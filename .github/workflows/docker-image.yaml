@@ -8,7 +8,7 @@ on:
 
 env:
   JMETER_VERSION: 5.5
-  JMETER_DOCKER_HUB_REPO: liukunup/jmeter:$JMETER_VERSION
+  DOCKER_HUB_REPO: liukunup/jmeter
 
 jobs:
 
@@ -30,7 +30,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v4
       with:
-        images: $JMETER_DOCKER_HUB_REPO
+        images: $DOCKER_HUB_REPO
 
     - name: Build & Push Docker image
       uses: docker/build-push-action@v3
