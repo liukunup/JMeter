@@ -23,13 +23,13 @@ RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	&& apk add --update openjdk8-jre tzdata curl unzip bash \
+	&& apk add --update openjdk8-jre tzdata bash curl vim tar unzip \
 	&& apk add --no-cache nss \
 	&& rm -rf /var/cache/apk/* \
 	&& mkdir -p /tmp/dependencies \
 	&& curl -L --silent ${JMETER_DOWNLOAD_URL} > /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz \
 	&& mkdir -p /opt \
-	&& tar -xzf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
+	&& tar -zxvf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
 	&& rm -rf /tmp/dependencies
 
 # 将JMeter执行路径加入环境变量
