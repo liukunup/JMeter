@@ -33,7 +33,7 @@ jobs:
       uses: docker/metadata-action@v4
       with:
         images: |
-          $DOCKER_HUB_REPO
+          ${{ env.DOCKER_HUB_REPO }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
