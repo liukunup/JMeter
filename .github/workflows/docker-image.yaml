@@ -55,7 +55,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            "JMETER_VERSION=$JMETER_VERSION"
+            JMETER_VERSION=${{ env.JMETER_VERSION }}
       -
         name: Update Docker Hub Repository Description
         uses: peter-evans/dockerhub-description@v2
