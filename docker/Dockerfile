@@ -36,7 +36,7 @@ RUN    apk update \
 ENV PATH ${PATH}:${JMETER_BIN}
 
 # 默认的入口程序脚本
-COPY entrypoint.sh /
+COPY docker/entrypoint.sh /
 
 # 工作目录
 WORKDIR	${JMETER_HOME}
