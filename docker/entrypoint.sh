@@ -29,17 +29,17 @@ function func_jmeter() {
   echo "${JVM_ARGS}"
 
   echo "===== JMETER ARGS ====="
-  echo "${@:1}"
+  echo "${@:2}"
 
   echo "===== JMETER EXTRA ARGS ====="
   EXTRA_ARGS=-Dlog4j2.formatMsgNoLookups=true
   echo ${EXTRA_ARGS}
 
   echo "===== JMETER ALL ARGS ====="
-  echo ${EXTRA_ARGS} "${@:1}"
+  echo ${EXTRA_ARGS} "${@:2}"
 
   # Run JMeter
-  jmeter ${EXTRA_ARGS} "${@:1}"
+  jmeter ${EXTRA_ARGS} "${@:2}"
 
   echo "FUNC OUT - JMeter"
 }
@@ -52,7 +52,14 @@ function func_jmeter_server() {
 
 function func_server_agent() {
   echo "FUNC IN  - Server Agent"
-  "${SERVER_AGENT_HOME}"/startAgent.sh --udp-port 0 --tcp-port 4444 --interval 5
+
+  # 拼凑启动脚本文件的路径
+  SCRIPT_FILE="${SERVER_AGENT_HOME}/startAgent.sh"
+  # 后台运行
+  /bin/bash "${SCRIPT_FILE}" --udp-port 0 --tcp-port "${SERVER_AGENT_PORT}" --interval 5 &
+  # 维持容器Running状态
+  tail -f /dev/null
+
   echo "FUNC OUT - Server Agent"
 }
 
