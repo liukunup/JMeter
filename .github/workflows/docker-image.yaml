@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - 'releases/**'
+    tags:
+      - 'v*'
 
 env:
   JMETER_VERSION: 5.5
@@ -30,7 +32,14 @@ jobs:
       id: meta
       uses: docker/metadata-action@v4
       with:
-        images: $DOCKER_HUB_REPO
+        images: |
+          $DOCKER_HUB_REPO
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha
 
     - name: Build & Push Docker image
       uses: docker/build-push-action@v3
