@@ -39,6 +39,7 @@ jobs:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
           tags: |
+            type=ref,event=branch
             type=raw,value=${{ env.JMETER_VERSION }}
             type=semver,pattern=-{{version}},prefix=${{ env.JMETER_VERSION }}
             type=semver,pattern=-{{major}}.{{minor}}.{{patch}},prefix=${{ env.JMETER_VERSION }}
