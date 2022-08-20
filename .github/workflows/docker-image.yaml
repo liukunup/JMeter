@@ -45,6 +45,10 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha
       -
+        name: Test
+        run: |
+            echo "::debug::{{defaultContext}}"
+      -
         name: Build & Push Docker image
         uses: docker/build-push-action@v3
         with:
