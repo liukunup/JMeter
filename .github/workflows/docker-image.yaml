@@ -39,11 +39,9 @@ jobs:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
+            type=semver,pattern={{version}},prefix=${{ env.JMETER_VERSION }}
+            type=semver,pattern={{major}}.{{minor}},prefix=${{ env.JMETER_VERSION }}
+            type=semver,pattern={{major}},prefix=${{ env.JMETER_VERSION }}
       -
         name: Build & Push Docker image
         uses: docker/build-push-action@v3
