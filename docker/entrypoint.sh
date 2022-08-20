@@ -29,17 +29,17 @@ function func_jmeter() {
   echo "${JVM_ARGS}"
 
   echo "===== JMETER ARGS ====="
-  echo "$@"
+  echo "${@:1}"
 
   echo "===== JMETER EXTRA ARGS ====="
   EXTRA_ARGS=-Dlog4j2.formatMsgNoLookups=true
   echo ${EXTRA_ARGS}
 
   echo "===== JMETER ALL ARGS ====="
-  echo ${EXTRA_ARGS} "$@"
+  echo ${EXTRA_ARGS} "${@:1}"
 
   # Run JMeter
-  jmeter ${EXTRA_ARGS} "$@"
+  jmeter ${EXTRA_ARGS} "${@:1}"
 
   echo "FUNC OUT - JMeter"
 }
@@ -52,7 +52,7 @@ function func_jmeter_server() {
 
 function func_server_agent() {
   echo "FUNC IN  - Server Agent"
-
+  "${SERVER_AGENT_HOME}"/startAgent.sh --udp-port 0 --tcp-port 4444 --interval 5
   echo "FUNC OUT - Server Agent"
 }
 
@@ -75,21 +75,21 @@ echo "=============== START Running at $(date) ==============="
 mode=$1
 
 # 打印脚本进程ID
-echo $$
+echo "Process ID: $$"
 
 # 按模式选择函数
 case $mode in
     jmeter)        echo "Run mode JMeter"
-    func_jmeter "${@:1}"
+    func_jmeter "$@"
     ;;
     jmeter-server) echo "Run mode JMeter-Server"
-    func_jmeter_server "${@:1}"
+    func_jmeter_server "$@"
     ;;
     server-agent)  echo "Run mode Server-Agent"
-    func_server_agent "${@:1}"
+    func_server_agent "$@"
     ;;
     debug)         echo "Run mode DEBUG"
-    func_debug "${@:1}"
+    func_debug "$@"
     ;;
 esac
 
