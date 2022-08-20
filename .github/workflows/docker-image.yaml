@@ -1,0 +1,34 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'releases/**'
+
+env:
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  JMETER_VERSION: 5.5
+  JMETER_DOCKER_REPO: liukunup/jmeter:${JMETER_VERSION}
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: DockerHub login
+      run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+    - name: Build & Push & Clean
+      run: |
+        docker build --build-arg JMETER_VERSION=${JMETER_VERSION} -f docker/Dockerfile -t ${JMETER_DOCKER_REPO} .
+        docker push ${JMETER_DOCKER_REPO}
+        docker rmi ${JMETER_DOCKER_REPO}
+
+    - name: DockerHub login
+      run: docker logout
