@@ -81,21 +81,18 @@ echo "=============== START Running at $(date) ==============="
 # 3. server agent (PerfMon)
 mode=$1
 
-# 打印脚本进程ID
-echo "Process ID: $$"
-
 # 按模式选择函数
 case $mode in
-    jmeter)        echo "Run mode JMeter"
+    jmeter)        echo "Process ID: $$, Run mode JMeter"
     func_jmeter "$@"
     ;;
-    jmeter-server) echo "Run mode JMeter-Server"
+    jmeter-server) echo "Process ID: $$, Run mode JMeter-Server"
     func_jmeter_server "$@"
     ;;
-    server-agent)  echo "Run mode Server-Agent"
+    server-agent)  echo "Process ID: $$, Run mode Server-Agent"
     func_server_agent "$@"
     ;;
-    debug)         echo "Run mode DEBUG"
+    debug)         echo "Process ID: $$, Run mode DEBUG"
     func_debug "$@"
     ;;
 esac
