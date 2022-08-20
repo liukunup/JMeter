@@ -10,7 +10,7 @@ on:
 
 env:
   JMETER_VERSION: 5.5
-  DOCKER_HUB_REPO: liukunup/jmeter
+  DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
 
 jobs:
   docker:
@@ -49,9 +49,17 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: {context}/docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          file: $context/docker/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             "JMETER_VERSION=$JMETER_VERSION"
+      -
+        name: Update repo description
+        uses: peter-evans/dockerhub-description@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.DOCKER_HUB_REPO }}
