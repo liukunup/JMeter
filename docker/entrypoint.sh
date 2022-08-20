@@ -53,12 +53,12 @@ function func_jmeter_server() {
 function func_server_agent() {
   echo "FUNC IN  - Server Agent"
 
-  # 拼凑启动脚本文件的路径
-  SCRIPT_FILE="${SERVER_AGENT_HOME}/startAgent.sh"
-  # 后台运行
-  /bin/bash "${SCRIPT_FILE}" --udp-port 0 --tcp-port "${SERVER_AGENT_PORT}" --interval 5 &
-  # 维持容器Running状态
-  tail -f /dev/null
+  # 脚本绝对路径
+  SCRIPT="${SERVER_AGENT_HOME}/startAgent.sh"
+  # 预设采样间隔为 5 秒
+  [[ -z ${SA_INTERVAL} ]] && SA_INTERVAL=5
+  # 启动服务
+  /bin/bash "${SCRIPT}" --udp-port 4444 --tcp-port 4444 --interval ${SA_INTERVAL}
 
   echo "FUNC OUT - Server Agent"
 }
