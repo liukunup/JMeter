@@ -43,11 +43,12 @@ clean:
 
 run:
 	@mkdir -p $(REPORT_DIR)
-	docker run --rm --name $(CONTAINER_NAME) -i -v $(PWD):$(PWD) -w $(PWD) $(CONTAINER_IMAGE) \
+	docker run --rm --name $(CONTAINER_NAME) -i -v $(PWD):$(PWD) -w $(PWD) \
+    -e JVM_ARGS=$(JVM_ARGS) $(CONTAINER_IMAGE) jmeter \
 	-Dlog_level.jmeter=DEBUG \
-	-JTARGET_HOST=${TARGET_HOST} -JTARGET_PORT=${TARGET_PORT} \
-	-JTARGET_PATH=${TARGET_PATH} -JTARGET_KEYWORD=${TARGET_KEYWORD} \
-	-JTHREADS=$(THREADS) \
+	-JTARGET_THREADS=$(TARGET_THREADS) \
+	-JTARGET_HOST=$(TARGET_HOST) -JTARGET_PORT=$(TARGET_PORT) \
+	-JTARGET_PATH=$(TARGET_PATH) \
 	-n -t $(JMX_DIR)/$(JMX) -l $(PROJECT_DIR)/test-plan.jtl -j $(PROJECT_DIR)/jmeter.log \
 	-e -o $(REPORT_DIR)
 
