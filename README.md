@@ -4,6 +4,8 @@
 
 [JMeter 官方网站](https://jmeter.apache.org)
 
+如果喜欢请`Star🌟`/`Fork🍴`/`Add to favorites🗂`,拜托啦～🫰
+
 
 ## OKR
 
