@@ -1,7 +1,7 @@
 #!/bin/bash
 
 JMETER_VERSION=${JMETER_VERSION:-"5.5"}
-CONTAINER_NAME="jmeter"
+CONTAINER_NAME="server-agent"
 CONTAINER_IMAGE="liukunup/jmeter:${JMETER_VERSION}"
 
 # example: sh run_server_agent.sh
