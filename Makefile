@@ -24,9 +24,14 @@ JMETER_VERSION ?= "5.5"
 CONTAINER_NAME ?= "jmeter"
 CONTAINER_IMAGE = "liukunup/jmeter:$(JMETER_VERSION)"
 
+# JMeter Server
+JS_PORT           ?= "1234"
+JS_CONTAINER_NAME ?= "jmeter-server"
+
 # Server Agent
-SA_PORT     ?= "8888"
-SA_INTERVAL ?= "10"
+SA_PORT           ?= "8888"
+SA_INTERVAL       ?= "10"
+SA_CONTAINER_NAME ?= "server-agent"
 
 # JVM
 JVM_ARGS ?= "-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
@@ -64,10 +69,18 @@ report:
 	echo "==== HTML Test Report ===="
 	echo "See HTML test report in $(REPORT_DIR)/index.html"
 
+server:
+	docker run -d \
+      -p $(JS_PORT):$(JS_PORT) \
+      -e SERVER_PORT=$(JS_PORT) \
+      --restart=unless-stopped \
+      --name=$(JS_CONTAINER_NAME) \
+      $(CONTAINER_IMAGE) jmeter-server
+
 agent:
 	docker run -d \
       -p $(SA_PORT):4444 \
       -e SA_INTERVAL=$(SA_INTERVAL) \
       --restart=unless-stopped \
-      --name=$(CONTAINER_NAME) \
+      --name=$(SA_CONTAINER_NAME) \
       $(CONTAINER_IMAGE) server-agent
