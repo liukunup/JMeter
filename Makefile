@@ -7,12 +7,15 @@
 # ################################################## 默认参数 ##################################################
 
 PROJECT ?= "proj_example"
-JMX ?= "example.jmx"
+JMX ?= "standard_fixed.jmx"
 
-TARGET_THREADS ?= "1"
-TARGET_HOST    ?= "example.com"
-TARGET_PORT    ?= "80"
-TARGET_PATH    ?= "/index.html"
+TARGET_THREADS  ?= "1"
+TARGET_PROTOCOL ?= "https"
+TARGET_HOST     ?= "example.com"
+TARGET_PORT     ?= "443"
+TARGET_PATH     ?= "/api"
+TARGET_DATASET  ?= "testcases/${PROJECT}/dataset.txt"
+TARGET_TEMP_DIR ?= "temp"
 
 # ################################################## 无需修改 ##################################################
 
@@ -39,7 +42,7 @@ REPORT_DIR    = $(PROJECT_DIR)/report
 all: clean run report
 
 clean:
-	@rm -rf $(REPORT_DIR) $(PROJECT_DIR)/test-plan.jtl $(PROJECT_DIR)/jmeter.log
+	@rm -rf $(REPORT_DIR) $(PROJECT_DIR)/jmeter.jtl $(PROJECT_DIR)/jmeter.log
 
 run:
 	@mkdir -p $(REPORT_DIR)
@@ -47,16 +50,17 @@ run:
     -e JVM_ARGS=$(JVM_ARGS) $(CONTAINER_IMAGE) jmeter \
 	-Dlog_level.jmeter=DEBUG \
 	-JTARGET_THREADS=$(TARGET_THREADS) \
-	-JTARGET_HOST=$(TARGET_HOST) -JTARGET_PORT=$(TARGET_PORT) \
+	-JTARGET_PROTOCOL=$(TARGET_PROTOCOL) -JTARGET_HOST=$(TARGET_HOST) -JTARGET_PORT=$(TARGET_PORT) \
 	-JTARGET_PATH=$(TARGET_PATH) \
-	-n -t $(JMX_DIR)/$(JMX) -l $(PROJECT_DIR)/test-plan.jtl -j $(PROJECT_DIR)/jmeter.log \
+	-JTARGET_DATASET=$(TARGET_DATASET) -JTARGET_TEMP_DIR=$(TARGET_TEMP_DIR) \
+	-n -t $(JMX_DIR)/$(JMX) -l $(PROJECT_DIR)/jmeter.jtl -j $(PROJECT_DIR)/jmeter.log \
 	-e -o $(REPORT_DIR)
 
 report:
 	echo "==== jmeter.log ===="
 	cat $(PROJECT_DIR)/jmeter.log
 	echo "==== Raw Test Report ===="
-	cat $(PROJECT_DIR)/test-plan.jtl
+	cat $(PROJECT_DIR)/jmeter.jtl
 	echo "==== HTML Test Report ===="
 	echo "See HTML test report in $(REPORT_DIR)/index.html"
 

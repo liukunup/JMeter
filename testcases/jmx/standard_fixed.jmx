@@ -16,43 +16,43 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="TARGET_THREADS" elementType="Argument">
             <stringProp name="Argument.name">TARGET_THREADS</stringProp>
-            <stringProp name="Argument.value">1</stringProp>
+            <stringProp name="Argument.value">${__P(TARGET_THREADS,1)}</stringProp>
             <stringProp name="Argument.desc">目标线程数</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="TARGET_PROTOCOL" elementType="Argument">
             <stringProp name="Argument.name">TARGET_PROTOCOL</stringProp>
-            <stringProp name="Argument.value">https</stringProp>
+            <stringProp name="Argument.value">${__P(TARGET_PROTOCOL,https)}</stringProp>
             <stringProp name="Argument.desc">请求协议</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="TARGET_HOST" elementType="Argument">
             <stringProp name="Argument.name">TARGET_HOST</stringProp>
-            <stringProp name="Argument.value">www.baidu.com</stringProp>
+            <stringProp name="Argument.value">${__P(TARGET_HOST,example.com)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">请求地址</stringProp>
           </elementProp>
           <elementProp name="TARGET_PORT" elementType="Argument">
             <stringProp name="Argument.name">TARGET_PORT</stringProp>
-            <stringProp name="Argument.value">443</stringProp>
+            <stringProp name="Argument.value">${__P(TARGET_PORT,443)}</stringProp>
             <stringProp name="Argument.desc">请求端口</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="TARGET_PATH" elementType="Argument">
             <stringProp name="Argument.name">TARGET_PATH</stringProp>
-            <stringProp name="Argument.value">/s</stringProp>
+            <stringProp name="Argument.value">${__P(TARGET_PATH)}</stringProp>
             <stringProp name="Argument.desc">请求路径</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="TARGET_DATASET" elementType="Argument">
             <stringProp name="Argument.name">TARGET_DATASET</stringProp>
-            <stringProp name="Argument.value">dataset.txt</stringProp>
+            <stringProp name="Argument.value">${__P(TARGET_DATASET,dataset.txt)}</stringProp>
             <stringProp name="Argument.desc">测试数据集</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="TARGET_TEMP_DIR" elementType="Argument">
             <stringProp name="Argument.name">TARGET_TEMP_DIR</stringProp>
-            <stringProp name="Argument.value">temp</stringProp>
+            <stringProp name="Argument.value">${__P(TARGET_TEMP_DIR,temp)}</stringProp>
             <stringProp name="Argument.desc">临时文件夹</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
@@ -117,6 +117,16 @@
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
             <collectionProp name="HeaderManager.headers"/>
           </HeaderManager>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="响应断言" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">true</boolProp>
+            <intProp name="Assertion.test_type">8</intProp>
+          </ResponseAssertion>
           <hashTree/>
         </hashTree>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="查看结果树" enabled="true">
