@@ -47,6 +47,22 @@ function func_jmeter() {
 function func_jmeter_server() {
   echo "FUNC IN  - JMeter Server"
 
+  echo "===== JVM_ARGS ====="
+  echo "${JVM_ARGS}"
+
+  echo "===== JMETER SERVER ARGS ====="
+  echo "${@:2}"
+
+  echo "===== JMETER SERVER EXTRA ARGS ====="
+  EXTRA_ARGS=-Dlog4j2.formatMsgNoLookups=true
+  echo ${EXTRA_ARGS}
+
+  echo "===== JMETER SERVER ALL ARGS ====="
+  echo ${EXTRA_ARGS} "${@:2}"
+
+  # Run JMeter Server
+  jmeter-server ${EXTRA_ARGS} "${@:2}"
+
   echo "FUNC OUT - JMeter Server"
 }
 
