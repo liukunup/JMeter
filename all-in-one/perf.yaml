@@ -1,0 +1,350 @@
+---  # 1. Namespace = perf-stack
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: perf-stack
+---  # 2.1 Grafana ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana
+  namespace: perf-stack
+  labels:
+    app: grafana
+data:
+  grafana.ini: |
+    [server]
+      domain = grafana.perf.com
+---  # 2.2 Grafana PersistentVolumeClaim (注意: 前提是`StorageClass`已经存在)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana
+  namespace: perf-stack
+  annotations:
+    volume.beta.kubernetes.io/storage-provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
+spec:
+  storageClassName: nas-qnap-kubernetes
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---  # 2.3 Grafana Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: perf-stack
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        fsGroup: 472
+        supplementalGroups:
+          - 0
+      containers:
+        - name: grafana
+          image: grafana/grafana:8.5.10
+          ports:
+            - containerPort: 3000
+              name: grafana
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /robots.txt
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 2
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3000
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 250m
+              memory: 750Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          volumeMounts:
+            - mountPath: /var/lib/grafana
+              name: data
+            - mountPath: /etc/grafana
+              name: conf
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: grafana
+        - name: conf
+          configMap:
+            name: grafana
+---  # 2.4 Grafana Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: perf-stack
+  labels:
+    app: grafana
+spec:
+  ports:
+    - port: 3000
+      targetPort: grafana
+      protocol: TCP
+  selector:
+    app: grafana
+  sessionAffinity: None
+  type: LoadBalancer
+---  # 2.5 Grafana Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: perf-stack
+  labels:
+    app: grafana
+spec:
+  rules:
+  - host: grafana.perf.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000
+---  # 3.1 InfluxDB PersistentVolumeClaim (注意: 前提是`StorageClass`已经存在)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: influxdb
+  namespace: perf-stack
+  annotations:
+    volume.beta.kubernetes.io/storage-provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
+spec:
+  storageClassName: nas-qnap-kubernetes
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---  # 3.2 InfluxDB Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influxdb
+  namespace: perf-stack
+  labels:
+    app: influxdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: influxdb
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+      - name: influxdb
+        image: influxdb:2.4.0
+        ports:
+          - containerPort: 8086
+            name: influxdb
+            protocol: TCP
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        volumeMounts:
+          - mountPath: /var/lib/influxdb2
+            name: data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: influxdb
+---  # 3.3 InfluxDB Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+  namespace: perf-stack
+  labels:
+    app: influxdb
+spec:
+  ports:
+    - port: 8086
+      targetPort: influxdb
+      protocol: TCP
+  selector:
+    app: influxdb
+  sessionAffinity: None
+  type: LoadBalancer
+---  # 3.4 InfluxDB Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: influxdb
+  namespace: perf-stack
+  labels:
+    app: influxdb
+spec:
+  rules:
+  - host: influxdb.perf.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: influxdb
+            port:
+              number: 8086
+---  # 4.1 Jenkins PersistentVolumeClaim (注意: 前提是`StorageClass`已经存在)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins
+  namespace: perf-stack
+  annotations:
+    volume.beta.kubernetes.io/storage-provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
+spec:
+  storageClassName: nas-qnap-kubernetes
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---  # 4.2 Jenkins Server Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: perf-stack
+  labels:
+    app: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts
+        ports:
+          - name: jenkins
+            containerPort: 8080
+            protocol: TCP
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        volumeMounts:
+          - mountPath: /var/jenkins_home
+            name: jenkins-home
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: jenkins
+---  # 4.3 Jenkins Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins
+  namespace: perf-stack
+  labels:
+    app: jenkins
+spec:
+  ports:
+    - port: 8080
+      targetPort: jenkins
+      protocol: TCP
+  selector:
+    app: jenkins
+  sessionAffinity: None
+  type: LoadBalancer
+---  # 4.4 Jenkins Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jenkins
+  namespace: perf-stack
+  labels:
+    app: jenkins
+spec:
+  rules:
+  - host: jenkins.perf.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: jenkins
+            port:
+              number: 8080
+--- # 5.1 JMeter Server Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter-server
+  namespace: perf-stack
+  labels:
+    app: jmeter-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: jmeter-server
+  template:
+    metadata:
+      labels:
+        app: jmeter-server
+    spec:
+      containers:
+      - name: jmeter-server
+        image: liukunup/jmeter:5.5
+        args: ["jmeter-server"]
+        ports:
+          - containerPort: 1234
+            name: jmeter-server
+            protocol: TCP
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
