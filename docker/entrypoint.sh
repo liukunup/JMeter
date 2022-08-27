@@ -85,13 +85,13 @@ function func_server_agent() {
   echo "FUNC OUT - Server Agent"
 }
 
-function func_debug() {
-  echo "FUNC IN  - Debug"
+function func_keepalive() {
+  echo "FUNC IN  - Keepalive"
 
-  # cli
-  /bin/bash
+  # keepalive
+  tail -f /dev/null
 
-  echo "FUNC OUT - Debug"
+  echo "FUNC OUT - Keepalive"
 }
 
 # 打印开始时间
@@ -101,6 +101,7 @@ echo "=============== START Running at $(date) ==============="
 # 1. jmeter
 # 2. jmeter server
 # 3. server agent (PerfMon)
+# 4. keepalive
 mode=$1
 
 # 按模式选择函数
@@ -114,8 +115,8 @@ case $mode in
     server-agent)  echo "Process ID: $$, Run mode Server-Agent"
     func_server_agent "$@"
     ;;
-    debug)         echo "Process ID: $$, Run mode DEBUG"
-    func_debug "$@"
+    keepalive)         echo "Process ID: $$, Run mode Keepalive"
+    func_keepalive "$@"
     ;;
 esac
 
