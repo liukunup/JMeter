@@ -315,7 +315,7 @@ spec:
             name: jenkins
             port:
               number: 8080
---- # 5.1 JMeter Server Deployment
+---  # 5.1 JMeter Server Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -345,6 +345,52 @@ spec:
           requests:
             cpu: 500m
             memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+---  # 5.2 JMeter Server Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: jmeter-server
+  namespace: perf-stack
+  labels:
+    app: jmeter-server
+spec:
+  ports:
+    - port: 1234
+      targetPort: jmeter-server
+      nodePort: 31234
+  selector:
+    app: jmeter-server
+  sessionAffinity: None
+  type: NodePort
+---  # 5.3 JMeter Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter-in-k8s
+  namespace: perf-stack
+  labels:
+    app: jmeter-in-k8s
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jmeter-in-k8s
+  template:
+    metadata:
+      labels:
+        app: jmeter-in-k8s
+    spec:
+      containers:
+      - name: jmeter-in-k8s
+        image: liukunup/jmeter:5.5
+        args: ["keepalive"]
+        resources:
+          requests:
+            cpu: 250m
+            memory: 750Mi
           limits:
             cpu: 1000m
             memory: 2Gi
