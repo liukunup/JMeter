@@ -348,9 +348,10 @@ spec:
         image: liukunup/jmeter:5.5
         args: ["jmeter-server"]
         ports:
-          - containerPort: 1234
-            name: jmeter-server
-            protocol: TCP
+          - name: server-port
+            containerPort: 1099
+          - name: local-port
+            containerPort: 50000
         env:
           - name: JVM_ARGS
             valueFrom:
@@ -374,9 +375,12 @@ metadata:
     app: jmeter-server
 spec:
   ports:
-    - port: 1234
-      targetPort: jmeter-server
-      nodePort: 31234
+    - port: 1099
+      targetPort: 1099
+      nodePort: 31099
+    - port: 50000
+      targetPort: 50000
+      nodePort: 31100
   selector:
     app: jmeter-server
   sessionAffinity: None

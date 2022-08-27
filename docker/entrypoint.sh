@@ -54,13 +54,9 @@ function func_jmeter_server() {
   # 通常不再需要配置参数
   echo "${@:2}"
 
-  # 预设服务端口为 1234
-  [[ -z ${SERVER_PORT} ]] && SERVER_PORT=1234
-  export SERVER_PORT=${SERVER_PORT}
-
   echo "===== JMETER SERVER EXTRA ARGS ====="
   # 多数情况下会默认设置`server.rmi.ssl.disable=true`,因此直接写到内部来
-  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver.rmi.ssl.disable=true)
+  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=1099 -Dserver.rmi.localport=50000 -Dserver.rmi.ssl.disable=true)
   echo ${EXTRA_ARGS[*]}
 
   echo "===== JMETER SERVER ALL ARGS ====="
