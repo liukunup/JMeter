@@ -315,7 +315,17 @@ spec:
             name: jenkins
             port:
               number: 8080
----  # 5.1 JMeter Server Deployment
+---  # 5.1 JMeter ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jmeter
+  namespace: perf-stack
+  labels:
+    app: jmeter
+data:
+  JVM_ARGS: "-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
+---  # 5.2 JMeter Server Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -341,6 +351,12 @@ spec:
           - containerPort: 1234
             name: jmeter-server
             protocol: TCP
+        env:
+          - name: JVM_ARGS
+            valueFrom:
+              configMapKeyRef:
+                name: jmeter
+                key: JVM_ARGS
         resources:
           requests:
             cpu: 500m
@@ -348,7 +364,7 @@ spec:
           limits:
             cpu: 1000m
             memory: 2Gi
----  # 5.2 JMeter Server Service
+---  # 5.3 JMeter Server Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -365,7 +381,7 @@ spec:
     app: jmeter-server
   sessionAffinity: None
   type: NodePort
----  # 5.3 JMeter Deployment
+---  # 5.4 JMeter Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -387,6 +403,12 @@ spec:
       - name: jmeter-in-k8s
         image: liukunup/jmeter:5.5
         args: ["keepalive"]
+        env:
+          - name: JVM_ARGS
+            valueFrom:
+              configMapKeyRef:
+                name: jmeter
+                key: JVM_ARGS
         resources:
           requests:
             cpu: 250m
