@@ -144,7 +144,7 @@ jenkins    <none>   jenkins.perf.com    192.168.100.22,192.168.100.23,192.168.10
 
 导入[官方看板](https://grafana.com/grafana/dashboards/?dataSource=influxdb&search=JMeter)
 
-这里选择`JMeter Load Test`作为数据看板,通过ID`1152`进行导入。
+这里选择`JMeter Load Test (org.md.jmeter.influxdb2.visualizer) - influxdb v2.0 (Flux)`作为数据看板,通过ID`13644`进行导入。
 
 ![Data Dashboard 1](screenshot/grafana-dashboard-1.png)
 
