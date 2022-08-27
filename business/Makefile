@@ -7,7 +7,7 @@
 # ################################################## 默认参数 ##################################################
 
 PROJECT ?= "proj_example"
-JMX ?= "standard_fixed.jmx"
+JMX ?= "HelloWorld.jmx"
 
 TARGET_THREADS  ?= "1"
 TARGET_PROTOCOL ?= "https"
@@ -30,6 +30,8 @@ REPORT_DIR    = $(PROJECT_DIR)/report
 
 # ################################################## Target ##################################################
 
+REMOTE_HOSTS = $(shell getent ahostsv4 jmeter-server | cut -d ' ' -f 1 | sort -u | awk -v ORS=:1099, '{print $1}' | sed 's/,$\//')
+
 all: clean run report
 
 clean:
@@ -37,15 +39,15 @@ clean:
 
 run:
 	@mkdir -p $(REPORT_DIR)
-	@export JVM_ARGS=$(JVM_ARGS)
-	jmeter -Dlog4j2.formatMsgNoLookups=true -Dlog_level.jmeter=DEBUG \
+	@echo "Remote Hosts: " $(REMOTE_HOSTS)
+	jmeter -Dlog4j2.formatMsgNoLookups=true -Dlog_level.jmeter=DEBUG -Dserver.rmi.ssl.disable=true \
 	-JTARGET_THREADS=$(TARGET_THREADS) \
 	-JTARGET_PROTOCOL=$(TARGET_PROTOCOL) -JTARGET_HOST=$(TARGET_HOST) -JTARGET_PORT=$(TARGET_PORT) \
 	-JTARGET_PATH=$(TARGET_PATH) \
 	-JTARGET_DATASET=$(TARGET_DATASET) -JTARGET_TEMP_DIR=$(TARGET_TEMP_DIR) \
 	-n -t $(JMX_DIR)/$(JMX) -l $(PROJECT_DIR)/jmeter.jtl -j $(PROJECT_DIR)/jmeter.log \
 	-e -o $(REPORT_DIR) \
-	-R `getent ahostsv4 jmeter-server | cut -d' ' -f1 | sort -u | awk -v ORS=, '{print $1}' | sed 's/,$//'`
+	-R $(REMOTE_HOSTS)
 
 report:
 	echo "==== jmeter.log ===="
