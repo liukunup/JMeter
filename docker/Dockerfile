@@ -41,7 +41,7 @@ RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	&& apk add --update openjdk11-jre tzdata bash curl vim tar unzip \
+	&& apk add --update openjdk18-jre tzdata bash curl vim tar unzip \
 	&& apk add --no-cache nss \
 	&& rm -rf /var/cache/apk/* \
 	&& mkdir -p /tmp/dependencies \
