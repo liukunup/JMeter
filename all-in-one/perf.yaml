@@ -375,10 +375,12 @@ metadata:
     app: jmeter-server
 spec:
   ports:
-    - port: 1099
+    - name: server-port
+      port: 1099
       targetPort: 1099
       nodePort: 31099
-    - port: 50000
+    - name: local-port
+      port: 50000
       targetPort: 50000
       nodePort: 31100
   selector:
