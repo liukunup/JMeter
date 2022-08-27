@@ -1,5 +1,5 @@
 # 基础镜像
-FROM openjdk:17-alpine
+FROM alpine:3.16
 # 作者信息
 LABEL LIUKUN="liukunup@outlook.com"
 
@@ -41,7 +41,7 @@ RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	&& apk add --update tzdata bash curl vim tar unzip \
+	&& apk add --update openjdk11-jre tzdata bash curl vim tar unzip \
 	&& apk add --no-cache nss \
 	&& rm -rf /var/cache/apk/* \
 	&& mkdir -p /tmp/dependencies \
