@@ -6,8 +6,7 @@ CONTAINER_IMAGE="liukunup/jmeter:${JMETER_VERSION}"
 
 # example: sh run_jmeter_server.sh
 docker run -d \
-  -p 1234:1234 \
-  -e SERVER_PORT=1234 \
+  -p 1099:1099 \
   --restart=unless-stopped \
   --name=${CONTAINER_NAME} \
   "${CONTAINER_IMAGE}" jmeter-server

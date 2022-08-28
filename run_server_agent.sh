@@ -6,7 +6,7 @@ CONTAINER_IMAGE="liukunup/jmeter:${JMETER_VERSION}"
 
 # example: sh run_server_agent.sh
 docker run -d \
-  -p 8888:4444 \
+  -p 4444:4444 \
   -e SA_INTERVAL=10 \
   --restart=unless-stopped \
   --name=${CONTAINER_NAME} \
