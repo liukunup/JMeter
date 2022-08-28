@@ -333,6 +333,7 @@ metadata:
   namespace: perf-stack
   labels:
     app: jmeter-server
+    jmeterMode: server
 spec:
   replicas: 3
   selector:
@@ -343,9 +344,21 @@ spec:
       labels:
         app: jmeter-server
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: jmeterMode
+                      operator: In
+                      values:
+                        - server
+                topologyKey: "kubernetes.io/hostname"
       containers:
       - name: jmeter-server
-        image: liukunup/jmeter:5.5
+        image: liukunup/jmeter:business-5.5
         args: ["jmeter-server"]
         ports:
           - name: server-port
@@ -374,19 +387,17 @@ metadata:
   labels:
     app: jmeter-server
 spec:
+  clusterIP: None
   ports:
     - name: server-port
       port: 1099
       targetPort: 1099
-      nodePort: 31099
     - name: local-port
       port: 50000
       targetPort: 50000
-      nodePort: 31100
   selector:
     app: jmeter-server
-  sessionAffinity: None
-  type: NodePort
+  type: ClusterIP
 ---  # 5.4 JMeter Deployment
 apiVersion: apps/v1
 kind: Deployment
@@ -407,7 +418,7 @@ spec:
     spec:
       containers:
       - name: jmeter-in-k8s
-        image: liukunup/jmeter:5.5
+        image: liukunup/jmeter:business-5.5
         args: ["keepalive"]
         env:
           - name: JVM_ARGS
