@@ -289,3 +289,24 @@ kubectl get svc -n perf-stack -o wide
 ```shell
 kubectl get ingress -n perf-stack -o wide
 ```
+
+- 拷贝外部文件到集群Pod容器内
+
+以更新jmx为例
+
+```shell
+kubectl cp xxx/jmx/abc.jmx "${namespace}/${pod}:/opt/workspace/testcases/jmx/xxx.jmx"
+```
+
+更新多个Pod的文件
+
+```shell
+#!/bin/bash
+namespace=perf-stack
+jmeterPods=$(kubectl get po -n perf-stack | grep jmeter | grep Running | awk '{print $1}')
+for pod in ${jmeterPods};
+do
+  echo "${pod}"
+  kubectl cp testcases/jmx/HelloWorld.jmx "${namespace}/${pod}:/opt/workspace/testcases/jmx/HelloWorld.jmx"
+done
+```
