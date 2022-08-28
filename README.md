@@ -46,3 +46,4 @@
 ## 参考资料
 
 - [justb4/docker-jmeter](https://github.com/justb4/docker-jmeter)
+- [JMeter InfluxDB v2.0 listener plugin](https://github.com/mderevyankoaqa/jmeter-influxdb2-listener-plugin)
