@@ -174,10 +174,78 @@ jenkins    <none>   jenkins.perf.com    192.168.100.22,192.168.100.23,192.168.10
 kubectl exec -it $(kubectl get pods -n perf-stack | grep jmeter-in-k8s | awk '{print $1}') -n perf-stack -- /bin/bash
 ```
 
-运行性能测试目标
+执行完会发现已经进入容器的命令行模式
+
+可以使用`pwd`查看一下当前路径
+
+```text
+bash-5.1# pwd
+/opt/workspace
+```
+
+一键执行测试
 
 ```shell
 make all
+```
+
+执行日志如下
+
+```text
+bash-5.1# make all
+REMOTE HOSTS: 10.42.0.14:1099,10.42.1.24:1099,10.42.2.26:1099
+jmeter -Dlog4j2.formatMsgNoLookups=true -Dlog_level.jmeter=DEBUG -Dserver.rmi.ssl.disable=true \
+-GTARGET_THREADS=1 \
+-GTARGET_PROTOCOL=https -GTARGET_HOST=example.com -GTARGET_PORT=443 \
+-GTARGET_PATH=/api \
+-GTARGET_DATASET=/opt/workspace/testcases/proj_example/dataset.txt -GTARGET_TEMP_DIR=temp \
+-n -t /opt/workspace/testcases/jmx/HelloWorld.jmx -l /opt/workspace/testcases/proj_example/jmeter.jtl -j /opt/workspace/testcases/proj_example/jmeter.log \
+-e -o /opt/workspace/testcases/proj_example/report \
+-R 10.42.0.14:1099,10.42.1.24:1099,10.42.2.26:1099
+...
+Created the tree successfully using /opt/workspace/testcases/jmx/HelloWorld.jmx
+Configuring remote engine: 10.42.0.14:1099
+Configuring remote engine: 10.42.1.24:1099
+Configuring remote engine: 10.42.2.26:1099
+...
+Waiting for possible Shutdown/StopTestNow/HeapDump/ThreadDump message on port 4445
+summary +      1 in 00:00:02 =    0.6/s Avg:  1286 Min:  1286 Max:  1286 Err:     1 (100.00%) Active: 3 Started: 3 Finished: 0
+summary +    303 in 00:00:28 =   10.6/s Avg:   209 Min:     0 Max:  2890 Err:   303 (100.00%) Active: 2 Started: 3 Finished: 1
+summary =    304 in 00:00:30 =   10.1/s Avg:   212 Min:     0 Max:  2890 Err:   304 (100.00%)
+summary +    131 in 00:00:01 =  152.3/s Avg:   187 Min:     0 Max:   820 Err:   131 (100.00%) Active: 0 Started: 3 Finished: 3
+summary =    435 in 00:00:31 =   14.0/s Avg:   204 Min:     0 Max:  2890 Err:   435 (100.00%)
+...
+==== jmeter.log ====
+...
+==== Raw Test Report ====
+...
+==== HTML Test Report ====
+...
+See HTML test report in /opt/workspace/testcases/proj_example/report/index.html
+```
+
+Tips: 注意这里给各个服务器传递参数的方式
+
+> -Dxxx defines a java system property
+
+> -Jxxx defines a local JMeter property
+
+> -Gxxx defines a JMeter property to be sent to all remote servers
+
+相关路径
+1. 报告路径 `testcases/proj_example/report` 打包下载即可
+2. 日志路径
+   1. 测试日志 `testcases/proj_example/jmeter.jtl`
+   2. JMeter日志 `testcases/proj_example/jmeter.log`
+   3. 其他日志 `testcases/proj_example/temp`
+
+- Makefile伪目标
+
+```text
+all:    依次执行clean、run、report伪目标
+clean:  清理目录
+run:    执行测试
+report: 显示结果
 ```
 
 ---
@@ -185,3 +253,26 @@ make all
 ### Jenkins
 
 👷施工中...
+
+
+---
+
+## 常用命令
+
+- 查看Pod状态
+
+```shell
+kubectl get po -n perf-stack -o wide
+```
+
+- 查看Service状态
+
+```shell
+kubectl get svc -n perf-stack -o wide
+```
+
+- 查看Ingress状态
+
+```shell
+kubectl get ingress -n perf-stack -o wide
+```
