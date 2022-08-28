@@ -44,7 +44,7 @@ SA_INTERVAL       ?= 10
 SA_CONTAINER_NAME ?= server-agent
 
 # JVM
-JVM_ARGS ?= -Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m
+JVM_ARGS ?= "-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
 
 # Testcases
 JMX_DIR       = $(TESTCASE_DIR)/jmx

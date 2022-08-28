@@ -30,7 +30,7 @@ TARGET_INFLUXDB2_TOKEN ?= not_set
 # ################################################## 无需修改 ##################################################
 
 # JVM
-JVM_ARGS ?= -Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m
+JVM_ARGS ?= "-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
 
 # JMeter
 JMX_DIR     = $(TESTCASE_DIR)/jmx
@@ -59,7 +59,7 @@ run:
 	-GTARGET_PROTOCOL=$(TARGET_PROTOCOL) -GTARGET_HOST=$(TARGET_HOST) -GTARGET_PORT=$(TARGET_PORT) \
 	-GTARGET_PATH=$(TARGET_PATH) \
 	-GTARGET_DATASET=$(TARGET_DATASET) -GTARGET_TEMP_DIR=$(TARGET_TEMP_DIR) \
-    -GTARGET_INFLUXDB2_TOKEN=$(TARGET_INFLUXDB2_TOKEN) \
+	-GTARGET_INFLUXDB2_TOKEN=$(TARGET_INFLUXDB2_TOKEN) \
 	-n -t $(JMX_DIR)/$(JMX) -l $(PROJECT_DIR)/jmeter.jtl -j $(PROJECT_DIR)/jmeter.log \
 	-e -o $(REPORT_DIR) \
 	-R $(REMOTE_HOSTS)
