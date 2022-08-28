@@ -25,7 +25,7 @@ TARGET_DATASET  ?= $(TESTCASE_DIR)/$(PROJECT)/dataset.txt
 TARGET_TEMP_DIR ?= $(TESTCASE_DIR)/$(PROJECT)/temp
 
 # 仅在配置了 InfluxDB2 Listener 时需要
-TARGET_INFLUXDB2_TOKEN ?= not_set
+TARGET_INFLUXDB2_TOKEN ?= token
 
 # ################################################## 无需修改 ##################################################
 
