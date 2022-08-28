@@ -6,38 +6,42 @@
 
 # ################################################## 默认参数 ##################################################
 
-PROJECT ?= "proj_example"
-JMX ?= "standard_fixed.jmx"
+# 默认测试路径 无需修改
+TESTCASE_DIR    ?= $(PWD)/testcases
 
-TARGET_THREADS  ?= "1"
-TARGET_PROTOCOL ?= "https"
-TARGET_HOST     ?= "example.com"
-TARGET_PORT     ?= "443"
-TARGET_PATH     ?= "/api"
-TARGET_DATASET  ?= "testcases/${PROJECT}/dataset.txt"
-TARGET_TEMP_DIR ?= "temp"
+# 项目文件夹以及JMX文件
+PROJECT ?= proj_example
+JMX     ?= HelloWorld.jmx
+
+# JMX配置参数
+TARGET_THREADS  ?= 1
+TARGET_PROTOCOL ?= https
+TARGET_HOST     ?= example.com
+TARGET_PORT     ?= 443
+TARGET_PATH     ?= /api
+TARGET_DATASET  ?= $(TESTCASE_DIR)/$(PROJECT)/dataset.txt
+TARGET_TEMP_DIR ?= temp
 
 # ################################################## 无需修改 ##################################################
 
 # Container
-JMETER_VERSION ?= "5.5"
-CONTAINER_NAME ?= "jmeter"
-CONTAINER_IMAGE = "liukunup/jmeter:$(JMETER_VERSION)"
+JMETER_VERSION ?= 5.5
+CONTAINER_NAME ?= jmeter
+CONTAINER_IMAGE = liukunup/jmeter:$(JMETER_VERSION)
 
 # JMeter Server
-JS_PORT           ?= "1234"
-JS_CONTAINER_NAME ?= "jmeter-server"
+JS_PORT           ?= 1099
+JS_CONTAINER_NAME ?= jmeter-server
 
 # Server Agent
-SA_PORT           ?= "8888"
-SA_INTERVAL       ?= "10"
-SA_CONTAINER_NAME ?= "server-agent"
+SA_PORT           ?= 4444
+SA_INTERVAL       ?= 10
+SA_CONTAINER_NAME ?= server-agent
 
 # JVM
-JVM_ARGS ?= "-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
+JVM_ARGS ?= -Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m
 
 # Testcases
-TESTCASE_DIR ?= testcases
 JMX_DIR       = $(TESTCASE_DIR)/jmx
 PROJECT_DIR   = $(TESTCASE_DIR)/$(PROJECT)
 REPORT_DIR    = $(PROJECT_DIR)/report
@@ -63,9 +67,9 @@ run:
 
 report:
 	echo "==== jmeter.log ===="
-	cat $(PROJECT_DIR)/jmeter.log
+	tail -n 10 $(PROJECT_DIR)/jmeter.log
 	echo "==== Raw Test Report ===="
-	cat $(PROJECT_DIR)/jmeter.jtl
+	tail -n 10 $(PROJECT_DIR)/jmeter.jtl
 	echo "==== HTML Test Report ===="
 	echo "See HTML test report in $(REPORT_DIR)/index.html"
 
