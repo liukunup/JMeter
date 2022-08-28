@@ -136,7 +136,7 @@ jenkins    <none>   jenkins.perf.com    192.168.100.22,192.168.100.23,192.168.10
 
 操作路径: `Configuration(左侧边栏齿轮图标)` -> `Data Sources` -> `InfluxDB(第3个图标)`
 
-如下图进行配置。注意: 这里的URL使用`influxdb:8086`的形式。
+如下图进行配置。注意: 集群内Pod之间，这里的URL使用`influxdb:8086`的形式。
 
 ![Data Sources 1](screenshot/grafana-ds-1.png)
 
@@ -247,6 +247,19 @@ clean:  清理目录
 run:    执行测试
 report: 显示结果
 ```
+
+#### InfluxDB2 Listener
+
+OK，我们现在使用带`InfluxDB2 Listener`的JMX来尝试一下，以下是配置参数。
+
+注意：当你在集群内部访问时，应该使用`influxdb:8086`，而不是下图设置的`influxdb.perf.com:80`。
+
+![InfluxDB2 Listener Config](screenshot/influxdb2-listener-conf.png)
+
+执行完测试后，你将会看到下面的效果。[飞机票✈️](http://grafana.perf.com/)
+
+![Grafana Demo](screenshot/grafana-demo.png)
+
 
 ---
 
