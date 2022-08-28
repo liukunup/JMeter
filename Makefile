@@ -24,9 +24,6 @@ TARGET_DATASET  ?= $(TESTCASE_DIR)/$(PROJECT)/dataset.txt
 # 仅在配置了保存文件时需要
 TARGET_TEMP_DIR ?= $(TESTCASE_DIR)/$(PROJECT)/temp
 
-# 仅在配置了 InfluxDB2 Listener 时需要
-TARGET_INFLUXDB2_TOKEN ?= token
-
 # ################################################## 无需修改 ##################################################
 
 # Container
@@ -67,7 +64,6 @@ run:
       -JTARGET_PROTOCOL=$(TARGET_PROTOCOL) -JTARGET_HOST=$(TARGET_HOST) -JTARGET_PORT=$(TARGET_PORT) \
       -JTARGET_PATH=$(TARGET_PATH) \
       -JTARGET_DATASET=$(TARGET_DATASET) -JTARGET_TEMP_DIR=$(TARGET_TEMP_DIR) \
-      -JTARGET_INFLUXDB2_TOKEN=$(TARGET_INFLUXDB2_TOKEN) \
       -n -t $(JMX_DIR)/$(JMX) -l $(PROJECT_DIR)/jmeter.jtl -j $(PROJECT_DIR)/jmeter.log \
       -e -o $(REPORT_DIR)
 
