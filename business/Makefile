@@ -20,7 +20,7 @@ TARGET_HOST     ?= example.com
 TARGET_PORT     ?= 443
 TARGET_PATH     ?= /api
 TARGET_DATASET  ?= $(TESTCASE_DIR)/$(PROJECT)/dataset.txt
-TARGET_TEMP_DIR ?= temp
+TARGET_TEMP_DIR ?= $(TESTCASE_DIR)/$(PROJECT)/temp
 
 # ################################################## 无需修改 ##################################################
 
@@ -44,10 +44,10 @@ REMOTE_HOSTS = $(shell getent ahostsv4 jmeter-server | cut -d ' ' -f 1 | sort -u
 all: clean run report
 
 clean:
-	@rm -rf $(REPORT_DIR) $(PROJECT_DIR)/jmeter.jtl $(PROJECT_DIR)/jmeter.log
+	@rm -rf $(REPORT_DIR) $(TARGET_TEMP_DIR) $(PROJECT_DIR)/jmeter.jtl $(PROJECT_DIR)/jmeter.log
 
 run:
-	@mkdir -p $(REPORT_DIR)
+	@mkdir -p $(REPORT_DIR) $(TARGET_TEMP_DIR)
 	@echo "REMOTE HOSTS: $(REMOTE_HOSTS)"
 	jmeter -Dlog4j2.formatMsgNoLookups=true -Dlog_level.jmeter=DEBUG -Dserver.rmi.ssl.disable=true \
 	-GTARGET_THREADS=$(TARGET_THREADS) \
@@ -59,9 +59,9 @@ run:
 	-R $(REMOTE_HOSTS)
 
 report:
-	echo "==== jmeter.log ===="
-	tail -n 10 $(PROJECT_DIR)/jmeter.log
-	echo "==== Raw Test Report ===="
-	tail -n 10 $(PROJECT_DIR)/jmeter.jtl
-	echo "==== HTML Test Report ===="
-	echo "See HTML test report in $(REPORT_DIR)/index.html"
+	@echo "==== jmeter.log ===="
+	@tail -n 10 $(PROJECT_DIR)/jmeter.log
+	@echo "==== Raw Test Report ===="
+	@tail -n 10 $(PROJECT_DIR)/jmeter.jtl
+	@echo "==== HTML Test Report ===="
+	@echo "See HTML test report in $(REPORT_DIR)/index.html"

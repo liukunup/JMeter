@@ -20,7 +20,7 @@ TARGET_HOST     ?= example.com
 TARGET_PORT     ?= 443
 TARGET_PATH     ?= /api
 TARGET_DATASET  ?= $(TESTCASE_DIR)/$(PROJECT)/dataset.txt
-TARGET_TEMP_DIR ?= temp
+TARGET_TEMP_DIR ?= $(TESTCASE_DIR)/$(PROJECT)/temp
 
 # ################################################## 无需修改 ##################################################
 
@@ -51,27 +51,27 @@ REPORT_DIR    = $(PROJECT_DIR)/report
 all: clean run report
 
 clean:
-	@rm -rf $(REPORT_DIR) $(PROJECT_DIR)/jmeter.jtl $(PROJECT_DIR)/jmeter.log
+	@rm -rf $(REPORT_DIR) $(TARGET_TEMP_DIR) $(PROJECT_DIR)/jmeter.jtl $(PROJECT_DIR)/jmeter.log
 
 run:
-	@mkdir -p $(REPORT_DIR)
+	@mkdir -p $(REPORT_DIR) $(TARGET_TEMP_DIR)
 	docker run --rm --name $(CONTAINER_NAME) -i -v $(PWD):$(PWD) -w $(PWD) \
-    -e JVM_ARGS=$(JVM_ARGS) $(CONTAINER_IMAGE) jmeter \
-	-Dlog_level.jmeter=DEBUG \
-	-JTARGET_THREADS=$(TARGET_THREADS) \
-	-JTARGET_PROTOCOL=$(TARGET_PROTOCOL) -JTARGET_HOST=$(TARGET_HOST) -JTARGET_PORT=$(TARGET_PORT) \
-	-JTARGET_PATH=$(TARGET_PATH) \
-	-JTARGET_DATASET=$(TARGET_DATASET) -JTARGET_TEMP_DIR=$(TARGET_TEMP_DIR) \
-	-n -t $(JMX_DIR)/$(JMX) -l $(PROJECT_DIR)/jmeter.jtl -j $(PROJECT_DIR)/jmeter.log \
-	-e -o $(REPORT_DIR)
+      -e JVM_ARGS=$(JVM_ARGS) $(CONTAINER_IMAGE) jmeter \
+      -Dlog_level.jmeter=DEBUG \
+      -JTARGET_THREADS=$(TARGET_THREADS) \
+      -JTARGET_PROTOCOL=$(TARGET_PROTOCOL) -JTARGET_HOST=$(TARGET_HOST) -JTARGET_PORT=$(TARGET_PORT) \
+      -JTARGET_PATH=$(TARGET_PATH) \
+      -JTARGET_DATASET=$(TARGET_DATASET) -JTARGET_TEMP_DIR=$(TARGET_TEMP_DIR) \
+      -n -t $(JMX_DIR)/$(JMX) -l $(PROJECT_DIR)/jmeter.jtl -j $(PROJECT_DIR)/jmeter.log \
+      -e -o $(REPORT_DIR)
 
 report:
-	echo "==== jmeter.log ===="
-	tail -n 10 $(PROJECT_DIR)/jmeter.log
-	echo "==== Raw Test Report ===="
-	tail -n 10 $(PROJECT_DIR)/jmeter.jtl
-	echo "==== HTML Test Report ===="
-	echo "See HTML test report in $(REPORT_DIR)/index.html"
+	@echo "==== jmeter.log ===="
+	@tail -n 10 $(PROJECT_DIR)/jmeter.log
+	@echo "==== Raw Test Report ===="
+	@tail -n 10 $(PROJECT_DIR)/jmeter.jtl
+	@echo "==== HTML Test Report ===="
+	@echo "See HTML test report in $(REPORT_DIR)/index.html"
 
 server:
 	docker run -d \
