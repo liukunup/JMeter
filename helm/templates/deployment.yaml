@@ -1,16 +1,18 @@
+---  # Worker Node
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "JMeter.fullname" . }}
+  name: {{ include "jmeter.fullname" . }}-worker
   labels:
-    {{- include "JMeter.labels" . | nindent 4 }}
+    {{- include "jmeter.labels" . | nindent 4 }}
+    jmeterMode: worker
 spec:
   {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount.worker }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "JMeter.selectorLabels" . | nindent 6 }}
+      {{- include "jmeter.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,40 +20,115 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "JMeter.selectorLabels" . | nindent 8 }}
+        {{- include "jmeter.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "JMeter.serviceAccountName" . }}
+      serviceAccountName: {{ include "jmeter.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ .Chart.Name }}-worker
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["jmeter-server"]
           ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
+            - name: server-port
+              containerPort: 1099
+            - name: local-port
+              containerPort: 50000
+          env:
+            - name: JVM_ARGS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "jmeter.fullname" . }}
+                  key: JVM_ARGS
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            exec:
+              command:
+              - date
+            periodSeconds: 5
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            tcpSocket:
+              port: 1099
+            initialDelaySeconds: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.affinity.worker }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---  # Controller Node
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jmeter.fullname" . }}-controller
+  labels:
+    {{- include "jmeter.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount.controller }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "jmeter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "jmeter.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "jmeter.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-controller
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["keepalive"]
+          env:
+            - name: JVM_ARGS
+              valueFrom:
+                configMapKeyRef:
+                  name: { { include "jmeter.fullname" . } }
+                  key: JVM_ARGS
+          livenessProbe:
+            exec:
+              command:
+              - date
+            periodSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: 1099
+            initialDelaySeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity.controller }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}

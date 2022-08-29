@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "JMeter.fullname" . }}
+  name: {{ include "jmeter.fullname" . }}
   labels:
-    {{- include "JMeter.labels" . | nindent 4 }}
+    {{- include "jmeter.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "JMeter.fullname" . }}
+    name: {{ include "JMeter.fullname" . }}-worker
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:
