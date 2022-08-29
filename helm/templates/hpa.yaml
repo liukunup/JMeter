@@ -3,6 +3,7 @@ apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "jmeter.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "jmeter.labels" . | nindent 4 }}
 spec:

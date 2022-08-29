@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "jmeter.fullname" . }}-worker
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "jmeter.labels" . | nindent 4 }}
     jmeterMode: worker
@@ -75,6 +76,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "jmeter.fullname" . }}-controller
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "jmeter.labels" . | nindent 4 }}
 spec:
