@@ -113,7 +113,7 @@ spec:
             - name: JVM_ARGS
               valueFrom:
                 configMapKeyRef:
-                  name: { { include "jmeter.fullname" . } }
+                  name: {{ include "jmeter.fullname" . }}
                   key: JVM_ARGS
           livenessProbe:
             exec:
