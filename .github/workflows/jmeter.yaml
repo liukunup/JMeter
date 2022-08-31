@@ -1,10 +1,9 @@
-name: Docker Image CI
+name: JMeter Docker Image CI/CD
 
 on:
   push:
     branches:
-      - main
-      - 'releases/**'
+      - 'release/**'
     tags:
       - 'v*'
 
@@ -14,7 +13,9 @@ env:
 
 jobs:
   jmeter:
+
     runs-on: ubuntu-latest
+
     steps:
       -
         name: Checkout Source Code
@@ -64,47 +65,3 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
           repository: ${{ env.DOCKER_HUB_REPO }}
-
-  business:
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: Checkout Source Code
-        uses: actions/checkout@v3
-      -
-        name: Setup QEMU
-        uses: docker/setup-qemu-action@v2
-      -
-        name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-      -
-        name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: |
-            ${{ env.DOCKER_HUB_REPO }}
-          tags: |
-            type=raw,value=business-${{ env.JMETER_VERSION }}
-            type=semver,pattern=-{{version}},prefix=business-${{ env.JMETER_VERSION }}
-            type=semver,pattern=-{{major}}.{{minor}}.{{patch}},prefix=business-${{ env.JMETER_VERSION }}
-            type=semver,pattern=-{{major}}.{{minor}},prefix=business-${{ env.JMETER_VERSION }}
-            type=semver,pattern=-{{major}},prefix=business-${{ env.JMETER_VERSION }},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
-      -
-        name: Build & Push Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          file: business/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            JMETER_VERSION=${{ env.JMETER_VERSION }}
