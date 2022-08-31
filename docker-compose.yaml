@@ -1,0 +1,39 @@
+version: '2'
+
+services:
+
+  jmeter-server:
+    image: liukunup/jmeter:business-5.5
+    container_name: jmeter-server
+    hostname: jmeter-server
+    restart: unless-stopped
+    command: jmeter-server
+    ports:
+      - "1099:1099"
+      - "50000:50000"
+    volumes:
+      - ${PWD}:/opt/workspace
+    environment:
+      - JVM_ARGS="-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
+
+  jmeter:
+    image: liukunup/jmeter:business-5.5
+    container_name: jmeter
+    hostname: jmeter
+    restart: unless-stopped
+    command: keepalive
+    volumes:
+      - ${PWD}:/opt/workspace
+    environment:
+      - JVM_ARGS="-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
+
+  server-agent:
+    image: liukunup/jmeter:business-5.5
+    container_name: server-agent
+    hostname: server-agent
+    restart: unless-stopped
+    command: server-agent
+    ports:
+      - "4444:4444"
+    environment:
+      - SA_INTERVAL=10
