@@ -23,7 +23,7 @@ RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	&& apk add --update bash vim tzdata openjdk15-jre curl tar unzip make net-tools \
+	&& apk add --update bash vim tzdata openjdk15-jdk curl tar unzip make net-tools \
 	&& apk add --no-cache nss \
 	&& rm -rf /var/cache/apk/* \
 	&& mkdir -p /tmp/dependencies \
@@ -31,6 +31,11 @@ RUN    apk update \
 	&& mkdir -p /opt \
 	&& tar -zxvf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
 	&& rm -rf /tmp/dependencies
+
+# 配置环境变量
+ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk
+ENV CLASSPATH=${JAVA_HOME}/bin
+ENV PATH ${PATH}:${JMETER_HOME}:${JMETER_BIN}:${JAVA_HOME}:${CLASSPATH}
 
 # 反漏洞安全补丁(适用于`JMeter-5.5`版本)
 ENV	JMETER_LIC ${JMETER_HOME}/licenses
@@ -65,9 +70,6 @@ RUN    mkdir -p /tmp/patch \
     && rm -rf META-INF \
     && rm -rf org \
     && rm -rf /tmp/patch
-
-# 将`JMeter`执行路径加入环境变量
-ENV PATH ${PATH}:${JMETER_BIN}
 
 # 默认的入口程序脚本
 COPY jmeter/entrypoint.sh /
