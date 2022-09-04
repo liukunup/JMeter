@@ -32,6 +32,40 @@ RUN    apk update \
 	&& tar -zxvf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
 	&& rm -rf /tmp/dependencies
 
+# 反漏洞安全补丁(适用于`JMeter-5.5`版本)
+ENV	JMETER_LIC ${JMETER_HOME}/licenses
+RUN    mkdir -p /tmp/patch \
+    && cd /tmp/patch \
+    && rm -f ${JMETER_LIB}/tika-core-1.28.3.jar \
+    && rm -rf ${JMETER_LIC}/tika-core-1.28.3.jar \
+    && mkdir -p ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF \
+    && curl -L --silent https://repo1.maven.org/maven2/org/apache/tika/tika-core/1.28.4/tika-core-1.28.4.jar > ${JMETER_LIB}/tika-core-1.28.4.jar \
+    && jar xvf ${JMETER_LIB}/tika-core-1.28.4.jar \
+    && cp META-INF/LICENSE ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF/LICENSE \
+    && cp META-INF/NOTICE ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF/NOTICE \
+    && rm -rf META-INF \
+    && rm -rf org \
+    && rm -f ${JMETER_LIB}/tika-parsers-1.28.3.jar \
+    && rm -rf ${JMETER_LIC}/tika-parsers-1.28.3.jar \
+    && mkdir -p ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF \
+    && curl -L --silent https://repo1.maven.org/maven2/org/apache/tika/tika-parsers/1.28.4/tika-parsers-1.28.4.jar > ${JMETER_LIB}/tika-parsers-1.28.4.jar \
+    && jar xvf ${JMETER_LIB}/tika-parsers-1.28.4.jar \
+    && cp META-INF/LICENSE ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF/LICENSE \
+    && cp META-INF/NOTICE ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF/NOTICE \
+    && rm -rf META-INF \
+    && rm -rf org \
+    && rm -rf com \
+    && rm -f ${JMETER_LIB}/jsoup-1.15.1.jar \
+    && rm -rf ${JMETER_LIC}/jsoup-1.15.1.jar \
+    && mkdir -p ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF \
+    && curl -L --silent https://repo1.maven.org/maven2/org/jsoup/jsoup/1.15.3/jsoup-1.15.3.jar > ${JMETER_LIB}/jsoup-1.15.3.jar \
+    && jar xvf ${JMETER_LIB}/jsoup-1.15.3.jar \
+    && cp META-INF/LICENSE ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF/LICENSE \
+    && cp META-INF/NOTICE ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF/NOTICE \
+    && rm -rf META-INF \
+    && rm -rf org \
+    && rm -rf /tmp/patch
+
 # 将`JMeter`执行路径加入环境变量
 ENV PATH ${PATH}:${JMETER_BIN}
 
