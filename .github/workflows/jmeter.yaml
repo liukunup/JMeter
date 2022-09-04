@@ -47,6 +47,7 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
+            ghcr.io/${{ github.repository }}
           tags: |
             type=ref,event=branch
             type=raw,value=${{ env.JMETER_VERSION }}
@@ -54,7 +55,6 @@ jobs:
             type=semver,pattern=-{{major}}.{{minor}}.{{patch}},prefix=${{ env.JMETER_VERSION }}
             type=semver,pattern=-{{major}}.{{minor}},prefix=${{ env.JMETER_VERSION }}
             type=semver,pattern=-{{major}},prefix=${{ env.JMETER_VERSION }},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
-            ghcr.io/${{ github.repository }}-${{ env.JMETER_VERSION }}
       -
         name: Build & Push Docker image
         uses: docker/build-push-action@v3
