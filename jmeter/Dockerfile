@@ -32,9 +32,11 @@ RUN    apk update \
 	&& tar -zxvf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
 	&& rm -rf /tmp/dependencies
 
+# JAVA 环境变量
+ENV JAVA_HOME /usr/lib/jvm/java-15-openjdk
+ENV CLASSPATH ${JAVA_HOME}/bin
+
 # 配置环境变量
-ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk
-ENV CLASSPATH=${JAVA_HOME}/bin
 ENV PATH ${PATH}:${JMETER_HOME}:${JMETER_BIN}:${JAVA_HOME}:${CLASSPATH}
 
 # 反漏洞安全补丁(适用于`JMeter-5.5`版本)
@@ -45,8 +47,9 @@ RUN    ls -l \
     && mkdir -p ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF \
     && curl -L --silent https://repo1.maven.org/maven2/org/apache/tika/tika-core/1.28.4/tika-core-1.28.4.jar > ${JMETER_LIB}/tika-core-1.28.4.jar \
     && jar xf ${JMETER_LIB}/tika-core-1.28.4.jar \
-    && cp META-INF/LICENSE ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF/LICENSE \
-    && cp META-INF/NOTICE ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF/NOTICE \
+    && ls -l \
+    && cp /META-INF/LICENSE ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF/LICENSE \
+    && cp /META-INF/NOTICE ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF/NOTICE \
     && rm -rf META-INF \
     && rm -rf org \
     && rm -f ${JMETER_LIB}/tika-parsers-1.28.3.jar \
@@ -54,8 +57,9 @@ RUN    ls -l \
     && mkdir -p ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF \
     && curl -L --silent https://repo1.maven.org/maven2/org/apache/tika/tika-parsers/1.28.4/tika-parsers-1.28.4.jar > ${JMETER_LIB}/tika-parsers-1.28.4.jar \
     && jar xf ${JMETER_LIB}/tika-parsers-1.28.4.jar \
-    && cp META-INF/LICENSE ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF/LICENSE \
-    && cp META-INF/NOTICE ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF/NOTICE \
+    && ls -l \
+    && cp /META-INF/LICENSE ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF/LICENSE \
+    && cp /META-INF/NOTICE ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF/NOTICE \
     && rm -rf META-INF \
     && rm -rf org \
     && rm -rf com \
@@ -64,8 +68,9 @@ RUN    ls -l \
     && mkdir -p ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF \
     && curl -L --silent https://repo1.maven.org/maven2/org/jsoup/jsoup/1.15.3/jsoup-1.15.3.jar > ${JMETER_LIB}/jsoup-1.15.3.jar \
     && jar xf ${JMETER_LIB}/jsoup-1.15.3.jar \
-    && cp META-INF/LICENSE ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF/LICENSE \
-    && cp META-INF/NOTICE ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF/NOTICE \
+    && ls -l \
+    && cp /META-INF/LICENSE ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF/LICENSE \
+    && cp /META-INF/NOTICE ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF/NOTICE \
     && rm -rf META-INF \
     && rm -rf org \
     && ls -l
