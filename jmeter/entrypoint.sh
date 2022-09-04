@@ -68,19 +68,6 @@ function func_jmeter_server() {
   echo "FUNC OUT - JMeter Server"
 }
 
-function func_server_agent() {
-  echo "FUNC IN  - Server Agent"
-
-  # 脚本绝对路径
-  SCRIPT="${SERVER_AGENT_HOME}/startAgent.sh"
-  # 预设采样间隔为 5 秒
-  [[ -z ${SA_INTERVAL} ]] && SA_INTERVAL=5
-  # 启动服务
-  /bin/bash "${SCRIPT}" --udp-port 4444 --tcp-port 4444 --interval ${SA_INTERVAL}
-
-  echo "FUNC OUT - Server Agent"
-}
-
 function func_keepalive() {
   echo "FUNC IN  - Keepalive"
 
@@ -96,8 +83,7 @@ echo "=============== START Running at $(date) ==============="
 # 容器运行模式
 # 1. jmeter
 # 2. jmeter server
-# 3. server agent (PerfMon)
-# 4. keepalive
+# 3. keepalive
 mode=$1
 
 # 按模式选择函数
@@ -108,10 +94,7 @@ case $mode in
     jmeter-server) echo "Process ID: $$, Run mode JMeter-Server"
     func_jmeter_server "$@"
     ;;
-    server-agent)  echo "Process ID: $$, Run mode Server-Agent"
-    func_server_agent "$@"
-    ;;
-    keepalive)         echo "Process ID: $$, Run mode Keepalive"
+    keepalive)     echo "Process ID: $$, Run mode Keepalive"
     func_keepalive "$@"
     ;;
 esac
