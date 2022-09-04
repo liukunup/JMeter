@@ -40,7 +40,7 @@ RUN    mkdir -p /tmp/patch \
     && rm -rf ${JMETER_LIC}/tika-core-1.28.3.jar \
     && mkdir -p ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF \
     && curl -L --silent https://repo1.maven.org/maven2/org/apache/tika/tika-core/1.28.4/tika-core-1.28.4.jar > ${JMETER_LIB}/tika-core-1.28.4.jar \
-    && jar xvf ${JMETER_LIB}/tika-core-1.28.4.jar \
+    && /usr/bin/jar xvf ${JMETER_LIB}/tika-core-1.28.4.jar \
     && cp META-INF/LICENSE ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF/LICENSE \
     && cp META-INF/NOTICE ${JMETER_LIC}/tika-core-1.28.4.jar/META-INF/NOTICE \
     && rm -rf META-INF \
@@ -49,7 +49,7 @@ RUN    mkdir -p /tmp/patch \
     && rm -rf ${JMETER_LIC}/tika-parsers-1.28.3.jar \
     && mkdir -p ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF \
     && curl -L --silent https://repo1.maven.org/maven2/org/apache/tika/tika-parsers/1.28.4/tika-parsers-1.28.4.jar > ${JMETER_LIB}/tika-parsers-1.28.4.jar \
-    && jar xvf ${JMETER_LIB}/tika-parsers-1.28.4.jar \
+    && /usr/bin/jar xvf ${JMETER_LIB}/tika-parsers-1.28.4.jar \
     && cp META-INF/LICENSE ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF/LICENSE \
     && cp META-INF/NOTICE ${JMETER_LIC}/tika-parsers-1.28.4.jar/META-INF/NOTICE \
     && rm -rf META-INF \
@@ -59,7 +59,7 @@ RUN    mkdir -p /tmp/patch \
     && rm -rf ${JMETER_LIC}/jsoup-1.15.1.jar \
     && mkdir -p ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF \
     && curl -L --silent https://repo1.maven.org/maven2/org/jsoup/jsoup/1.15.3/jsoup-1.15.3.jar > ${JMETER_LIB}/jsoup-1.15.3.jar \
-    && jar xvf ${JMETER_LIB}/jsoup-1.15.3.jar \
+    && /usr/bin/jar xvf ${JMETER_LIB}/jsoup-1.15.3.jar \
     && cp META-INF/LICENSE ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF/LICENSE \
     && cp META-INF/NOTICE ${JMETER_LIC}/jsoup-1.15.3.jar/META-INF/NOTICE \
     && rm -rf META-INF \
