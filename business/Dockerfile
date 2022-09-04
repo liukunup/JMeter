@@ -1,9 +1,7 @@
 # 基础镜像版本
 ARG JMETER_VERSION="5.5"
-
 # 基础镜像
 FROM liukunup/jmeter:${JMETER_VERSION}
-
 # 作者信息
 LABEL LIUKUN="liukunup@outlook.com"
 

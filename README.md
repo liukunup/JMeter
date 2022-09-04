@@ -52,8 +52,8 @@
     - [Docker Hub](https://hub.docker.com/r/liukunup/jmeter) 求个`Star🌟`
     - [Artifact Hub](https://artifacthub.io/packages/helm/jmeter/jmeter) 求个`Star🌟`
   - `KR-4-2` 一套代码同时支持`JMeter`/`JMeter Server`/`Server Agent`三种模式
-    - [Dockerfile](docker/Dockerfile)
-    - [entrypoint.sh](docker/entrypoint.sh)
+    - [Dockerfile](jmeter/Dockerfile)
+    - [entrypoint.sh](jmeter/entrypoint.sh)
   - `KR-4-3` 支持Docker CLI/Docker Compose/Kubernetes/Helm等不同部署执行方式
     - `Docker CLI` 一键运行[JMeter](run_jmeter.sh)
     - `Docker CLI` 一键拉起[JMeter Server](run_jmeter_server.sh)

@@ -1,18 +1,9 @@
+# 基础镜像版本
+ARG JMETER_VERSION="5.5"
 # 基础镜像
-FROM alpine:3.16
+FROM liukunup/jmeter:${JMETER_VERSION}
 # 作者信息
 LABEL LIUKUN="liukunup@outlook.com"
-
-# JMeter 版本及下载源
-ARG JMETER_VERSION="5.5"
-ENV	JMETER_DOWNLOAD_URL https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
-# JMeter 常用目录
-ENV JMETER_HOME /opt/apache-jmeter-${JMETER_VERSION}
-ENV	JMETER_BIN	${JMETER_HOME}/bin
-ENV	JMETER_LIB	${JMETER_HOME}/lib
-ENV	JMETER_EXT	${JMETER_HOME}/lib/ext
-# JMeter 自定义插件目录
-ENV JMETER_CUSTOM_PLUGINS_FOLDER /plugins
 
 # JMeter Manager
 ENV JMETER_PLUGINS_MANAGER_URL https://jmeter-plugins.org/get/
@@ -32,25 +23,11 @@ ENV SERVER_AGENT_URL https://github.com/undera/perfmon-agent/releases/download/$
 # Server Agent 目录
 ENV SERVER_AGENT_HOME /opt/ServerAgent
 
-# 默认时区
-ARG TIMEZONE="Asia/Shanghai"
-ENV TZ ${TIMEZONE}
-
-# 安装包
-RUN    apk update \
-	&& apk upgrade \
-	&& apk add ca-certificates \
-	&& update-ca-certificates \
-	&& apk add --update openjdk15-jre tzdata bash curl vim tar unzip make \
-	&& apk add --no-cache nss \
-	&& rm -rf /var/cache/apk/* \
-	&& mkdir -p /tmp/dependencies \
-	&& curl -L --silent ${JMETER_DOWNLOAD_URL} > /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz \
+# 包安装过程
+RUN    mkdir -p /tmp/dependencies \
     && curl -L --silent ${PLUGIN_JPGC_CASUTG_URL} > /tmp/dependencies/jpgc-casutg-${PLUGIN_JPGC_CASUTG_VERSION}.zip \
-    && curl -L --silent ${PLUGIN_JPGC_PERFMON_URL} > /tmp/dependencies/jpgc-perfmon-${PLUGIN_JPGC_PERFMON_VERSION}.zip \
-	&& mkdir -p /opt \
-	&& tar -zxvf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
     && unzip /tmp/dependencies/jpgc-casutg-${PLUGIN_JPGC_CASUTG_VERSION}.zip -d ${JMETER_HOME} \
+    && curl -L --silent ${PLUGIN_JPGC_PERFMON_URL} > /tmp/dependencies/jpgc-perfmon-${PLUGIN_JPGC_PERFMON_VERSION}.zip \
     && unzip /tmp/dependencies/jpgc-perfmon-${PLUGIN_JPGC_PERFMON_VERSION}.zip -d ${JMETER_HOME} \
     && curl -L --silent ${PLUGIN_INFLUXDB2_LISTENER_URL} > ${JMETER_EXT}/jmeter-plugins-influxdb2-listener-${PLUGIN_INFLUXDB2_LISTENER_VERSION}.jar \
     && rm ${JMETER_EXT}/jmeter-plugins-manager-*.jar \
@@ -62,17 +39,14 @@ RUN    apk update \
 	&& chmod +x ${SERVER_AGENT_HOME}/*.sh \
 	&& rm -rf /tmp/dependencies
 
-# 将 JMeter / Server Agent 执行路径加入环境变量
-ENV PATH ${PATH}:${JMETER_BIN}:${SERVER_AGENT_HOME}
+# 将`Server Agent`执行路径加入环境变量
+ENV PATH ${PATH}:${SERVER_AGENT_HOME}
 
 # 默认的入口程序脚本
-COPY docker/entrypoint.sh /
+COPY jmeter-with-plugins/entrypoint.sh /
 
 # 端口暴露
-EXPOSE 4444 1099 50000
-
-# 工作目录
-WORKDIR	${JMETER_HOME}
+EXPOSE 4444
 
 # 默认入口程序
 ENTRYPOINT ["/entrypoint.sh"]
