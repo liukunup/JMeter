@@ -1,5 +1,10 @@
 name: JMeter with Plugins
 
+on:
+  push:
+    branches:
+      - main
+
 env:
   JMETER_VERSION: 5.5
   DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
