@@ -1,9 +1,9 @@
-name: JMeter Docker Image CI/CD
+name: JMeter
 
 on:
   push:
     branches:
-      - 'release/**'
+      - main
     tags:
       - 'v*'
 
