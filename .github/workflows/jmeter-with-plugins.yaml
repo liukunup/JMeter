@@ -38,6 +38,7 @@ jobs:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
           tags: |
+            type=ref,event=branch
             type=semver,pattern=-{{major}}.{{minor}}.{{patch}},prefix=plugins-${{ env.JMETER_VERSION }}
       -
         name: Build & Push Docker image
