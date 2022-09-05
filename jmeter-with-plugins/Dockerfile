@@ -5,6 +5,9 @@ FROM liukunup/jmeter:${JMETER_VERSION}
 # 作者信息
 LABEL LIUKUN="liukunup@outlook.com"
 
+# JMeter 应用程序目录
+ENV JMETER_HOME /opt/apache-jmeter-${JMETER_VERSION}
+
 # JMeter Manager
 ENV JMETER_PLUGINS_MANAGER_URL https://jmeter-plugins.org/get/
 # jp@gc - Custom Thread Groups
