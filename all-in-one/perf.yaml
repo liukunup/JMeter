@@ -358,7 +358,7 @@ spec:
                 topologyKey: "kubernetes.io/hostname"
       containers:
       - name: jmeter-server
-        image: liukunup/jmeter:business-5.5
+        image: liukunup/jmeter:business-5.6.3
         args: ["jmeter-server"]
         ports:
           - name: server-port
@@ -418,7 +418,7 @@ spec:
     spec:
       containers:
       - name: jmeter-in-k8s
-        image: liukunup/jmeter:business-5.5
+        image: liukunup/jmeter:business-5.6.3
         args: ["keepalive"]
         env:
           - name: JVM_ARGS

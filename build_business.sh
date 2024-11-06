@@ -1,6 +1,6 @@
 #!/bin/bash
 
-JMETER_VERSION=${JMETER_VERSION:-"5.5"}
+JMETER_VERSION=${JMETER_VERSION:-"5.6.3"}
 
 docker build \
   --build-arg JMETER_VERSION="${JMETER_VERSION}" \

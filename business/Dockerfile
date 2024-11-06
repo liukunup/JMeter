@@ -1,5 +1,5 @@
 # 基础镜像版本
-ARG JMETER_VERSION="5.5"
+ARG JMETER_VERSION="5.6.3"
 # 基础镜像
 FROM liukunup/jmeter:${JMETER_VERSION}
 # 作者信息

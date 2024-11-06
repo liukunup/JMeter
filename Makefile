@@ -27,7 +27,7 @@ TARGET_TEMP_DIR ?= $(TESTCASE_DIR)/$(PROJECT)/temp
 # ################################################## 无需修改 ##################################################
 
 # Container
-JMETER_VERSION ?= 5.5
+JMETER_VERSION ?= 5.6.3
 CONTAINER_NAME ?= jmeter
 CONTAINER_IMAGE = liukunup/jmeter:$(JMETER_VERSION)
 

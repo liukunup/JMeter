@@ -1,7 +1,7 @@
 # JMeter
 
 ![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
-![JMeter](https://img.shields.io/badge/jmeter-5.5-blue.svg)
+![JMeter](https://img.shields.io/badge/jmeter-5.6.3-blue.svg)
 ![Java](https://img.shields.io/badge/java-openjdk15-blue.svg)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/jmeter)](https://artifacthub.io/packages/search?repo=jmeter)
 [![Docker Hub](https://img.shields.io/badge/dockerhub-JMeter-brightgreen.svg)]({https://hub.docker.com/r/liukunup/jmeter})
