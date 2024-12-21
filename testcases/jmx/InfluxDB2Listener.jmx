@@ -12,7 +12,7 @@
       <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
     <hashTree>
-      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="自定义配置参数" enabled="true">
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="自定义配置参数">
         <collectionProp name="Arguments.arguments">
           <elementProp name="TARGET_THREADS" elementType="Argument">
             <stringProp name="Argument.name">TARGET_THREADS</stringProp>
@@ -60,7 +60,7 @@
         <stringProp name="TestPlan.comments">当外部未通过-JXXX配置环境变量时，则使用以下默认配置参数。</stringProp>
       </Arguments>
       <hashTree/>
-      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="测试数据参数化" enabled="true">
+      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="测试数据参数化">
         <stringProp name="TestPlan.comments">从CSV文件中逐行取测试数据进行使用</stringProp>
         <stringProp name="delimiter">,</stringProp>
         <stringProp name="fileEncoding">UTF-8</stringProp>
@@ -73,23 +73,30 @@
         <stringProp name="variableNames">Query</stringProp>
       </CSVDataSet>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="线程组" enabled="true">
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
-          <boolProp name="LoopController.continue_forever">false</boolProp>
-          <intProp name="LoopController.loops">-1</intProp>
-        </elementProp>
-        <stringProp name="ThreadGroup.num_threads">${TARGET_THREADS}</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
-        <boolProp name="ThreadGroup.scheduler">true</boolProp>
-        <stringProp name="ThreadGroup.duration">30</stringProp>
-        <stringProp name="ThreadGroup.delay"></stringProp>
-        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="线程组">
         <stringProp name="TestPlan.comments">固定线程组+持续30秒</stringProp>
+        <stringProp name="ThreadGroup.num_threads">${TARGET_THREADS}</stringProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <longProp name="ThreadGroup.duration">30</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
       </ThreadGroup>
       <hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="我的请求" enabled="true">
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+          <stringProp name="HTTPSampler.domain">${TARGET_HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${ARGET_PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${TARGET_PROTOCOL}</stringProp>
+          <stringProp name="HTTPSampler.path">${TARGET_PATH}</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
             <collectionProp name="Arguments.arguments">
               <elementProp name="wd" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
@@ -100,19 +107,6 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">${TARGET_HOST}</stringProp>
-          <stringProp name="HTTPSampler.port">${ARGET_PORT}</stringProp>
-          <stringProp name="HTTPSampler.protocol">${TARGET_PROTOCOL}</stringProp>
-          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">${TARGET_PATH}</stringProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
-          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
-          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
-          <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
@@ -130,7 +124,7 @@
           </ResponseAssertion>
           <hashTree/>
         </hashTree>
-        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="查看结果树" enabled="true">
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="查看结果树">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
             <name>saveConfig</name>
@@ -167,47 +161,37 @@
           <stringProp name="filename"></stringProp>
         </ResultCollector>
         <hashTree/>
-        <BackendListener guiclass="BackendListenerGui" testclass="BackendListener" testname="后端监听器" enabled="true">
-          <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" enabled="true">
+        <BackendListener guiclass="BackendListenerGui" testclass="BackendListener" testname="后端监听器">
+          <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
             <collectionProp name="Arguments.arguments">
               <elementProp name="testName" elementType="Argument">
                 <stringProp name="Argument.name">testName</stringProp>
-                <stringProp name="Argument.value">Test</stringProp>
+                <stringProp name="Argument.value">&lt;项目名称&gt;</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="nodeName" elementType="Argument">
                 <stringProp name="Argument.name">nodeName</stringProp>
-                <stringProp name="Argument.value">Test-Node</stringProp>
+                <stringProp name="Argument.value">${__machineName()}-${__machineIP()}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="runId" elementType="Argument">
                 <stringProp name="Argument.name">runId</stringProp>
-                <stringProp name="Argument.value">R001</stringProp>
+                <stringProp name="Argument.value">&lt;接口-并发数-第x次&gt;</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
-              <elementProp name="influxDBHttpScheme" elementType="Argument">
-                <stringProp name="Argument.name">influxDBHttpScheme</stringProp>
-                <stringProp name="Argument.value">http</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="influxDBHost" elementType="Argument">
-                <stringProp name="Argument.name">influxDBHost</stringProp>
-                <stringProp name="Argument.value">influxdb</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="influxDBPort" elementType="Argument">
-                <stringProp name="Argument.name">influxDBPort</stringProp>
-                <stringProp name="Argument.value">8086</stringProp>
+              <elementProp name="influxDBURL" elementType="Argument">
+                <stringProp name="Argument.name">influxDBURL</stringProp>
+                <stringProp name="Argument.value">http://${DB_INFLUXDB2_HOST}:${DB_INFLUXDB2_PORT}/</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="influxDBToken" elementType="Argument">
                 <stringProp name="Argument.name">influxDBToken</stringProp>
-                <stringProp name="Argument.value">请替换成自己的Token</stringProp>
+                <stringProp name="Argument.value">${DB_INFLUXDB2_TOKEN}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="influxDBOrganization" elementType="Argument">
                 <stringProp name="Argument.name">influxDBOrganization</stringProp>
-                <stringProp name="Argument.value">Home</stringProp>
+                <stringProp name="Argument.value">&lt;公司名称 或 组织名称&gt;</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="influxDBBucket" elementType="Argument">

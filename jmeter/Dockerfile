@@ -1,5 +1,5 @@
 # 基础镜像
-FROM alpine:3.16
+FROM alpine:3.21
 # 作者信息
 LABEL LIUKUN="liukunup@outlook.com"
 
@@ -8,7 +8,7 @@ ARG TIMEZONE="Asia/Shanghai"
 ENV TZ ${TIMEZONE}
 
 # JMeter 版本及下载源
-ARG JMETER_VERSION="5.5"
+ARG JMETER_VERSION="5.6.3"
 ENV	JMETER_DOWNLOAD_URL https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
 # JMeter 应用程序目录
 ENV JMETER_HOME /opt/apache-jmeter-${JMETER_VERSION}
