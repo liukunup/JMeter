@@ -3,7 +3,7 @@ name: Business
 on:
   push:
     branches:
-      - main
+      - business/*
     tags:
       - 'v*'
 
@@ -13,6 +13,7 @@ env:
 
 jobs:
   business:
+    needs: jmeter-with-plugins.yml#jmeter-with-plugins
     runs-on: ubuntu-latest
     steps:
       -
