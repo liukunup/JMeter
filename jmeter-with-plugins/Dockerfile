@@ -19,6 +19,9 @@ ENV PLUGIN_JPGC_PERFMON_URL https://jmeter-plugins.org/files/packages/jpgc-perfm
 # InfluxDB v2.0 Listener
 ENV PLUGIN_INFLUXDB2_LISTENER_VERSION 2.4
 ENV PLUGIN_INFLUXDB2_LISTENER_URL https://github.com/mderevyankoaqa/jmeter-influxdb2-listener-plugin/releases/download/v${PLUGIN_INFLUXDB2_LISTENER_VERSION}/jmeter-plugins-influxdb2-listener-${PLUGIN_INFLUXDB2_LISTENER_VERSION}.jar
+# Driver MySQL Connector-J for JDBC
+ENV DRIVER_MYSQL_CONNECTOR_J_VERSION 9.1.0
+ENV DRIVER_MYSQL_CONNECTOR_J_URL https://cdn.mysql.com/Downloads/Connector-J/mysql-connector-j-${DRIVER_MYSQL_CONNECTOR_J_VERSION}.zip
 
 # Server Agent 版本及下载源
 ARG SERVER_AGENT_VERSION="2.2.3"
@@ -33,6 +36,8 @@ RUN    mkdir -p /tmp/dependencies \
     && curl -L --silent ${PLUGIN_JPGC_PERFMON_URL} > /tmp/dependencies/jpgc-perfmon-${PLUGIN_JPGC_PERFMON_VERSION}.zip \
     && unzip /tmp/dependencies/jpgc-perfmon-${PLUGIN_JPGC_PERFMON_VERSION}.zip -d ${JMETER_HOME} \
     && curl -L --silent ${PLUGIN_INFLUXDB2_LISTENER_URL} > ${JMETER_EXT}/jmeter-plugins-influxdb2-listener-${PLUGIN_INFLUXDB2_LISTENER_VERSION}.jar \
+    && curl -L --silent ${DRIVER_MYSQL_CONNECTOR_J_URL} > /tmp/dependencies/mysql-connector-j-${DRIVER_MYSQL_CONNECTOR_J_VERSION}.zip \
+    && unzip /tmp/dependencies/mysql-connector-j-${DRIVER_MYSQL_CONNECTOR_J_VERSION}.zip -d ${JMETER_EXT} \
     && rm ${JMETER_EXT}/jmeter-plugins-manager-*.jar \
     && curl -L --silent ${JMETER_PLUGINS_MANAGER_URL} > ${JMETER_EXT}/jmeter-plugins-manager-latest.jar \
 	&& curl -L --silent ${SERVER_AGENT_URL} > /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}.zip \
