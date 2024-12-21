@@ -23,7 +23,7 @@ RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	&& apk add --update bash vim tzdata openjdk23-jre curl tar unzip make net-tools \
+	&& apk add --update bash vim tzdata openjdk21-jre curl tar unzip make net-tools \
 	&& apk add --no-cache nss \
 	&& rm -rf /var/cache/apk/* \
 	&& mkdir -p /tmp/dependencies \
