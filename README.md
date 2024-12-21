@@ -86,6 +86,7 @@ JMeter [Getting Started](https://jmeter.apache.org/usermanual/get-started.html)
 - 尝试构建以下`OS/ARCH`的镜像时，发现无法执行`apk add openjdk21-jre`安装包
     - linux/386
     - linux/arm/v6
+    - linux/arm/v7
 
 ## 参考资料
 
