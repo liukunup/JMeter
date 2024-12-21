@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - plugins/*
     tags:
       - 'v*'
 
@@ -13,6 +14,7 @@ env:
 
 jobs:
   jmeter-with-plugins:
+    needs: jmeter.yml#jmeter
     runs-on: ubuntu-latest
     steps:
       -
