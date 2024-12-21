@@ -9,8 +9,7 @@ LABEL LIUKUN="liukunup@outlook.com"
 ENV JMETER_HOME /opt/apache-jmeter-${JMETER_VERSION}
 
 # JMeter Manager
-ENV JMETER_PLUGINS_MANAGER_VERSION 1.10
-ENV JMETER_PLUGINS_MANAGER_URL https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/${JMETER_PLUGINS_MANAGER_VERSION}/jmeter-plugins-manager-${JMETER_PLUGINS_MANAGER_VERSION}.jar
+ENV JMETER_PLUGINS_MANAGER_URL https://jmeter-plugins.org/get/
 # jp@gc - Custom Thread Groups
 ENV PLUGIN_JPGC_CASUTG_VERSION 2.10
 ENV PLUGIN_JPGC_CASUTG_URL https://jmeter-plugins.org/files/packages/jpgc-casutg-${PLUGIN_JPGC_CASUTG_VERSION}.zip
@@ -44,8 +43,7 @@ RUN    mkdir -p /tmp/dependencies \
     && unzip /tmp/dependencies/mysql-connector-j-${DRIVER_MYSQL_CONNECTOR_J_VERSION}.zip -d ${JMETER_HOME} \
     && curl -L --silent ${DRIVER_WEBSOCKET_URL} > /tmp/dependencies/websocket-samplers-${DRIVER_WEBSOCKET_VERSION}.zip \
     && unzip /tmp/dependencies/websocket-samplers-${DRIVER_WEBSOCKET_VERSION}.zip -d ${JMETER_HOME} \
-    && rm ${JMETER_EXT}/jmeter-plugins-manager-*.jar \
-    && curl -L --silent ${JMETER_PLUGINS_MANAGER_URL} > ${JMETER_EXT}/jmeter-plugins-manager-${JMETER_PLUGINS_MANAGER_VERSION}.jar \
+    && curl -L --silent ${JMETER_PLUGINS_MANAGER_URL} > ${JMETER_EXT}/jmeter-plugins-manager-latest.jar \
 	&& curl -L --silent ${SERVER_AGENT_URL} > /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}.zip \
 	&& mkdir -p ${SERVER_AGENT_HOME}  \
     && unzip /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}.zip -d /tmp/dependencies/ \
