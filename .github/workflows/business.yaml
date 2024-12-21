@@ -12,8 +12,7 @@ env:
   DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
 
 jobs:
-  business:
-    needs: jmeter-with-plugins.yml#jmeter-with-plugins
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       -
@@ -46,7 +45,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          platforms: linux/amd64,linux/arm64/v8,linux/ppc64le,linux/riscv64,linux/s390x
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/riscv64,linux/s390x
           file: business/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
