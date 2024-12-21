@@ -1,5 +1,5 @@
 # 基础镜像
-FROM alpine:3.16
+FROM alpine:3.21
 # 作者信息
 LABEL LIUKUN="liukunup@outlook.com"
 
