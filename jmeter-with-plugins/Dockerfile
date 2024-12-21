@@ -17,7 +17,7 @@ ENV PLUGIN_JPGC_CASUTG_URL https://jmeter-plugins.org/files/packages/jpgc-casutg
 ENV PLUGIN_JPGC_PERFMON_VERSION 2.1
 ENV PLUGIN_JPGC_PERFMON_URL https://jmeter-plugins.org/files/packages/jpgc-perfmon-${PLUGIN_JPGC_PERFMON_VERSION}.zip
 # InfluxDB v2.0 Listener
-ENV PLUGIN_INFLUXDB2_LISTENER_VERSION 2.4
+ENV PLUGIN_INFLUXDB2_LISTENER_VERSION 2.8
 ENV PLUGIN_INFLUXDB2_LISTENER_URL https://github.com/mderevyankoaqa/jmeter-influxdb2-listener-plugin/releases/download/v${PLUGIN_INFLUXDB2_LISTENER_VERSION}/jmeter-plugins-influxdb2-listener-${PLUGIN_INFLUXDB2_LISTENER_VERSION}.jar
 # Driver MySQL Connector-J for JDBC
 ENV DRIVER_MYSQL_CONNECTOR_J_VERSION 9.1.0
