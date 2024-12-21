@@ -6,7 +6,7 @@ FROM liukunup/jmeter:${JMETER_VERSION}
 LABEL LIUKUN="liukunup@outlook.com"
 
 # 工作空间
-ENV	JMETER_WORKSPACE /opt/workspace
+ENV	JMETER_WORKSPACE=/opt/workspace
 
 # 工作目录
 WORKDIR	${JMETER_WORKSPACE}
