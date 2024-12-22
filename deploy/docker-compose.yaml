@@ -1,0 +1,49 @@
+services:
+
+  jmeter:
+    image: liukunup/jmeter:5.6.3
+    container_name: jmeter
+    restart: unless-stopped
+    command: ["keepalive"]
+    volumes:
+      - jmeter:/opt/apache-jmeter-5.6.3
+    environment:
+      JVM_ARGS: "-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
+
+  influxdb:
+    image: influxdb:2
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - 8086:8086
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${ADMIN_USERNAME:?InfluxDB username required}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${ADMIN_PASSWORD:?InfluxDB password required}
+      DOCKER_INFLUXDB_INIT_ORG: Organization
+      DOCKER_INFLUXDB_INIT_BUCKET: JMeter
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_ADMIN_TOKEN:?InfluxDB admin token required}
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - x:/etc/grafana/provisioning/datasources
+    environment:
+      GF_SECURITY_ADMIN_USER: ${ADMIN_USERNAME:?Grafana username required}
+      GF_SECURITY_ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Grafana password required}
+    depends_on:
+      - influxdb
+
+volumes:
+  jmeter-storage:
+  influxdb-data:
+  influxdb-config:
+  grafana-storage:
