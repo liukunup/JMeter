@@ -21,16 +21,6 @@ TOKEN=$(generate_token $TOKEN_LENGTH $TOKEN_CHAR_SET)
 
 echo 2. Starting InfluxDB2 container...
 
-# 如果容器已经启动，则提示并退出
-if [ "$(docker ps -a --format '{{.Names}}' | grep -w perf-influxdb)" ]; then
-  echo
-  echo "InfluxDB2 container is already running."
-  echo
-  echo "Please stop the container first before starting a new one."
-  echo
-  exit 1
-fi
-
 echo
 echo Container Id:
 # 拉起`InfluxDB 2`容器
@@ -53,5 +43,5 @@ docker run -d \
 echo
 echo Please save the following Token securely, it is your credential to access InfluxDB2.
 echo
-echo token: !TOKEN!
+echo token: $TOKEN
 echo

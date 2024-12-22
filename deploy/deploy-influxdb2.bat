@@ -15,18 +15,6 @@ for /f "delims=" %%i in ('powershell -command "$length=%TOKEN_LENGTH%; $chars='%
 
 ECHO 2. Starting InfluxDB2 container...
 
-:: 如果容器已经启动，则提示并退出
-FOR /F "tokens=*" %%i IN ('docker ps -a --format "{{.Names}}"') DO (
-  IF "%%i"=="perf-influxdb" (
-    ECHO.
-    ECHO InfluxDB2 container is already running.
-    ECHO.
-    ECHO Please stop the container first before starting a new one.
-    ECHO.
-    GOTO :EOF
-  )
-)
-
 ECHO.
 ECHO Container Id:
 :: 拉起`InfluxDB 2`容器
