@@ -57,7 +57,7 @@ docker run -d `
   --hostname=grafana `
   --network=perf `
   --name=perf-grafana `
-  "$repository/grafana/grafana:latest"
+  $repository/grafana/grafana:latest
 
 Write-Output ""
 Write-Output "Grafana has been successfully deployed. You can access it via http://localhost:3000."
@@ -105,7 +105,7 @@ datasources:
       token: $token
 "@
 
-    $influxdb2Yaml | Out-File -FilePath "$PERF_DATASOURCES\influxdb2.yaml" -Encoding utf8
+    $influxdb2Yaml | Out-File -FilePath $PERF_DATASOURCES\influxdb2.yaml -Encoding utf8
 
     Write-Output ""
     Write-Output "[InfluxDB2] Datasource has been successfully configured. You can verify it by checking the file: $PERF_DATASOURCES\influxdb2.yaml"
