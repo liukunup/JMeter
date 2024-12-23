@@ -4,7 +4,7 @@ $CADVISOR_HOME = "$PERF_HOME\cadvisor"
 
 # 如果不存在则创建
 if (-Not (Test-Path -Path $CADVISOR_HOME)) {
-    New-Item -ItemType Directory -Path $CADVISOR_HOME -Force
+    New-Item -ItemType Directory -Path $CADVISOR_HOME -Force | Out-Null
 }
 
 Write-Output "==================== Deploy cAdvisor ===================="
