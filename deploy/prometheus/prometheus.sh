@@ -25,19 +25,8 @@ echo 2. Starting Prometheus container...
 # 询问并设置账号和密码
 read -p "[Prometheus] Please input the username (default: admin): " username
 username=${username:-admin}
-read -p "[Prometheus] Please input the password (default: perf@JMeter#1024): " password
-password=${password:-perf@JMeter#1024}
-# 加密处理
+echo    "[Prometheus] Please input the password"
 encrypted_password=$(htpasswd -nBC 12 '' | tr -d ':\n')
-
-# 询问`Node Exporter`的`IP:PORT`列表
-read -p "[Prometheus] Please input the ip address and port list of node-exporter instances (example: ip1:9100,ip2:9100,ip3:9100): " node_exporter_list
-formatted_list=$(echo "$node_exporter_list" | tr ',' '\n' | sed "s/^/'/;s/$/'/" | paste -sd, -)
-# 询问`Node Exporter`的账号和密码
-read -p "[Prometheus] Please input the username of node-exporter instances (default: admin): " node_exporter_username
-node_exporter_username=${node_exporter_username:-admin}
-read -p "[Prometheus] Please input the password of node-exporter instances (default: perf@JMeter#1024): " node_exporter_password
-node_exporter_password=${node_exporter_password:-perf@JMeter#1024}
 
 # 询问镜像仓库
 read -p "[Prometheus] Please input the image repository (default: docker.io): " repository
@@ -60,13 +49,6 @@ scrape_configs:
   - job_name: 'prometheus'
     static_configs:
     - targets: ['localhost:9090']
-
-  - job_name: 'node_exporter'
-    basic_auth:
-      username: $node_exporter_username
-      password: $node_exporter_password
-    static_configs:
-    - targets: [$formatted_list]
 EOF
 
 echo
@@ -80,7 +62,7 @@ docker run -d \
   --hostname=prometheus \
   --network=perf \
   --name=perf-prometheus \
-  $repository/prom/prometheus:latest \
+  $repository/prom/prometheus \
   --config.file=/etc/prometheus/prometheus.yml \
   --web.config.file=/etc/prometheus/web-config.yml
 
