@@ -1,7 +1,7 @@
 # 设定生成Token的长度
 $TOKEN_LENGTH = 64
 # 用于生成Token的字符集
-$TOKEN_CHAR_SET = "a-zA-Z0-9!@#$%^&*-_=+"
+$TOKEN_CHAR_SET = "a-zA-Z0-9-_="
 
 Write-Output "==================== Deploy InfluxDB 2 ===================="
 
