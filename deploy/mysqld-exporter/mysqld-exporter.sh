@@ -52,5 +52,5 @@ docker run -d \
   --web.config.file=/etc/mysqld-exporter/web-config.yml
 
 echo
-echo cAdvisor has been successfully deployed. You can access it via http://localhost:8080/metrics.
+echo cAdvisor has been successfully deployed. You can access it via http://localhost:9104/metrics.
 echo
