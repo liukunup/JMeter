@@ -1,5 +1,5 @@
 # 基础镜像
-FROM alpine:3.21
+FROM alpine:latest
 # 作者信息
 LABEL LIUKUN="liukunup@outlook.com"
 
@@ -18,14 +18,20 @@ ENV	JMETER_EXT=${JMETER_HOME}/lib/ext
 # JMeter 自定义插件目录
 ENV JMETER_CUSTOM_PLUGINS_FOLDER=/plugins
 
+# 设置环境变量以确保Python输出实时打印，而不是被缓冲
+ENV PYTHONUNBUFFERED=1
+
 # 包安装过程
 RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	&& apk add --update bash vim tzdata openjdk21-jre curl tar unzip make net-tools \
+	&& apk add --update bash vim tzdata openjdk21-jre python3 curl tar unzip make net-tools \
 	&& apk add --no-cache nss \
-	&& rm -rf /var/cache/apk/* \
+    && rm -rf /var/cache/apk/* \
+    && ln -sf python3 /usr/bin/python \
+    && python3 -m ensurepip \
+    && pip3 install --no-cache --upgrade pip setuptools \
 	&& mkdir -p /tmp/dependencies \
 	&& curl -L --silent ${JMETER_DOWNLOAD_URL} > /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz \
 	&& mkdir -p /opt \
