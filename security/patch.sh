@@ -34,14 +34,14 @@ while IFS= read -r line; do
   fi
 
   # 提取库名称、当前版本、期望版本和CVE编号
-  LIB_GROUP="${fields[0]}"
+  LIB_GROUP="${fields[0]%/*}"
   LIB_ARTIFACT="${fields[0]#*/}"
   CURRENT_VERSION="${fields[1]}"
   DESIRED_VERSION="${fields[2]}"
   CVE_ID="${fields[3]% *}" # 如果CVE编号后有额外信息，则只取到空格前的部分
 
   # 打印出要更新的库和版本信息
-  echo "Updating library: $LIB_GROUP:$LIB_ARTIFACT from version $CURRENT_VERSION to $DESIRED_VERSION (CVE: $CVE_ID)"
+  echo "Updating library: $LIB_GROUP:$LIB_ARTIFACT from version $CURRENT_VERSION to $DESIRED_VERSION ($CVE_ID)"
 
   # 下载并更新
   rm -f ${JMETER_LIB}/${LIB_ARTIFACT}-${CURRENT_VERSION}.jar
