@@ -41,8 +41,7 @@ RUN    apk update \
 	&& tar -zxf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
 	&& rm -rf /tmp/dependencies \
 	&& chmod +x /tmp/security/*.sh \
-	&& cd /tmp/security \
-	&& ./patch.sh \
+	&& cd /tmp/security && ./patch.sh \
 	&& rm -rf /tmp/security
 
 # 配置环境变量
