@@ -33,8 +33,8 @@ RUN    apk update \
 	&& update-ca-certificates \
 	&& apk add --update bash vim tzdata ${JRE_PKG} curl tar unzip make net-tools maven \
 	&& apk add --no-cache nss \
-    && if [ "$INSTALL_PYTHON_3" = "true" ]; then apk add --update --no-cache python3 py3-pip && ln -sf python3 /usr/bin/python fi \
-    && rm -rf /var/cache/apk/* \
+	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then apk add --update --no-cache python3 py3-pip && ln -sf python3 /usr/bin/python; fi \
+	&& rm -rf /var/cache/apk/* \
 	&& mkdir -p /tmp/dependencies \
 	&& curl -L --silent ${JMETER_DOWNLOAD_URL} > /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz \
 	&& mkdir -p /opt \
