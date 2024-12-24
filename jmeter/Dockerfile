@@ -17,6 +17,8 @@ ENV	JMETER_LIB=${JMETER_HOME}/lib
 ENV	JMETER_EXT=${JMETER_HOME}/lib/ext
 # JMeter 自定义插件目录
 ENV JMETER_CUSTOM_PLUGINS_FOLDER=/plugins
+# 工作空间
+ENV JMETER_WORKSPACE=/opt/workspace
 
 # 设置环境变量以确保Python输出实时打印，而不是被缓冲
 ENV PYTHONUNBUFFERED=1
