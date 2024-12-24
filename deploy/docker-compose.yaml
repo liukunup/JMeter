@@ -4,15 +4,20 @@ services:
     image: liukunup/jmeter:5.6.3
     container_name: jmeter
     restart: unless-stopped
-    command: ["keepalive"]
+    command: keepalive
     volumes:
       - jmeter:/opt/apache-jmeter-5.6.3
+      - .\:/opt/workspace  # 映射您的工作目录到容器
+    working_dir: /opt/workspace
     environment:
-      JVM_ARGS: "-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
+      JVM_ARGS: -Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m
+    networks:
+      - perf
 
   influxdb:
     image: influxdb:2
     container_name: influxdb
+    hostname: influxdb
     restart: unless-stopped
     ports:
       - 8086:8086
@@ -26,6 +31,25 @@ services:
       DOCKER_INFLUXDB_INIT_ORG: Organization
       DOCKER_INFLUXDB_INIT_BUCKET: JMeter
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_ADMIN_TOKEN:?InfluxDB admin token required}
+    networks:
+      - perf
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    ports:
+      - 9090:9090
+    volumes:
+      - prometheus-storage:/etc/prometheus  # 请事先准备好 prometheus.yml 和 web-config.yml
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - perf
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.config.file=/etc/prometheus/web-config.yml
 
   grafana:
     image: grafana/grafana-oss:latest
@@ -35,15 +59,22 @@ services:
       - 3000:3000
     volumes:
       - grafana-storage:/var/lib/grafana
-      - x:/etc/grafana/provisioning/datasources
     environment:
       GF_SECURITY_ADMIN_USER: ${ADMIN_USERNAME:?Grafana username required}
       GF_SECURITY_ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Grafana password required}
+    networks:
+      - perf
     depends_on:
       - influxdb
+      - prometheus
 
 volumes:
-  jmeter-storage:
+  jmeter:
   influxdb-data:
   influxdb-config:
+  prometheus-storage:
   grafana-storage:
+
+networks:
+  perf:
+    driver: bridge
