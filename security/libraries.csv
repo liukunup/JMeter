@@ -1,0 +1,10 @@
+# org.apache.tika/tika-core,1.28.3,1.28.4,CVE
+# org.apache.tika/tika-parsers,1.28.3,1.28.4,CVE
+# org.jsoup/jsoup,1.15.1,1.15.3,CVE
+org.apache.xmlgraphics/batik-transcoder,1.16,1.18,CVE-2022-44729
+org.apache.xmlgraphics/batik-bridge,1.16,1.18,CVE-2022-44729
+org.apache.xmlgraphics/batik-script,1.16,1.18,CVE-2022-44730
+dnsjava/dnsjava,2.1.9,3.6.2,CVE-2024-25638
+com.thoughtworks.xstream/xstream,1.4.20,1.4.21,CVE-2024-47072
+io.netty/netty-common,4.1.104.Final,4.1.116.Final,CVE-2024-47535
+# alpine/vim,9.1.0707-r0,9.1.0936-r0,CVE-2024-47814

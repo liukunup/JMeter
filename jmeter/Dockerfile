@@ -44,28 +44,12 @@ RUN    apk update \
 # 配置环境变量
 ENV PATH=${PATH}:${JMETER_BIN}
 
-# 反漏洞安全补丁(适用于`JMeter-5.5`版本)
+# 反漏洞安全补丁(更新存在漏洞的jar包)
+COPY security /opt/
 ENV	JMETER_LIC=${JMETER_HOME}/licenses
-RUN    echo "add security patch" \
-    && rm -f ${JMETER_LIB}/tika-core-1.28.3.jar \
-    && rm -rf ${JMETER_LIC}/tika-core-1.28.3.jar \
-    && curl -L --silent https://repo1.maven.org/maven2/org/apache/tika/tika-core/1.28.4/tika-core-1.28.4.jar > ${JMETER_LIB}/tika-core-1.28.4.jar \
-    && mkdir -p ${JMETER_LIC}/tika-core-1.28.4.jar \
-    && unzip ${JMETER_LIB}/tika-core-1.28.4.jar -d ${JMETER_LIC}/tika-core-1.28.4.jar \
-    && rm -rf ${JMETER_LIC}/tika-core-1.28.4.jar/org \
-    && rm -f ${JMETER_LIB}/tika-parsers-1.28.3.jar \
-    && rm -rf ${JMETER_LIC}/tika-parsers-1.28.3.jar \
-    && curl -L --silent https://repo1.maven.org/maven2/org/apache/tika/tika-parsers/1.28.4/tika-parsers-1.28.4.jar > ${JMETER_LIB}/tika-parsers-1.28.4.jar \
-    && mkdir -p ${JMETER_LIC}/tika-parsers-1.28.4.jar \
-    && unzip ${JMETER_LIB}/tika-parsers-1.28.4.jar -d ${JMETER_LIC}/tika-parsers-1.28.4.jar \
-    && rm -rf ${JMETER_LIC}/tika-parsers-1.28.4.jar/org \
-    && rm -rf ${JMETER_LIC}/tika-parsers-1.28.4.jar/com \
-    && rm -f ${JMETER_LIB}/jsoup-1.15.1.jar \
-    && rm -rf ${JMETER_LIC}/jsoup-1.15.1.jar \
-    && curl -L --silent https://repo1.maven.org/maven2/org/jsoup/jsoup/1.15.3/jsoup-1.15.3.jar > ${JMETER_LIB}/jsoup-1.15.3.jar \
-    && mkdir -p ${JMETER_LIC}/jsoup-1.15.3.jar \
-    && unzip ${JMETER_LIB}/jsoup-1.15.3.jar -d ${JMETER_LIC}/jsoup-1.15.3.jar \
-    && rm -rf ${JMETER_LIC}/jsoup-1.15.3.jar/org
+RUN    chmod +x /opt/security/*.sh \
+    && /opt/security/patch.sh \
+    && rm -rf /opt/security
 
 # 默认的入口程序脚本
 COPY jmeter/entrypoint.sh /
