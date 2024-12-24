@@ -26,8 +26,8 @@ RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	&& apk add --update bash vim tzdata openjdk21-jre python3 curl tar unzip make net-tools \
-	&& apk add --no-cache nss \
+	&& apk add --update bash vim tzdata openjdk21-jre curl tar unzip make net-tools \
+	&& apk add --no-cache nss python3 \
     && rm -rf /var/cache/apk/* \
     && ln -sf python3 /usr/bin/python \
     && python3 -m ensurepip \
