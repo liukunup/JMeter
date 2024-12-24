@@ -31,7 +31,8 @@ RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	&& apk add --update --no-cache tzdata bash vim curl tar unzip make net-tools nss ${JRE_PKG} \
+	&& apk add --update bash vim tzdata ${JRE_PKG} curl tar unzip make net-tools \
+	&& apk add --no-cache nss \
 	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then apk add --update --no-cache python3 py3-pip && ln -sf python3 /usr/bin/python; fi \
 	&& rm -rf /var/cache/apk/* \
 	&& mkdir -p /tmp/dependencies \
