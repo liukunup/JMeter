@@ -27,11 +27,9 @@ RUN    apk update \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
 	&& apk add --update bash vim tzdata openjdk21-jre curl tar unzip make net-tools \
-	&& apk add --no-cache nss python3 \
+	&& apk add --no-cache nss \
+    && apk add --update --no-cache python3 py3-pip && ln -sf python3 /usr/bin/python \
     && rm -rf /var/cache/apk/* \
-    && ln -sf python3 /usr/bin/python \
-    && python3 -m ensurepip \
-    && pip3 install --no-cache --upgrade pip setuptools \
 	&& mkdir -p /tmp/dependencies \
 	&& curl -L --silent ${JMETER_DOWNLOAD_URL} > /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz \
 	&& mkdir -p /opt \
