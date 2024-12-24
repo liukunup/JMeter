@@ -63,7 +63,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             ALPINE_VERSION=3
-            JRE_PKG=openjdk21-jre
+            JRE_VERSION=openjdk21-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
   build-openjdk8:
@@ -116,5 +116,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             ALPINE_VERSION=3.12
-            JRE_PKG=openjdk8-jre
+            JRE_VERSION=openjdk8-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
