@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # 打印已经配置好的环境变量
 echo "JMeter library directory: $JMETER_LIB"
