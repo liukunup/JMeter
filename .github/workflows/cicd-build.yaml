@@ -13,7 +13,7 @@ env:
 
 jobs:
 
-  build-with-openjdk21:
+  build-openjdk21:
     runs-on: ubuntu-24.04
     permissions:
       packages: write
@@ -62,9 +62,11 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
+            ALPINE_VERSION=3
+            JRE_PKG=openjdk21-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
-  build-with-openjdk8:
+  build-openjdk8:
     runs-on: ubuntu-24.04
     permissions:
       packages: write
@@ -113,5 +115,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            JMETER_VERSION=${{ env.JMETER_VERSION }}
+            ALPINE_VERSION=3.12
             JRE_PKG=openjdk8-jre
+            JMETER_VERSION=${{ env.JMETER_VERSION }}
