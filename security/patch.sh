@@ -43,6 +43,12 @@ while IFS= read -r line; do
   # 打印出要更新的库和版本信息
   echo "Updating library: $LIB_GROUP:$LIB_ARTIFACT from version $CURRENT_VERSION to $DESIRED_VERSION ($CVE_ID)"
 
+  # 跳过不存在的JAR包
+  if [ ! -f ${JMETER_LIB}/${LIB_ARTIFACT}-${CURRENT_VERSION}.jar ]; then
+    echo "Skip ${JMETER_LIB}/${LIB_ARTIFACT}-${CURRENT_VERSION}.jar"
+    continue
+  fi
+
   # 下载并更新
   rm -f ${JMETER_LIB}/${LIB_ARTIFACT}-${CURRENT_VERSION}.jar
   rm -rf ${JMETER_LIC}/${LIB_ARTIFACT}-${CURRENT_VERSION}.jar
