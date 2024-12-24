@@ -1,7 +1,11 @@
 #!/bin/bash
 
+# 打印已经配置好的环境变量
+echo "JMeter library directory: $JMETER_LIB"
+echo "JMeter license directory: $JMETER_LIC"
+
 # 待解决CVE漏洞的JAR包列表
-JAR_LIST="security/libraries.csv"
+JAR_LIST="libraries.csv"
 
 # Maven下载地址的URL前缀
 MAVEN_URL_PREFIX="https://repo1.maven.org/maven2"

@@ -45,11 +45,12 @@ RUN    apk update \
 ENV PATH=${PATH}:${JMETER_BIN}
 
 # 反漏洞安全补丁(更新存在漏洞的jar包)
-COPY security /
+COPY security /tmp/security/
 ENV	JMETER_LIC=${JMETER_HOME}/licenses
-RUN    chmod +x /security/patch.sh \
-    && /security/patch.sh \
-    && rm -rf /security
+RUN    chmod +x /tmp/security/*.sh \
+    && cd /tmp/security \
+    && ./patch.sh \
+    && rm -rf /tmp/security
 
 # 默认的入口程序脚本
 COPY jmeter/entrypoint.sh /
