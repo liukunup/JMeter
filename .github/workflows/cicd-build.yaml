@@ -13,7 +13,7 @@ env:
 
 jobs:
 
-  build-push-update:
+  build:
     runs-on: ubuntu-24.04
     permissions:
       packages: write
