@@ -40,7 +40,7 @@ RUN    apk update \
 	&& mkdir -p /opt \
 	&& tar -zxf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
 	&& rm -rf /tmp/dependencies \
-	&& chmod +x /tmp/security/*.sh \
+	&& chmod +x /tmp/security/patch.sh \
 	&& cd /tmp/security \
 	&& ./patch.sh \
 	&& rm -rf /tmp/security
