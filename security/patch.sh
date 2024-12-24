@@ -8,7 +8,7 @@ echo "JMeter license directory: $JMETER_LIC"
 JAR_LIST="libraries.csv"
 
 # Maven下载地址的URL前缀
-MAVEN_URL_PREFIX="https://repo1.maven.org/maven2"
+URL_PREFIX="https://repo1.maven.org/maven2"
 
 # 检查列表文件是否存在
 if [ ! -f $JAR_LIST ]; then
