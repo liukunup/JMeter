@@ -20,9 +20,6 @@ ENV JMETER_CUSTOM_PLUGINS_FOLDER=/plugins
 # 工作空间
 ENV JMETER_WORKSPACE=/opt/workspace
 
-# 设置环境变量以确保Python输出实时打印，而不是被缓冲
-ENV PYTHONUNBUFFERED=1
-
 # 包安装过程
 RUN    apk update \
 	&& apk upgrade \
