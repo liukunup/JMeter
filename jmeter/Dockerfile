@@ -17,17 +17,23 @@ ENV	JMETER_LIB=${JMETER_HOME}/lib
 ENV	JMETER_EXT=${JMETER_HOME}/lib/ext
 # JMeter 自定义插件目录
 ENV JMETER_CUSTOM_PLUGINS_FOLDER=/plugins
-# 工作空间
+# JMeter 测试工作空间
 ENV JMETER_WORKSPACE=/opt/workspace
+
+# Java Runtime Environment
+ARG JRE_PKG=openjdk21-jre
+
+# 是否安装 Python 3
+ARG INSTALL_PYTHON_3=false
 
 # 包安装过程
 RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	&& apk add --update bash vim tzdata openjdk21-jre curl tar unzip make net-tools maven \
+	&& apk add --update bash vim tzdata ${JRE_PKG} curl tar unzip make net-tools maven \
 	&& apk add --no-cache nss \
-    && apk add --update --no-cache python3 py3-pip && ln -sf python3 /usr/bin/python \
+    && if [ "$INSTALL_PYTHON_3" = "true" ]; then apk add --update --no-cache python3 py3-pip && ln -sf python3 /usr/bin/python fi \
     && rm -rf /var/cache/apk/* \
 	&& mkdir -p /tmp/dependencies \
 	&& curl -L --silent ${JMETER_DOWNLOAD_URL} > /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz \
