@@ -3,7 +3,9 @@ name: build docker images
 on:
   push:
     branches:
-      - dev/*
+      - dev*
+    paths-ignore:
+      - '**.md'
 
 env:
   JMETER_VERSION: 5.6.3
