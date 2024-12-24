@@ -47,7 +47,7 @@ ENV PATH=${PATH}:${JMETER_BIN}
 # 反漏洞安全补丁(更新存在漏洞的jar包)
 COPY security /tmp/security/
 ENV	JMETER_LIC=${JMETER_HOME}/licenses
-RUN    chmod +x /tmp/security/*.sh \
+RUN    chmod +x /tmp/security/patch.sh \
     && cd /tmp/security \
     && ./patch.sh \
     && rm -rf /tmp/security
