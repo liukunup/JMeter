@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# 增强健壮性
+set -ue
+set -o pipefail
+
 # 打印已经配置好的环境变量
 echo "JMeter library directory: $JMETER_LIB"
 echo "JMeter license directory: $JMETER_LIC"
@@ -50,12 +54,14 @@ while IFS= read -r line; do
   fi
 
   # 下载并更新
+  set -x
   rm -f ${JMETER_LIB}/${LIB_ARTIFACT}-${CURRENT_VERSION}.jar
-  rm -rf ${JMETER_LIC}/${LIB_ARTIFACT}-${CURRENT_VERSION}.jar
+  rm -rf ${JMETER_LIC}/${LIB_GROUP}/${LIB_ARTIFACT}-${CURRENT_VERSION}
   curl -L --silent ${URL_PREFIX}/${LIB_GROUP//.//}/${LIB_ARTIFACT}/${DESIRED_VERSION}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar > ${JMETER_LIB}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar
-  mkdir -p ${JMETER_LIC}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar
-  unzip ${JMETER_LIB}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar -d ${JMETER_LIC}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar
-  rm -rf ${JMETER_LIC}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar/$(echo $LIB_GROUP | cut -d'.' -f1)
+  mkdir -p ${JMETER_LIC}/${LIB_GROUP}/${LIB_ARTIFACT}-${DESIRED_VERSION}
+  unzip ${JMETER_LIB}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar -d ${JMETER_LIC}/${LIB_GROUP}/${LIB_ARTIFACT}-${DESIRED_VERSION}
+  rm -rf ${JMETER_LIC}/${LIB_ARTIFACT}-${DESIRED_VERSION}/$(echo $LIB_GROUP | cut -d'.' -f1)
+  set +x
 
 done < $JAR_LIST
 

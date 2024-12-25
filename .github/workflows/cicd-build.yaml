@@ -49,8 +49,7 @@ jobs:
             ${{ env.DOCKER_HUB_REPO }}
             ghcr.io/${{ github.repository }}
           tags: |
-            type=ref,event=branch
-            type=raw,value=${{ env.JMETER_VERSION }}
+            type=ref,suffix=-${{ env.JMETER_VERSION }},event=branch
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
@@ -103,8 +102,7 @@ jobs:
             ${{ env.DOCKER_HUB_REPO }}
             ghcr.io/${{ github.repository }}
           tags: |
-            type=ref,event=branch
-            type=raw,value=openjdk8-${{ env.JMETER_VERSION }}
+            type=ref,suffix=-${{ env.JMETER_VERSION }}-openjdk8,event=branch
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
