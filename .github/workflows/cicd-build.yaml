@@ -8,7 +8,7 @@ on:
       - '**.md'
 
 env:
-  JMETER_VERSION: 5.5
+  JMETER_VERSION: 5.0
   DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
 
 jobs:
