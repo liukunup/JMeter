@@ -22,8 +22,8 @@ ENV JMETER_CUSTOM_PLUGINS_FOLDER=/plugins
 # Java Runtime Environment
 ARG JRE_VERSION=openjdk21-jre
 
-# 是否安装 Python 3 (默认不安装)
-ARG INSTALL_PYTHON_3=false
+# 是否安装 Python 3 (默认安装)
+ARG INSTALL_PYTHON_3=true
 
 # 设置时区 (默认Asia/Shanghai)
 ARG TIMEZONE=Asia/Shanghai

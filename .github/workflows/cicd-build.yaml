@@ -64,7 +64,6 @@ jobs:
             ALPINE_VERSION=latest
             JRE_VERSION=openjdk21-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
-            INSTALL_PYTHON_3=true
 
   build-openjdk8:
     runs-on: ubuntu-24.04
@@ -117,4 +116,3 @@ jobs:
             ALPINE_VERSION=latest
             JRE_VERSION=openjdk8-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
-            INSTALL_PYTHON_3=true
