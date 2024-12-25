@@ -6,8 +6,8 @@ services:
     restart: unless-stopped
     command: keepalive
     volumes:
-      - jmeter:/opt/apache-jmeter-5.6.3
-      - .\:/opt/workspace  # 映射您的工作目录到容器
+      - jmeter-home:/opt/apache-jmeter-5.6.3
+      - jmeter-workspace:/opt/workspace  # 建议映射您的工作目录
     working_dir: /opt/workspace
     environment:
       JVM_ARGS: -Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m
@@ -28,7 +28,7 @@ services:
       DOCKER_INFLUXDB_INIT_MODE: setup
       DOCKER_INFLUXDB_INIT_USERNAME: ${ADMIN_USERNAME:?InfluxDB username required}
       DOCKER_INFLUXDB_INIT_PASSWORD: ${ADMIN_PASSWORD:?InfluxDB password required}
-      DOCKER_INFLUXDB_INIT_ORG: Organization
+      DOCKER_INFLUXDB_INIT_ORG: Organization  # 修改为您的组织名称
       DOCKER_INFLUXDB_INIT_BUCKET: JMeter
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_ADMIN_TOKEN:?InfluxDB admin token required}
     networks:
@@ -39,20 +39,20 @@ services:
     container_name: prometheus
     hostname: prometheus
     restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.config.file=/etc/prometheus/web-config.yml
     ports:
       - 9090:9090
     volumes:
-      - prometheus-storage:/etc/prometheus  # 请事先准备好 prometheus.yml 和 web-config.yml
+      - prometheus-storage:/etc/prometheus  # 请事先准备好`prometheus.yml`和`web-config.yml`进行目录映射
     environment:
       TZ: Asia/Shanghai
     networks:
       - perf
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --web.config.file=/etc/prometheus/web-config.yml
 
   grafana:
-    image: grafana/grafana-oss:latest
+    image: grafana/grafana:latest
     container_name: grafana
     restart: unless-stopped
     ports:
@@ -69,7 +69,8 @@ services:
       - prometheus
 
 volumes:
-  jmeter:
+  jmeter-home:
+  jmeter-workspace:
   influxdb-data:
   influxdb-config:
   prometheus-storage:
