@@ -19,9 +19,6 @@ ENV JMETER_LIC=${JMETER_HOME}/licenses
 # JMeter 自定义插件目录
 ENV JMETER_CUSTOM_PLUGINS_FOLDER=/plugins
 
-# JMeter 业务工作空间
-ENV JMETER_WORKSPACE=/opt/workspace
-
 # Java Runtime Environment
 ARG JRE_VERSION=openjdk21-jre
 
