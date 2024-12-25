@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# 增强健壮性
+set -ue
+set -o pipefail
+
 # 打印已经配置好的环境变量
 echo "JMeter library directory: $JMETER_LIB"
 echo "JMeter license directory: $JMETER_LIC"
