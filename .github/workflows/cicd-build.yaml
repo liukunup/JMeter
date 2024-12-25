@@ -62,7 +62,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ALPINE_VERSION=3
+            ALPINE_VERSION=latest
             JRE_VERSION=openjdk21-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
@@ -109,12 +109,12 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/riscv64,linux/s390x,linux/386,linux/arm/v6,linux/arm/v7
+          platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x
           file: jmeter/Dockerfile
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ALPINE_VERSION=3.12
+            ALPINE_VERSION=latest
             JRE_VERSION=openjdk8-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
