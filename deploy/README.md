@@ -19,6 +19,26 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercon
 
 ## 保姆式指导教程
 
+### 快速拉起`JMeter`容器
+
+```shell
+# 试试看吧
+docker run --rm liukunup/jmeter:5.6.3 jmeter -v
+
+# 拉起容器 & 进入工作目录 (最常用+最有用)
+docker run -d -v .:/opt/workspace -w /opt/workspace --name=jmeter liukunup/jmeter:5.6.3 keepalive
+docker exec -it jmeter /bin/bash
+
+# 当然，复杂一点还可以设置JVM参数
+docker run -d -v .:/opt/workspace -w /opt/workspace -e JVM_ARGS="-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m" --name=jmeter-limit liukunup/jmeter:5.6.3 keepalive
+
+# 拉起 JMeter Server (JMeter服务器模式)
+docker run -d -p 1099:1099 -p 50000:50000 --restart=unless-stopped --name=jmeter-server liukunup/jmeter:5.6.3 jmeter-server
+
+# 拉起 Server Agent (PerfMon Server Agent)
+docker run -d -p 4444:4444 -e SA_INTERVAL=10 --restart=unless-stopped --name=server-agent liukunup/jmeter:plugins-5.6.3 server-agent
+```
+
 ### 通过`Docker Compose`部署本机工作环境
 
 优势：便于在本地快速拉起性能测试的工作环境，对环境安装、外部依赖都很少。
