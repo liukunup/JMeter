@@ -56,7 +56,7 @@ while IFS= read -r line; do
   curl -L --silent ${URL_PREFIX}/${LIB_GROUP//.//}/${LIB_ARTIFACT}/${DESIRED_VERSION}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar > ${JMETER_LIB}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar
   mkdir -p ${JMETER_LIC}/${LIB_GROUP}/${LIB_ARTIFACT}-${DESIRED_VERSION}
   unzip ${JMETER_LIB}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar -d ${JMETER_LIC}/${LIB_GROUP}/${LIB_ARTIFACT}-${DESIRED_VERSION}
-  rm -rf ${JMETER_LIC}/${LIB_ARTIFACT}-${DESIRED_VERSION}.jar/$(echo $LIB_GROUP | cut -d'.' -f1)
+  rm -rf ${JMETER_LIC}/${LIB_ARTIFACT}-${DESIRED_VERSION}/$(echo $LIB_GROUP | cut -d'.' -f1)
   set +x
 
 done < $JAR_LIST
