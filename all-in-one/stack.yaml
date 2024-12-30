@@ -263,7 +263,7 @@ data:
       - targets: ['localhost:9090']
   web-config.yml: |
     basic_auth_users:  # 请及时修改默认密码(admin: Ch@ngeIt#1234), 修改命令`htpasswd -nBC 12 '' | tr -d ':\n'`
-      admin:$apr1$0bi92ocs$zH5q3WK2RWPnadz2kmxoG0
+      admin: $apr1$0bi92ocs$zH5q3WK2RWPnadz2kmxoG0
 ---  # Prometheus PVC
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -388,7 +388,7 @@ spec:
           - name: JVM_ARGS
             valueFrom:
               configMapKeyRef:
-                name: jmeter
+                name: jmeter-server
                 key: JVM-Args
         resources:
           requests:
