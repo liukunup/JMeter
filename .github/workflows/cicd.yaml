@@ -206,4 +206,4 @@ jobs:
           tags: ${{ steps.meta-plugins.outputs.tags }}
           labels: ${{ steps.meta-plugins.outputs.labels }}
           build-args: |
-            JMETER_VERSION=${{ env.JMETER_VERSION }}
+            JMETER_VERSION=openjdk8-${{ env.JMETER_VERSION }}
