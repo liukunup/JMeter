@@ -1,0 +1,418 @@
+---  # Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admim
+type: Opaque
+stringData:
+  # 使用前请修改 `账号`+`密码`
+  username: <username>
+  password: <password>
+---  # Grafana PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---  # Grafana Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        fsGroup: 472
+        supplementalGroups:
+          - 0
+      containers:
+        - name: grafana
+          image: grafana/grafana:latest
+          ports:
+            - containerPort: 3000
+              name: grafana-http
+              protocol: TCP
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: admim
+                  key: username
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: admim
+                  key: password
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /robots.txt
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 2
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3000
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 250m
+              memory: 750Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          volumeMounts:
+            - mountPath: /var/lib/grafana
+              name: grafana-pv
+      volumes:
+        - name: grafana-pv
+          persistentVolumeClaim:
+            claimName: grafana-pvc
+---  # Grafana Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: grafana-http
+  selector:
+    app: grafana
+  sessionAffinity: None
+  type: LoadBalancer
+---  # Grafana Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+spec:
+  rules:
+  - host: grafana.perf.lan
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: grafana-http
+            port:
+              number: 3000
+---  # InfluxDB ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: influxdb-config
+data:
+  # 使用前请修改 `Token` 等信息
+  influxdb_organization: Org
+  influxdb_bucket: JMeter
+  influxdb_admin_token: <token>
+  influxdb_retention: 6m  # 6 months
+---  # InfluxDB PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: influxdb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influxdb
+  labels:
+    app: influxdb
+spec:
+  selector:
+    matchLabels:
+      app: influxdb
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+      - name: influxdb
+        image: influxdb:2
+        ports:
+          - containerPort: 8086
+            name: influxdb-http
+            protocol: TCP
+        env:
+          - name: DOCKER_INFLUXDB_INIT_MODE
+            value: setup
+          - name: DOCKER_INFLUXDB_INIT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: admim
+                key: username
+          - name: DOCKER_INFLUXDB_INIT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: admim
+                key: password
+          - name: DOCKER_INFLUXDB_INIT_ORG
+            valueFrom:
+              configMapKeyRef:
+                name: influxdb-config
+                key: influxdb_organization
+          - name: DOCKER_INFLUXDB_INIT_BUCKET
+            valueFrom:
+              configMapKeyRef:
+                name: influxdb-config
+                key: influxdb_bucket
+          - name: DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+            valueFrom:
+              configMapKeyRef:
+                name: influxdb-config
+                key: influxdb_admin_token
+          - name: DOCKER_INFLUXDB_INIT_RETENTION
+            valueFrom:
+              configMapKeyRef:
+                name: influxdb-config
+                key: influxdb_retention
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        volumeMounts:
+          - mountPath: /var/lib/influxdb2
+            name: influxdb-pv
+      volumes:
+        - name: influxdb-pv
+          persistentVolumeClaim:
+            claimName: influxdb-pvc
+---  # InfluxDB Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+spec:
+  ports:
+    - port: 8086
+      protocol: TCP
+      targetPort: influxdb-http
+  selector:
+    app: influxdb
+  sessionAffinity: None
+  type: LoadBalancer
+---  # InfluxDB Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: influxdb
+  labels:
+    app: influxdb
+spec:
+  rules:
+  - host: influxdb.perf.lan
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: influxdb-http
+            port:
+              number: 8086
+---  # Prometheus ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      scrape_timeout: 15s
+    scrape_configs:
+    - job_name: 'prometheus'
+      static_configs:
+      - targets: ['localhost:9090']
+  web-config.yml: |
+    basic_auth_users:  # 请及时修改默认密码(admin: Ch@ngeIt#1234), 修改命令`htpasswd -nBC 12 '' | tr -d ':\n'`
+      admin: $apr1$0bi92ocs$zH5q3WK2RWPnadz2kmxoG0
+---  # Prometheus PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---  # Prometheus Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus:latest
+        ports:
+          - containerPort: 9090
+            name: prometheus-http
+            protocol: TCP
+        args:
+          - --config.file=/etc/prometheus/prometheus.yml
+          - --web.config.file=/etc/prometheus/web-config.yml
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        volumeMounts:
+          - mountPath: /etc/prometheus
+            name: prometheus-config
+      volumes:
+      - name: prometheus-config
+        configMap:
+          name: prometheus-config
+---  # Prometheus Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+spec:
+  ports:
+    - port: 9090
+      protocol: TCP
+      targetPort: prometheus-http
+  selector:
+    app: prometheus
+  sessionAffinity: None
+  type: LoadBalancer
+---  # Prometheus Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+spec:
+  rules:
+  - host: prometheus.perf.lan
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: prometheus-http
+            port:
+              number: 9090
+---  # JMeter ConfigMap (Worker)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jmeter-server
+  labels:
+    app: jmeter-server
+data:
+  JVM-Args: -Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m
+---  # 5.2 JMeter Deployment (Worker)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter-server
+  labels:
+    app: jmeter-server
+spec:
+  replicas: 3  # 3个副本（建议桌面环境缩容到 1 个即可）
+  selector:
+    matchLabels:
+      app: jmeter-server
+  template:
+    metadata:
+      labels:
+        app: jmeter-server
+    spec:
+      containers:
+      - name: jmeter-server
+        image: liukunup/jmeter:5.6.3
+        args: 
+          - jmeter-server
+        ports:
+          - name: server-port
+            containerPort: 1099
+          - name: local-port
+            containerPort: 50000
+        env:
+          - name: JVM_ARGS
+            valueFrom:
+              configMapKeyRef:
+                name: jmeter-server
+                key: JVM-Args
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+---  # 5.3 JMeter Service (Worker)
+apiVersion: v1
+kind: Service
+metadata:
+  name: jmeter-server
+  labels:
+    app: jmeter-server
+spec:
+  clusterIP: None
+  ports:
+    - name: server-port
+      port: 1099
+      targetPort: 1099
+    - name: local-port
+      port: 50000
+      targetPort: 50000
+  selector:
+    app: jmeter-server
+  type: ClusterIP
