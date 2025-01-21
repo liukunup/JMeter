@@ -32,8 +32,9 @@ docker exec -it jmeter /bin/bash
 # 当然，复杂一点还可以设置JVM参数
 docker run -d -v .:/opt/workspace -w /opt/workspace -e JVM_ARGS="-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m" --name=jmeter-limit liukunup/jmeter:5.6.3 keepalive
 
-# 拉起 JMeter Server (JMeter服务器模式)
-docker run -d -p 1099:1099 -p 50000:50000 --restart=unless-stopped --name=jmeter-server liukunup/jmeter:5.6.3 jmeter-server
+# 拉起 JMeter Server (分布式)
+docker run -d -p 1099:1099 -p 50000:50000 --restart=unless-stopped --name=jmeter-slave docker.realme.icu/liukunup/jmeter:5.6.3 jmeter-server
+docker run -d -p 1099:1099 --restart=unless-stopped --name=jmeter-master docker.realme.icu/liukunup/jmeter:5.6.3 jmeter-server -Dremote_hosts="127.0.0.1:1099"
 
 # 拉起 Server Agent (PerfMon Server Agent)
 docker run -d -p 4444:4444 -e SA_INTERVAL=10 --restart=unless-stopped --name=server-agent liukunup/jmeter:plugins-5.6.3 server-agent
