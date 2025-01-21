@@ -1,0 +1,81 @@
+services:
+
+  jmeter:
+    image: liukunup/jmeter:5.6.3
+    container_name: jmeter
+    restart: unless-stopped
+    command: keepalive
+    volumes:
+      - jmeter-home:/opt/apache-jmeter-5.6.3
+      - jmeter-workspace:/opt/workspace  # 建议映射您的工作目录
+    working_dir: /opt/workspace
+    environment:
+      JVM_ARGS: -Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m
+    networks:
+      - perf
+
+  influxdb:
+    image: influxdb:2
+    container_name: influxdb
+    hostname: influxdb
+    restart: unless-stopped
+    ports:
+      - 8086:8086
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${ADMIN_USERNAME:?InfluxDB username required}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${ADMIN_PASSWORD:?InfluxDB password required}
+      DOCKER_INFLUXDB_INIT_ORG: Organization  # 修改为您的组织名称
+      DOCKER_INFLUXDB_INIT_BUCKET: JMeter
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_ADMIN_TOKEN:?InfluxDB admin token required}
+    networks:
+      - perf
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.config.file=/etc/prometheus/web-config.yml
+    ports:
+      - 9090:9090
+    volumes:
+      - prometheus-storage:/etc/prometheus  # 请事先准备好`prometheus.yml`和`web-config.yml`进行目录映射
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - perf
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${ADMIN_USERNAME:?Grafana username required}
+      GF_SECURITY_ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Grafana password required}
+    networks:
+      - perf
+    depends_on:
+      - influxdb
+      - prometheus
+
+volumes:
+  jmeter-home:
+  jmeter-workspace:
+  influxdb-data:
+  influxdb-config:
+  prometheus-storage:
+  grafana-storage:
+
+networks:
+  perf:
+    driver: bridge
