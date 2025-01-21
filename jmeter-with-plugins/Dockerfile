@@ -1,5 +1,5 @@
 # 基础镜像版本
-ARG JMETER_VERSION="5.6.3"
+ARG JMETER_VERSION=5.6.3
 # 基础镜像
 FROM liukunup/jmeter:${JMETER_VERSION}
 # 作者信息
@@ -27,7 +27,7 @@ ENV DRIVER_WEBSOCKET_VERSION=1.2.10
 ENV DRIVER_WEBSOCKET_URL=https://jmeter-plugins.org/files/packages/websocket-samplers-${DRIVER_WEBSOCKET_VERSION}.zip
 
 # Server Agent 版本及下载源
-ARG SERVER_AGENT_VERSION="2.2.3"
+ARG SERVER_AGENT_VERSION=2.2.3
 ENV SERVER_AGENT_URL=https://github.com/undera/perfmon-agent/releases/download/${SERVER_AGENT_VERSION}/ServerAgent-${SERVER_AGENT_VERSION}.zip
 # Server Agent 目录
 ENV SERVER_AGENT_HOME=/opt/ServerAgent

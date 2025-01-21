@@ -6,7 +6,7 @@ FROM alpine:${ALPINE_VERSION}
 LABEL LIUKUN="liukunup@outlook.com"
 
 # JMeter 版本及下载源
-ARG JMETER_VERSION=5.5
+ARG JMETER_VERSION=5.6.3
 ENV JMETER_DOWNLOAD_URL=https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
 
 # JMeter 应用程序目录
