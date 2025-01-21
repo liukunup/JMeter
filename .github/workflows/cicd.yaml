@@ -105,10 +105,10 @@ jobs:
             ${{ env.DOCKER_HUB_REPO }}
             ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=plugins-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=plugins-latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=semver,pattern=plugins-{{major}}.{{minor}}.{{patch}},enable=${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
-            type=sha,format=short,prefix=plugins-{{branch}}-,enable=${{ github.event_name == 'push' && (github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/dev') }}
+            type=raw,value=business-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=business-latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern=business-{{major}}.{{minor}}.{{patch}},enable=${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+            type=sha,format=short,prefix=business-{{branch}}-,enable=${{ github.event_name == 'push' && (github.ref == 'refs/heads/beta' || github.ref == 'refs/heads/dev') }}
 
       - name: Build and Push Docker Images with Business
         uses: docker/build-push-action@v6
