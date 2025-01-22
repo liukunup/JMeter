@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 安装自定义的插件
+# install custom plugins
 if [[ -d $JMETER_CUSTOM_PLUGINS_FOLDER ]]
 then
   for plugin in "${JMETER_CUSTOM_PLUGINS_FOLDER}"/*.jar; do
@@ -8,19 +8,19 @@ then
   done;
 fi
 
-# 设置JVM参数
+# set JVM parameters
 set -e
 freeMem=$(awk '/MemAvailable/ { print int($2/1024) }' /proc/meminfo)
-# 若空则赋值
+# assign values if empty
 [[ -z ${JVM_XMN} ]] && JVM_XMN=$((freeMem * 2 / 10))
 [[ -z ${JVM_XMS} ]] && JVM_XMS=$((freeMem * 8 / 10))
 [[ -z ${JVM_XMX} ]] && JVM_XMX=$((freeMem * 8 / 10))
-# 拼凑JVM参数
+# assemble JVM parameters
 [[ -z ${JVM_ARGS} ]] && JVM_ARGS="-Xmn${JVM_XMN}m -Xms${JVM_XMS}m -Xmx${JVM_XMX}m"
-# 设置环境变量以备使用
+# setup environment variable
 export JVM_ARGS=${JVM_ARGS}
 
-# ##################################### 模式 #####################################
+# ##################################### Operating Mode #####################################
 
 function func_jmeter() {
   echo "FUNC IN  - JMeter"
@@ -51,18 +51,18 @@ function func_jmeter_server() {
   echo "${JVM_ARGS}"
 
   echo "===== JMETER SERVER ARGS ====="
-  # 通常不再需要配置参数
+  # Usually no need to configure parameters
   echo "${@:2}"
 
   echo "===== JMETER SERVER EXTRA ARGS ====="
-  # 多数情况下会默认设置`server.rmi.ssl.disable=true`,因此直接写到内部来
+  # In most cases, `server.rmi.ssl.disable=true` is set by default, so write it internally
   EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=1099 -Dserver.rmi.localport=50000 -Dserver.rmi.ssl.disable=true)
   echo ${EXTRA_ARGS[*]}
 
   echo "===== JMETER SERVER ALL ARGS ====="
   echo ${EXTRA_ARGS[*]} "${@:2}"
 
-  # Run JMeter Server
+  # Start JMeter Server
   jmeter-server ${EXTRA_ARGS[*]} "${@:2}"
 
   echo "FUNC OUT - JMeter Server"
@@ -80,27 +80,24 @@ function func_keepalive() {
 function func_server_agent() {
   echo "FUNC IN  - Server Agent"
 
-  # 脚本绝对路径
   SCRIPT="${SERVER_AGENT_HOME}/startAgent.sh"
-  # 预设采样间隔为 5 秒
+  # Default sampling interval is 5 seconds
   [[ -z ${SA_INTERVAL} ]] && SA_INTERVAL=5
-  # 启动服务
+  # Start Agent Service
   /bin/bash "${SCRIPT}" --udp-port 4444 --tcp-port 4444 --interval ${SA_INTERVAL}
 
   echo "FUNC OUT - Server Agent"
 }
 
-# 打印开始时间
 echo "=============== START Running at $(date) ==============="
 
-# 容器运行模式
+# Operating mode:
 # 1. jmeter
 # 2. jmeter server
 # 3. keepalive
 # 4. server agent (PerfMon)
 mode=$1
 
-# 按模式选择函数
 case $mode in
     jmeter)        echo "Process ID: $$, Run mode JMeter"
     func_jmeter "$@"
@@ -116,5 +113,4 @@ case $mode in
     ;;
 esac
 
-# 打印结束时间
 echo "=============== FINISH Running on $(date) ==============="

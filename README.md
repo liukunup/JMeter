@@ -71,11 +71,24 @@
 
 JMeter [Getting Started](https://jmeter.apache.org/usermanual/get-started.html)
 
-## 支持标签
+## 标签&版本
 
-- `m.n` JMeter版本
-- `m.n-x.y.z` JMeter版本-发布版本
-- `business-x.y.z` 业务版本（将JMeter镜像作为基础镜像，带入了测试JMX以及数据）
+拉取镜像 `docker pull liukunup/jmeter:<version>`
+
+**正式版本**
+
+- `5.6.3` JMeter (仅包含JMeter的镜像)
+- `plugins-5.6.3` JMeter + Plugins (包含了常用插件的镜像)
+- `business-5.6.3` JMeter + Plugins + Example (最佳实践样例)
+- `openjdk8-xxx` 使用`OpenJDK 8`的镜像 (默认使用`OpenJDK 21`)
+
+**预发版本**
+
+包含`beta`标识，属于非正式版本，可能还存在一些不影响使用的问题。
+
+**开发版本**
+
+包含`dev`标识，临时开发调试使用，请勿使用，可能包含严重缺陷。
 
 ## 使用指导
 
@@ -83,12 +96,27 @@ JMeter [Getting Started](https://jmeter.apache.org/usermanual/get-started.html)
 
 ## 特别说明
 
-- 尝试构建以下`OS/ARCH`的镜像时，发现无法执行`apk add openjdk21-jre`安装包
-    - linux/386
-    - linux/arm/v6
-    - linux/arm/v7
+> 尝试构建镜像时，可能出现无法执行`apk add openjdk21-jre`安装包
+
+最新的`OpenJDK 21`镜像，支持以下架构：
+
+- linux/amd64
+- linux/arm64
+- linux/ppc64le
+- linux/riscv64
+- linux/s390x
+
+旧版的`OpenJDK 8`镜像，支持以下架构：
+
+- linux/amd64
+- linux/arm/v6
+- linux/arm/v7
+- linux/arm64/v8
+- linux/ppc64le
+- linux/s390x
 
 ## 参考资料
 
 - [justb4/docker-jmeter](https://github.com/justb4/docker-jmeter)
+- [alpine-docker/jmeter](https://github.com/alpine-docker/jmeter)
 - [JMeter InfluxDB v2.0 listener plugin](https://github.com/mderevyankoaqa/jmeter-influxdb2-listener-plugin)

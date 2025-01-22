@@ -1,19 +1,16 @@
-# ################################################## 业务介绍 ##################################################
+# ################################################## Task Overview ########################################################
 
 #
-# 演示样例
+# This Makefile is used to demonstrate JMeter test in distributed mode.
 #
 
-# ################################################## 默认参数 ##################################################
+# ################################################## Default Parameters ###################################################
 
-# 默认测试路径 无需修改
 TESTCASE_DIR    ?= $(PWD)/testcases
 
-# 项目文件夹以及JMX文件
 PROJECT ?= proj_example
 JMX     ?= HelloWorld.jmx
 
-# JMX配置参数
 TARGET_THREADS  ?= 1
 TARGET_PROTOCOL ?= https
 TARGET_HOST     ?= example.com
@@ -21,10 +18,10 @@ TARGET_PORT     ?= 443
 TARGET_PATH     ?= /api
 TARGET_DATASET  ?= $(TESTCASE_DIR)/$(PROJECT)/dataset.txt
 
-# 仅在配置了保存文件时需要
+# Only needed if saving files is configured
 TARGET_TEMP_DIR ?= $(TESTCASE_DIR)/$(PROJECT)/temp
 
-# ################################################## 无需修改 ##################################################
+# ################################################## No changes required ##################################################
 
 # JVM
 JVM_ARGS ?= "-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
@@ -37,9 +34,9 @@ REPORT_DIR  = $(PROJECT_DIR)/report
 # Distribution JMeter Server Port
 SERVER_PORT ?= 1099
 
-# ################################################## Target ##################################################
+# ################################################## Target ###############################################################
 
-# JMeter Server的Pod IP列表
+# List of JMeter Server Pod IPs
 REMOTE_HOSTS = $(shell getent ahostsv4 jmeter-server | cut -d ' ' -f 1 | sort -u \
                      | awk -v ORS=':$(SERVER_PORT),' '{print $1}' | sed 's/\(.*\),$\/\1/')
 

@@ -1,59 +1,59 @@
 #!/bin/bash
 
-# 增强健壮性
+# Enhance robustness
 set -ue
 set -o pipefail
 
-# 打印已经配置好的环境变量
+# Print configured environment variables
 echo "JMeter library directory: $JMETER_LIB"
 echo "JMeter license directory: $JMETER_LIC"
 
-# 待解决CVE漏洞的JAR包列表
+# List of JAR packages with CVE vulnerabilities to be resolved
 JAR_LIST="libraries.csv"
 
-# Maven下载地址的URL前缀
+# URL prefix for Maven download
 URL_PREFIX="https://repo1.maven.org/maven2"
 
-# 检查列表文件是否存在
+# Check if the list file exists
 if [ ! -f $JAR_LIST ]; then
   echo "The jar list file '$JAR_LIST' not found!"
   exit 1
 fi
 
-# 遍历列表文件中的每一行
+# Iterate through each line in the list file
 while IFS= read -r line; do
 
-  # 跳过注释行（以#开头的行）
+  # Skip comment lines (lines starting with #)
   if [[ $line =~ ^# ]]; then
     continue
   fi
 
-  # 使用IFS分隔符来分割每行的内容
+  # Use IFS delimiter to split the content of each line
   IFS=',' read -r -a fields <<< $line
 
-  # 检查是否读取了正确数量的字段
+  # Check if the correct number of fields were read
   if [ "${#fields[@]}" -ne 4 ]; then
     echo "Invalid CSV line: '$line'"
     continue
   fi
 
-  # 提取库名称、当前版本、期望版本和CVE编号
+  # Extract library name, current version, desired version, and CVE ID
   LIB_GROUP="${fields[0]%/*}"
   LIB_ARTIFACT="${fields[0]#*/}"
   CURRENT_VERSION="${fields[1]}"
   DESIRED_VERSION="${fields[2]}"
-  CVE_ID="${fields[3]% *}" # 如果CVE编号后有额外信息，则只取到空格前的部分
+  CVE_ID="${fields[3]% *}" # If there is extra information after the CVE ID, only take the part before the space
 
-  # 打印出要更新的库和版本信息
+  # Print the library and version information to be updated
   echo "Updating library: $LIB_GROUP:$LIB_ARTIFACT from version $CURRENT_VERSION to $DESIRED_VERSION ($CVE_ID)"
 
-  # 跳过不存在的JAR包
+  # Skip non-existent JAR packages
   if [ ! -f ${JMETER_LIB}/${LIB_ARTIFACT}-${CURRENT_VERSION}.jar ]; then
     echo "Skip ${JMETER_LIB}/${LIB_ARTIFACT}-${CURRENT_VERSION}.jar"
     continue
   fi
 
-  # 下载并更新
+  # Download and update
   set -x
   rm -f ${JMETER_LIB}/${LIB_ARTIFACT}-${CURRENT_VERSION}.jar
   rm -rf ${JMETER_LIC}/${LIB_GROUP}/${LIB_ARTIFACT}-${CURRENT_VERSION}
