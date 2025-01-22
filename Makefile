@@ -26,7 +26,7 @@ TARGET_TEMP_DIR ?= $(TESTCASE_DIR)/$(PROJECT)/temp
 # Container
 JMETER_VERSION ?= 5.6.3
 CONTAINER_NAME ?= jmeter
-CONTAINER_IMAGE = liukunup/jmeter:$(JMETER_VERSION)
+CONTAINER_IMAGE = liukunup/jmeter:plugins-$(JMETER_VERSION)
 
 # JMeter Server
 JS_PORT           ?= 1099

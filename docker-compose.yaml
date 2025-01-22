@@ -1,9 +1,9 @@
-version: '2'
+version: '3'
 
 services:
 
   jmeter-server:
-    image: liukunup/jmeter:business-5.6.3
+    image: liukunup/jmeter:plugins-${JMETER_VERSION:-5.6.3}
     container_name: jmeter-server
     hostname: jmeter-server
     restart: unless-stopped
@@ -17,7 +17,7 @@ services:
       - JVM_ARGS="-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
 
   jmeter:
-    image: liukunup/jmeter:business-5.6.3
+    image: liukunup/jmeter:plugins-${JMETER_VERSION:-5.6.3}
     container_name: jmeter
     hostname: jmeter
     restart: unless-stopped
@@ -28,7 +28,7 @@ services:
       - JVM_ARGS="-Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m"
 
   server-agent:
-    image: liukunup/jmeter:business-5.6.3
+    image: liukunup/jmeter:plugins-${JMETER_VERSION:-5.6.3}
     container_name: server-agent
     hostname: server-agent
     restart: unless-stopped
