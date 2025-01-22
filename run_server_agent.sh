@@ -2,7 +2,7 @@
 
 JMETER_VERSION=${JMETER_VERSION:-"5.6.3"}
 CONTAINER_NAME="server-agent"
-CONTAINER_IMAGE="liukunup/jmeter:${JMETER_VERSION}"
+CONTAINER_IMAGE="liukunup/jmeter:plugins-${JMETER_VERSION}"
 
 # example: sh run_server_agent.sh
 docker run -d \
