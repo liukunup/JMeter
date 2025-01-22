@@ -1,19 +1,16 @@
-# ################################################## Task Overview ##################################################
+# ################################################## Task Overview ########################################################
 
 #
 # This Makefile is used to demonstrate JMeter test in distributed mode.
 #
 
-# ################################################## Default Parameters ##################################################
+# ################################################## Default Parameters ###################################################
 
-# Root directory
 TESTCASE_DIR    ?= $(PWD)/testcases
 
-# Project folder and JMX file
 PROJECT ?= proj_example
 JMX     ?= HelloWorld.jmx
 
-# JMX configuration parameters
 TARGET_THREADS  ?= 1
 TARGET_PROTOCOL ?= https
 TARGET_HOST     ?= example.com
@@ -37,7 +34,7 @@ REPORT_DIR  = $(PROJECT_DIR)/report
 # Distribution JMeter Server Port
 SERVER_PORT ?= 1099
 
-# ################################################## Target ##################################################
+# ################################################## Target ###############################################################
 
 # List of JMeter Server Pod IPs
 REMOTE_HOSTS = $(shell getent ahostsv4 jmeter-server | cut -d ' ' -f 1 | sort -u \

@@ -1,19 +1,16 @@
-# ################################################## 业务介绍 ##################################################
+# ################################################## Task Overview ########################################################
 
 #
-# 演示样例
+# This Makefile is used to demonstrate JMeter test in standalone mode.
 #
 
-# ################################################## 默认参数 ##################################################
+# ################################################## Default Parameters ###################################################
 
-# 默认测试路径 无需修改
 TESTCASE_DIR    ?= $(PWD)/testcases
 
-# 项目文件夹以及JMX文件
 PROJECT ?= proj_example
 JMX     ?= HelloWorld.jmx
 
-# JMX配置参数
 TARGET_THREADS  ?= 1
 TARGET_PROTOCOL ?= https
 TARGET_HOST     ?= example.com
@@ -21,10 +18,10 @@ TARGET_PORT     ?= 443
 TARGET_PATH     ?= /api
 TARGET_DATASET  ?= $(TESTCASE_DIR)/$(PROJECT)/dataset.txt
 
-# 仅在配置了保存文件时需要
+# Only needed when saving files is configured
 TARGET_TEMP_DIR ?= $(TESTCASE_DIR)/$(PROJECT)/temp
 
-# ################################################## 无需修改 ##################################################
+# ################################################## No changes required ##################################################
 
 # Container
 JMETER_VERSION ?= 5.6.3
@@ -48,7 +45,7 @@ JMX_DIR       = $(TESTCASE_DIR)/jmx
 PROJECT_DIR   = $(TESTCASE_DIR)/$(PROJECT)
 REPORT_DIR    = $(PROJECT_DIR)/report
 
-# ################################################## Target ##################################################
+# ################################################## Target ###############################################################
 
 all: clean run report
 

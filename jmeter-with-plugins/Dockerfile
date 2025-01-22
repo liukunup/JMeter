@@ -1,38 +1,35 @@
-# 基础镜像版本
 ARG JMETER_VERSION=5.6.3
-# 基础镜像
 FROM liukunup/jmeter:${JMETER_VERSION}
-# 作者信息
+
 LABEL LIUKUN="liukunup@outlook.com"
 
-# JMeter 应用程序目录
-ENV JMETER_HOME=/opt/apache-jmeter-${JMETER_VERSION}
+# JMeter
+ARG JMETER_HOME=/opt/apache-jmeter-${JMETER_VERSION}
 
 # JMeter Manager
-ENV JMETER_PLUGINS_MANAGER_URL=https://jmeter-plugins.org/get/
+ARG JMETER_PLUGINS_MANAGER_URL=https://jmeter-plugins.org/get/
 # jp@gc - Custom Thread Groups
-ENV PLUGIN_JPGC_CASUTG_VERSION=2.10
-ENV PLUGIN_JPGC_CASUTG_URL=https://jmeter-plugins.org/files/packages/jpgc-casutg-${PLUGIN_JPGC_CASUTG_VERSION}.zip
+ARG PLUGIN_JPGC_CASUTG_VERSION=2.10
+ARG PLUGIN_JPGC_CASUTG_URL=https://jmeter-plugins.org/files/packages/jpgc-casutg-${PLUGIN_JPGC_CASUTG_VERSION}.zip
 # jp@gc - PerfMon
-ENV PLUGIN_JPGC_PERFMON_VERSION=2.1
-ENV PLUGIN_JPGC_PERFMON_URL=https://jmeter-plugins.org/files/packages/jpgc-perfmon-${PLUGIN_JPGC_PERFMON_VERSION}.zip
+ARG PLUGIN_JPGC_PERFMON_VERSION=2.1
+ARG PLUGIN_JPGC_PERFMON_URL=https://jmeter-plugins.org/files/packages/jpgc-perfmon-${PLUGIN_JPGC_PERFMON_VERSION}.zip
 # InfluxDB v2.0 Listener
-ENV PLUGIN_INFLUXDB2_LISTENER_VERSION=2.8
-ENV PLUGIN_INFLUXDB2_LISTENER_URL=https://github.com/mderevyankoaqa/jmeter-influxdb2-listener-plugin/releases/download/v${PLUGIN_INFLUXDB2_LISTENER_VERSION}/jmeter-plugins-influxdb2-listener-${PLUGIN_INFLUXDB2_LISTENER_VERSION}.jar
+ARG PLUGIN_INFLUXDB2_LISTENER_VERSION=2.8
+ARG PLUGIN_INFLUXDB2_LISTENER_URL=https://github.com/mderevyankoaqa/jmeter-influxdb2-listener-plugin/releases/download/v${PLUGIN_INFLUXDB2_LISTENER_VERSION}/jmeter-plugins-influxdb2-listener-${PLUGIN_INFLUXDB2_LISTENER_VERSION}.jar
 # MySQL Connector-J
-ENV DRIVER_MYSQL_CONNECTOR_J_VERSION=9.1.0
-ENV DRIVER_MYSQL_CONNECTOR_J_URL=https://cdn.mysql.com/Downloads/Connector-J/mysql-connector-j-${DRIVER_MYSQL_CONNECTOR_J_VERSION}.zip
+ARG DRIVER_MYSQL_CONNECTOR_J_VERSION=9.1.0
+ARG DRIVER_MYSQL_CONNECTOR_J_URL=https://cdn.mysql.com/Downloads/Connector-J/mysql-connector-j-${DRIVER_MYSQL_CONNECTOR_J_VERSION}.zip
 # WebSocket Samplers
-ENV DRIVER_WEBSOCKET_VERSION=1.2.10
-ENV DRIVER_WEBSOCKET_URL=https://jmeter-plugins.org/files/packages/websocket-samplers-${DRIVER_WEBSOCKET_VERSION}.zip
+ARG DRIVER_WEBSOCKET_VERSION=1.2.10
+ARG DRIVER_WEBSOCKET_URL=https://jmeter-plugins.org/files/packages/websocket-samplers-${DRIVER_WEBSOCKET_VERSION}.zip
 
-# Server Agent 版本及下载源
+# Server Agent
 ARG SERVER_AGENT_VERSION=2.2.3
-ENV SERVER_AGENT_URL=https://github.com/undera/perfmon-agent/releases/download/${SERVER_AGENT_VERSION}/ServerAgent-${SERVER_AGENT_VERSION}.zip
-# Server Agent 目录
+ARG SERVER_AGENT_URL=https://github.com/undera/perfmon-agent/releases/download/${SERVER_AGENT_VERSION}/ServerAgent-${SERVER_AGENT_VERSION}.zip
 ENV SERVER_AGENT_HOME=/opt/ServerAgent
 
-# 包安装过程
+# Install plugins and drivers
 RUN    mkdir -p /tmp/dependencies \
     && curl -L --silent ${PLUGIN_JPGC_CASUTG_URL} > /tmp/dependencies/jpgc-casutg-${PLUGIN_JPGC_CASUTG_VERSION}.zip \
     && unzip /tmp/dependencies/jpgc-casutg-${PLUGIN_JPGC_CASUTG_VERSION}.zip -d ${JMETER_HOME} \
@@ -44,21 +41,19 @@ RUN    mkdir -p /tmp/dependencies \
     && curl -L --silent ${DRIVER_WEBSOCKET_URL} > /tmp/dependencies/websocket-samplers-${DRIVER_WEBSOCKET_VERSION}.zip \
     && unzip /tmp/dependencies/websocket-samplers-${DRIVER_WEBSOCKET_VERSION}.zip -d ${JMETER_HOME} \
     && curl -L --silent ${JMETER_PLUGINS_MANAGER_URL} > ${JMETER_EXT}/jmeter-plugins-manager-latest.jar \
-	&& curl -L --silent ${SERVER_AGENT_URL} > /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}.zip \
-	&& mkdir -p ${SERVER_AGENT_HOME}  \
+    && curl -L --silent ${SERVER_AGENT_URL} > /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}.zip \
+    && mkdir -p ${SERVER_AGENT_HOME}  \
     && unzip /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}.zip -d /tmp/dependencies/ \
     && mv /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}/* ${SERVER_AGENT_HOME}/ \
-	&& chmod +x ${SERVER_AGENT_HOME}/*.sh \
-	&& rm -rf /tmp/dependencies
+    && chmod +x ${SERVER_AGENT_HOME}/*.sh \
+    && rm -rf /tmp/dependencies
 
-# 将`Server Agent`执行路径加入环境变量
+# Add `Server Agent` execution path to environment variables
 ENV PATH=${PATH}:${SERVER_AGENT_HOME}
 
-# 默认的入口程序脚本
 COPY jmeter-with-plugins/entrypoint.sh /
 
-# 端口暴露
+# Expose port
 EXPOSE 4444
 
-# 默认入口程序
 ENTRYPOINT ["/entrypoint.sh"]
