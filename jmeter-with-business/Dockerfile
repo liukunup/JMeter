@@ -12,4 +12,4 @@ WORKDIR	${JMETER_WORKSPACE}
 COPY testcases testcases
 
 # 4. Copy your makefiles to the container
-COPY business/Makefile ./
+COPY jmeter-with-business/Makefile ./
