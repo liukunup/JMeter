@@ -29,6 +29,9 @@ ARG SERVER_AGENT_VERSION=2.2.3
 ARG SERVER_AGENT_URL=https://github.com/undera/perfmon-agent/releases/download/${SERVER_AGENT_VERSION}/ServerAgent-${SERVER_AGENT_VERSION}.zip
 ENV SERVER_AGENT_HOME=/opt/ServerAgent
 
+# Entrypoint
+COPY jmeter-with-plugins/entrypoint.sh /
+
 # Install plugins and drivers
 RUN    mkdir -p /tmp/dependencies \
     && curl -L --silent ${PLUGIN_JPGC_CASUTG_URL} > /tmp/dependencies/jpgc-casutg-${PLUGIN_JPGC_CASUTG_VERSION}.zip \
@@ -46,12 +49,11 @@ RUN    mkdir -p /tmp/dependencies \
     && unzip /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}.zip -d /tmp/dependencies/ \
     && mv /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}/* ${SERVER_AGENT_HOME}/ \
     && chmod +x ${SERVER_AGENT_HOME}/*.sh \
+    && chmod +x /entrypoint.sh \
     && rm -rf /tmp/dependencies
 
 # Add `Server Agent` execution path to environment variables
 ENV PATH=${PATH}:${SERVER_AGENT_HOME}
-
-COPY jmeter-with-plugins/entrypoint.sh /
 
 # Expose port
 EXPOSE 4444

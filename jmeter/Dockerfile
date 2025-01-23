@@ -27,6 +27,9 @@ ARG INSTALL_PYTHON_3=true
 ARG TIMEZONE=Asia/Shanghai
 ENV TZ=${TIMEZONE}
 
+# Entrypoint
+COPY jmeter/entrypoint.sh /
+
 # Install packages
 RUN    apk update \
 	&& apk upgrade \
@@ -40,6 +43,7 @@ RUN    apk update \
 	&& curl -L --silent ${JMETER_DOWNLOAD_URL} > /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz \
 	&& mkdir -p /opt \
 	&& tar -zxf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
+	&& chmod +x /entrypoint.sh \
 	&& rm -rf /tmp/dependencies
 
 # Install security patch (update vulnerable jar packages)
@@ -50,8 +54,6 @@ RUN    chmod +x /tmp/security/patch.sh \
 	&& rm -rf /tmp/security
 
 ENV PATH=${PATH}:${JMETER_BIN}
-
-COPY jmeter/entrypoint.sh /
 
 # Expose ports for `JMeter Server` mode
 EXPOSE 1099 50000
