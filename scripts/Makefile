@@ -54,7 +54,7 @@ clean:
 
 run:
 	@mkdir -p $(REPORT_DIR) $(TARGET_TEMP_DIR)
-	docker run --rm --name $(CONTAINER_NAME) -i -v $(PWD):$(PWD) -w $(PWD) \
+	docker run --rm --name $(CONTAINER_NAME) -i -v $(PWD):/opt/workspace -w /opt/workspace \
       -e JVM_ARGS=$(JVM_ARGS) $(CONTAINER_IMAGE) jmeter \
       -Dlog_level.jmeter=DEBUG \
       -JTARGET_THREADS=$(TARGET_THREADS) \
