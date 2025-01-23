@@ -1,6 +1,6 @@
 #!/bin/bash
 
-JMETER_VERSION=${JMETER_VERSION:-"5.6.3"}
+JMETER_VERSION="5.6.3"
 CONTAINER_NAME="server-agent"
 CONTAINER_IMAGE="liukunup/jmeter:plugins-${JMETER_VERSION}"
 
@@ -10,4 +10,4 @@ docker run -d \
   -e SA_INTERVAL=10 \
   --restart=unless-stopped \
   --name=${CONTAINER_NAME} \
-  "${CONTAINER_IMAGE}" server-agent
+  ${CONTAINER_IMAGE} server-agent

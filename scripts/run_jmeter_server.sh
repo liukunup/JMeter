@@ -1,6 +1,6 @@
 #!/bin/bash
 
-JMETER_VERSION=${JMETER_VERSION:-"5.6.3"}
+JMETER_VERSION="5.6.3"
 CONTAINER_NAME="jmeter-server"
 CONTAINER_IMAGE="liukunup/jmeter:${JMETER_VERSION}"
 
