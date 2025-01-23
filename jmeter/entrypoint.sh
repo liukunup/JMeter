@@ -24,19 +24,24 @@ export JVM_ARGS=${JVM_ARGS}
 
 function func_jmeter() {
   echo "FUNC IN  - JMeter"
+  echo.
 
   echo "===== JVM_ARGS ====="
   echo "${JVM_ARGS}"
+  echo.
 
   echo "===== JMETER ARGS ====="
   echo "${@:2}"
+  echo.
 
   echo "===== JMETER EXTRA ARGS ====="
   EXTRA_ARGS=-Dlog4j2.formatMsgNoLookups=true
   echo ${EXTRA_ARGS}
+  echo.
 
   echo "===== JMETER ALL ARGS ====="
   echo ${EXTRA_ARGS} "${@:2}"
+  echo.
 
   # Run JMeter
   jmeter ${EXTRA_ARGS} "${@:2}"
@@ -46,21 +51,26 @@ function func_jmeter() {
 
 function func_jmeter_server() {
   echo "FUNC IN  - JMeter Server"
+  echo.
 
   echo "===== JVM_ARGS ====="
   echo "${JVM_ARGS}"
+  echo.
 
   echo "===== JMETER SERVER ARGS ====="
   # Usually no need to configure parameters
   echo "${@:2}"
+  echo.
 
   echo "===== JMETER SERVER EXTRA ARGS ====="
   # In most cases, `server.rmi.ssl.disable=true` is set by default, so write it directly here
   EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=1099 -Dserver.rmi.localport=50000 -Dserver.rmi.ssl.disable=true)
   echo ${EXTRA_ARGS[*]}
+  echo.
 
   echo "===== JMETER SERVER ALL ARGS ====="
   echo ${EXTRA_ARGS[*]} "${@:2}"
+  echo.
 
   # Start JMeter Server
   jmeter-server ${EXTRA_ARGS[*]} "${@:2}"
@@ -70,6 +80,7 @@ function func_jmeter_server() {
 
 function func_keepalive() {
   echo "FUNC IN  - Keepalive"
+  echo.
 
   # keepalive
   tail -f /dev/null
@@ -86,13 +97,16 @@ echo "=============== START Running at $(date) ==============="
 mode=$1
 
 case $mode in
-    jmeter)        echo "Process ID: $$, Run mode JMeter"
+    jmeter)        echo "Mode ID: $$, Name: JMeter"
+    echo.
     func_jmeter "$@"
     ;;
-    jmeter-server) echo "Process ID: $$, Run mode JMeter-Server"
+    jmeter-server) echo "Mode ID: $$, Name: JMeter-Server"
+    echo.
     func_jmeter_server "$@"
     ;;
-    keepalive)     echo "Process ID: $$, Run mode Keepalive"
+    keepalive)     echo "Mode ID: $$, Name: Keepalive"
+    echo.
     func_keepalive "$@"
     ;;
 esac

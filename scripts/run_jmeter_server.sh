@@ -10,4 +10,4 @@ docker run -d \
   -p 50000:50000 \
   --restart=unless-stopped \
   --name=${CONTAINER_NAME} \
-  "${CONTAINER_IMAGE}" jmeter-server
+  ${CONTAINER_IMAGE} jmeter-server
