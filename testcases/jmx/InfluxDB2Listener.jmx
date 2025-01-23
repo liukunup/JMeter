@@ -87,7 +87,7 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="我的请求" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="我的请求">
           <stringProp name="HTTPSampler.domain">${TARGET_HOST}</stringProp>
           <stringProp name="HTTPSampler.port">${ARGET_PORT}</stringProp>
           <stringProp name="HTTPSampler.protocol">${TARGET_PROTOCOL}</stringProp>
@@ -109,11 +109,11 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器">
             <collectionProp name="HeaderManager.headers"/>
           </HeaderManager>
           <hashTree/>
-          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="响应断言" enabled="true">
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="响应断言">
             <collectionProp name="Asserion.test_strings">
               <stringProp name="49586">200</stringProp>
             </collectionProp>
@@ -164,34 +164,54 @@
         <BackendListener guiclass="BackendListenerGui" testclass="BackendListener" testname="后端监听器">
           <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
             <collectionProp name="Arguments.arguments">
-              <elementProp name="testName" elementType="Argument">
-                <stringProp name="Argument.name">testName</stringProp>
-                <stringProp name="Argument.value">&lt;项目名称&gt;</stringProp>
+              <elementProp name="influxdbMetricsSender" elementType="Argument">
+                <stringProp name="Argument.name">influxdbMetricsSender</stringProp>
+                <stringProp name="Argument.value">org.apache.jmeter.visualizers.backend.influxdb.HttpMetricsSender</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="influxdbUrl" elementType="Argument">
+                <stringProp name="Argument.name">influxdbUrl</stringProp>
+                <stringProp name="Argument.value">http://host_to_change:8086/write?db=jmeter</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="application" elementType="Argument">
+                <stringProp name="Argument.name">application</stringProp>
+                <stringProp name="Argument.value">application name</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="measurement" elementType="Argument">
+                <stringProp name="Argument.name">measurement</stringProp>
+                <stringProp name="Argument.value">jmeter</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="summaryOnly" elementType="Argument">
+                <stringProp name="Argument.name">summaryOnly</stringProp>
+                <stringProp name="Argument.value">true</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="samplersRegex" elementType="Argument">
+                <stringProp name="Argument.name">samplersRegex</stringProp>
+                <stringProp name="Argument.value">.*</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="percentiles" elementType="Argument">
+                <stringProp name="Argument.name">percentiles</stringProp>
+                <stringProp name="Argument.value">90;95;99</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="testTitle" elementType="Argument">
+                <stringProp name="Argument.name">testTitle</stringProp>
+                <stringProp name="Argument.value">Test name</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="eventTags" elementType="Argument">
+                <stringProp name="Argument.name">eventTags</stringProp>
+                <stringProp name="Argument.value"></stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="nodeName" elementType="Argument">
                 <stringProp name="Argument.name">nodeName</stringProp>
                 <stringProp name="Argument.value">${__machineName()}-${__machineIP()}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="runId" elementType="Argument">
-                <stringProp name="Argument.name">runId</stringProp>
-                <stringProp name="Argument.value">&lt;接口-并发数-第x次&gt;</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="influxDBURL" elementType="Argument">
-                <stringProp name="Argument.name">influxDBURL</stringProp>
-                <stringProp name="Argument.value">http://${DB_INFLUXDB2_HOST}:${DB_INFLUXDB2_PORT}/</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="influxDBToken" elementType="Argument">
-                <stringProp name="Argument.name">influxDBToken</stringProp>
-                <stringProp name="Argument.value">${DB_INFLUXDB2_TOKEN}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="influxDBOrganization" elementType="Argument">
-                <stringProp name="Argument.name">influxDBOrganization</stringProp>
-                <stringProp name="Argument.value">&lt;公司名称 或 组织名称&gt;</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="influxDBBucket" elementType="Argument">
@@ -204,23 +224,8 @@
                 <stringProp name="Argument.value">4000</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
-              <elementProp name="influxDBMaxBatchSize" elementType="Argument">
-                <stringProp name="Argument.name">influxDBMaxBatchSize</stringProp>
-                <stringProp name="Argument.value">2000</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="influxDBThresholdError" elementType="Argument">
-                <stringProp name="Argument.name">influxDBThresholdError</stringProp>
-                <stringProp name="Argument.value">5</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="samplersList" elementType="Argument">
-                <stringProp name="Argument.name">samplersList</stringProp>
-                <stringProp name="Argument.value">.*</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="useRegexForSamplerList" elementType="Argument">
-                <stringProp name="Argument.name">useRegexForSamplerList</stringProp>
+              <elementProp name="saveResponseBodyOfFailures" elementType="Argument">
+                <stringProp name="Argument.name">saveResponseBodyOfFailures</stringProp>
                 <stringProp name="Argument.value">true</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -229,9 +234,39 @@
                 <stringProp name="Argument.value">true</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
-              <elementProp name="saveResponseBodyOfFailures" elementType="Argument">
-                <stringProp name="Argument.name">saveResponseBodyOfFailures</stringProp>
+              <elementProp name="influxDBMaxBatchSize" elementType="Argument">
+                <stringProp name="Argument.name">influxDBMaxBatchSize</stringProp>
+                <stringProp name="Argument.value">2000</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="influxDBToken" elementType="Argument">
+                <stringProp name="Argument.name">influxDBToken</stringProp>
+                <stringProp name="Argument.value">${DB_INFLUXDB2_TOKEN}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="influxDBThresholdError" elementType="Argument">
+                <stringProp name="Argument.name">influxDBThresholdError</stringProp>
+                <stringProp name="Argument.value">5</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="influxDBURL" elementType="Argument">
+                <stringProp name="Argument.name">influxDBURL</stringProp>
+                <stringProp name="Argument.value">http://${DB_INFLUXDB2_HOST}:${DB_INFLUXDB2_PORT}/</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="influxDBOrganization" elementType="Argument">
+                <stringProp name="Argument.name">influxDBOrganization</stringProp>
+                <stringProp name="Argument.value">&lt;公司名称 或 组织名称&gt;</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="useRegexForSamplerList" elementType="Argument">
+                <stringProp name="Argument.name">useRegexForSamplerList</stringProp>
                 <stringProp name="Argument.value">true</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="runId" elementType="Argument">
+                <stringProp name="Argument.name">runId</stringProp>
+                <stringProp name="Argument.value">&lt;接口-并发数-第x次&gt;</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="responseBodyLength" elementType="Argument">
@@ -239,9 +274,14 @@
                 <stringProp name="Argument.value">2000</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
+              <elementProp name="testName" elementType="Argument">
+                <stringProp name="Argument.name">testName</stringProp>
+                <stringProp name="Argument.value">&lt;项目名称&gt;</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="classname">io.github.mderevyankoaqa.influxdb2.visualizer.InfluxDatabaseBackendListenerClient</stringProp>
+          <stringProp name="classname">org.apache.jmeter.visualizers.backend.influxdb.InfluxdbBackendListenerClient</stringProp>
         </BackendListener>
         <hashTree/>
       </hashTree>
