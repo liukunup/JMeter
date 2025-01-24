@@ -24,7 +24,6 @@ export JVM_ARGS=${JVM_ARGS}
 
 function func_jmeter() {
   echo "FUNC IN  - JMeter"
-  echo
 
   echo "===== JVM_ARGS ====="
   echo "${JVM_ARGS}"
@@ -51,7 +50,6 @@ function func_jmeter() {
 
 function func_jmeter_server() {
   echo "FUNC IN  - JMeter Server"
-  echo
 
   echo "===== JVM_ARGS ====="
   echo "${JVM_ARGS}"
@@ -80,7 +78,6 @@ function func_jmeter_server() {
 
 function func_keepalive() {
   echo "FUNC IN  - Keepalive"
-  echo
 
   # keepalive
   tail -f /dev/null
