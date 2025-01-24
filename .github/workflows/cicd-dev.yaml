@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for JMeter Docker Images
+name: CI/CD Dev Pipeline for JMeter Docker Images
 
 on:
   push:
