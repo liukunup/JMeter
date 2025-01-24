@@ -24,24 +24,24 @@ export JVM_ARGS=${JVM_ARGS}
 
 function func_jmeter() {
   echo "FUNC IN  - JMeter"
-  echo.
+  echo
 
   echo "===== JVM_ARGS ====="
   echo "${JVM_ARGS}"
-  echo.
+  echo
 
   echo "===== JMETER ARGS ====="
   echo "${@:2}"
-  echo.
+  echo
 
   echo "===== JMETER EXTRA ARGS ====="
   EXTRA_ARGS=-Dlog4j2.formatMsgNoLookups=true
   echo ${EXTRA_ARGS}
-  echo.
+  echo
 
   echo "===== JMETER ALL ARGS ====="
   echo ${EXTRA_ARGS} "${@:2}"
-  echo.
+  echo
 
   # Run JMeter
   jmeter ${EXTRA_ARGS} "${@:2}"
@@ -51,26 +51,26 @@ function func_jmeter() {
 
 function func_jmeter_server() {
   echo "FUNC IN  - JMeter Server"
-  echo.
+  echo
 
   echo "===== JVM_ARGS ====="
   echo "${JVM_ARGS}"
-  echo.
+  echo
 
   echo "===== JMETER SERVER ARGS ====="
   # Usually no need to configure parameters
   echo "${@:2}"
-  echo.
+  echo
 
   echo "===== JMETER SERVER EXTRA ARGS ====="
   # In most cases, `server.rmi.ssl.disable=true` is set by default, so write it internally
   EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=1099 -Dserver.rmi.localport=50000 -Dserver.rmi.ssl.disable=true)
   echo ${EXTRA_ARGS[*]}
-  echo.
+  echo
 
   echo "===== JMETER SERVER ALL ARGS ====="
   echo ${EXTRA_ARGS[*]} "${@:2}"
-  echo.
+  echo
 
   # Start JMeter Server
   jmeter-server ${EXTRA_ARGS[*]} "${@:2}"
@@ -80,7 +80,7 @@ function func_jmeter_server() {
 
 function func_keepalive() {
   echo "FUNC IN  - Keepalive"
-  echo.
+  echo
 
   # keepalive
   tail -f /dev/null
@@ -90,7 +90,7 @@ function func_keepalive() {
 
 function func_server_agent() {
   echo "FUNC IN  - Server Agent"
-  echo.
+  echo
 
   SCRIPT="${SERVER_AGENT_HOME}/startAgent.sh"
   # Default sampling interval is 5 seconds
@@ -112,19 +112,19 @@ mode=$1
 
 case $mode in
     jmeter)        echo "Mode ID: $$, Name: JMeter"
-    echo.
+    echo
     func_jmeter "$@"
     ;;
     jmeter-server) echo "Mode ID: $$, Name: JMeter-Server"
-    echo.
+    echo
     func_jmeter_server "$@"
     ;;
     keepalive)     echo "Mode ID: $$, Name: Keepalive"
-    echo.
+    echo
     func_keepalive "$@"
     ;;
     server-agent)  echo "Mode ID: $$, Name: Server-Agent"
-    echo.
+    echo
     func_server_agent "$@"
     ;;
 esac
