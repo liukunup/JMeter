@@ -62,7 +62,7 @@ function func_jmeter_server() {
 
   echo "===== JMETER SERVER EXTRA ARGS ====="
   # In most cases, `server.rmi.ssl.disable=true` is set by default, so write it directly here
-  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=1099 -Dserver.rmi.localport=50000 -Dserver.rmi.ssl.disable=true)
+  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=1099 -Dserver.rmi.ssl.disable=true)
   echo ${EXTRA_ARGS[*]}
   echo
 
