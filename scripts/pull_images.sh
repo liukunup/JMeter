@@ -1,4 +1,5 @@
 #!/bin/bash
+# Usage: .\pull_images.sh
 
 REGISTRY="docker.io"
 JMETER_VERSION="5.6.3"

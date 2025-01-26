@@ -1,4 +1,5 @@
 # PowerShell
+# Usage: .\pull_images.ps1
 
 $REGISTRY="docker.io"
 $JMETER_VERSION="5.6.3"
