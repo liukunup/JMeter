@@ -55,7 +55,7 @@ RUN    mkdir -p /tmp/dependencies \
 # Add `Server Agent` execution path to environment variables
 ENV PATH=${PATH}:${SERVER_AGENT_HOME}
 
-# Expose ports for `JMeter Server` & `Server Agent`
-EXPOSE 1099 4444
+# Expose ports for `Server Agent`
+EXPOSE 4444
 
 ENTRYPOINT ["/entrypoint.sh"]

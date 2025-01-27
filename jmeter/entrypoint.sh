@@ -34,16 +34,16 @@ function func_jmeter() {
   echo
 
   echo "===== JMETER EXTRA ARGS ====="
-  EXTRA_ARGS=-Dlog4j2.formatMsgNoLookups=true
-  echo ${EXTRA_ARGS}
+  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true)
+  echo ${EXTRA_ARGS[*]}
   echo
 
   echo "===== JMETER ALL ARGS ====="
-  echo ${EXTRA_ARGS} "${@:2}"
+  echo ${EXTRA_ARGS[*]} "${@:2}"
   echo
 
   # Run JMeter
-  jmeter ${EXTRA_ARGS} "${@:2}"
+  jmeter ${EXTRA_ARGS[*]} "${@:2}"
 
   echo "FUNC OUT - JMeter"
 }
@@ -62,7 +62,7 @@ function func_jmeter_server() {
 
   echo "===== JMETER SERVER EXTRA ARGS ====="
   # In most cases, `server.rmi.ssl.disable=true` is set by default, so write it directly here
-  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=1099 -Dserver.rmi.ssl.disable=true)
+  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=1099 -Dserver.rmi.localport=50000 -Dserver.rmi.ssl.disable=true)
   echo ${EXTRA_ARGS[*]}
   echo
 
