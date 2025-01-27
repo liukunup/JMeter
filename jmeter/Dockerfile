@@ -55,8 +55,8 @@ RUN    chmod +x /tmp/security/patch.sh \
 
 ENV PATH=${PATH}:${JMETER_BIN}
 
-# Expose port for `JMeter Server`
-EXPOSE 1099 50000
+# Expose port for `JMeter Server` & `Mirror Server`
+EXPOSE 1099 50000 8080
 
 WORKDIR ${JMETER_HOME}
 

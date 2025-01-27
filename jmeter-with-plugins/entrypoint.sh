@@ -76,6 +76,32 @@ function func_jmeter_server() {
   echo "FUNC OUT - JMeter Server"
 }
 
+function func_mirror_server() {
+  echo "FUNC IN  - Mirror Server"
+
+  echo "===== JVM_ARGS ====="
+  echo "${JVM_ARGS}"
+  echo
+
+  echo "===== MIRROR SERVER ARGS ====="
+  echo "${@:2}"
+  echo
+
+  echo "===== MIRROR SERVER ARGS ====="
+  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true --port 8080)
+  echo ${EXTRA_ARGS[*]}
+  echo
+
+  echo "===== MIRROR SERVER ALL ARGS ====="
+  echo ${EXTRA_ARGS[*]} "${@:2}"
+  echo
+
+  # Start Mirror Server
+  mirror-server ${EXTRA_ARGS[*]} "${@:2}"
+
+  echo "FUNC OUT - Mirror Server"
+}
+
 function func_keepalive() {
   echo "FUNC IN  - Keepalive"
 
@@ -114,6 +140,10 @@ case $mode in
     jmeter-server) echo "Mode ID: $$, Name: JMeter-Server"
     echo
     func_jmeter_server "$@"
+    ;;
+    mirror-server) echo "Mode ID: $$, Name: Mirror-Server"
+    echo
+    func_mirror_server "$@"
     ;;
     keepalive)     echo "Mode ID: $$, Name: Keepalive"
     echo
