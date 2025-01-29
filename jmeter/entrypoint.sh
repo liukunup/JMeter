@@ -61,8 +61,12 @@ function func_jmeter_server() {
   echo
 
   echo "===== JMETER SERVER EXTRA ARGS ====="
+  # Default server port is 1099
+  [[ -z ${SERVER_PORT} ]] && SERVER_PORT=1099
+  # Default RMI local port is 50000
+  [[ -z ${SERVER_RMI_LOCALPORT} ]] && SERVER_RMI_LOCALPORT=50000
   # In most cases, `server.rmi.ssl.disable=true` is set by default, so write it directly here
-  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=1099 -Dserver.rmi.localport=50000 -Dserver.rmi.ssl.disable=true)
+  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=${SERVER_PORT} -Dserver.rmi.localport=${SERVER_RMI_LOCALPORT} -Dserver.rmi.ssl.disable=true)
   echo ${EXTRA_ARGS[*]}
   echo
 
@@ -88,7 +92,9 @@ function func_mirror_server() {
   echo
 
   echo "===== MIRROR SERVER ARGS ====="
-  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true --port 8080)
+  # Default server port is 8080
+  [[ -z ${MIRROR_SERVER_PORT} ]] && MIRROR_SERVER_PORT=8080
+  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true --port ${MIRROR_SERVER_PORT})
   echo ${EXTRA_ARGS[*]}
   echo
 

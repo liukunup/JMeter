@@ -27,6 +27,11 @@ ARG INSTALL_PYTHON_3=true
 ARG TIMEZONE=Asia/Shanghai
 ENV TZ=${TIMEZONE}
 
+# Ports of JMeter Server & Mirror Server
+ENV SERVER_PORT=1099
+ENV SERVER_RMI_LOCALPORT=50000
+ENV MIRROR_SERVER_PORT=8080
+
 # Entrypoint
 COPY jmeter/entrypoint.sh /
 
@@ -56,7 +61,7 @@ RUN    chmod +x /tmp/security/patch.sh \
 ENV PATH=${PATH}:${JMETER_BIN}
 
 # Expose port for `JMeter Server` & `Mirror Server`
-EXPOSE 1099 50000 8080
+EXPOSE ${SERVER_PORT} ${SERVER_RMI_LOCALPORT} ${MIRROR_SERVER_PORT}
 
 WORKDIR ${JMETER_HOME}
 

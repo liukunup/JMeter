@@ -29,6 +29,9 @@ ARG SERVER_AGENT_VERSION=2.2.3
 ARG SERVER_AGENT_URL=https://github.com/undera/perfmon-agent/releases/download/${SERVER_AGENT_VERSION}/ServerAgent-${SERVER_AGENT_VERSION}.zip
 ENV SERVER_AGENT_HOME=/opt/ServerAgent
 
+# Port of Server Agent
+ENV SERVER_AGENT_PORT=4444
+
 # Entrypoint
 COPY jmeter-with-plugins/entrypoint.sh /
 
@@ -56,6 +59,6 @@ RUN    mkdir -p /tmp/dependencies \
 ENV PATH=${PATH}:${SERVER_AGENT_HOME}
 
 # Expose ports for `Server Agent`
-EXPOSE 4444
+EXPOSE ${SERVER_AGENT_PORT}
 
 ENTRYPOINT ["/entrypoint.sh"]
