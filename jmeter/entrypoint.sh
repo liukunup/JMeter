@@ -108,6 +108,23 @@ function func_mirror_server() {
   echo "FUNC OUT - Mirror Server"
 }
 
+function func_customize() {
+  echo "FUNC IN  - Customize"
+
+  echo "===== JVM_ARGS ====="
+  echo "${JVM_ARGS}"
+  echo
+
+  echo "===== CUSTOMIZE ARGS ====="
+  echo "${@:2}"
+  echo
+
+  # Run customized command
+  ${@:2}
+
+  echo "FUNC OUT - Customize"
+}
+
 function func_keepalive() {
   echo "FUNC IN  - Keepalive"
 
@@ -137,6 +154,10 @@ case $mode in
     mirror-server) echo "Mode ID: $$, Name: Mirror-Server"
     echo
     func_mirror_server "$@"
+    ;;
+    customize)     echo "Mode ID: $$, Name: Customize"
+    echo
+    func_customize "$@"
     ;;
     keepalive)     echo "Mode ID: $$, Name: Keepalive"
     echo
