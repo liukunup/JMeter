@@ -19,5 +19,6 @@ foreach ($IMAGE in $IMAGES) {
     docker pull "$REGISTRY/$IMAGE"
     if ($REGISTRY -ne "docker.io") {
         docker tag "$REGISTRY/$IMAGE" "docker.io/$IMAGE"
+        docker rmi "$REGISTRY/$IMAGE"
     }
 }

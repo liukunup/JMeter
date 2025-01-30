@@ -19,5 +19,6 @@ for IMAGE in "${IMAGES[@]}"; do
     docker pull ${REGISTRY}/${IMAGE}
     if [ "${REGISTRY}" != "docker.io" ]; then
         docker tag ${REGISTRY}/${IMAGE} docker.io/${IMAGE}
+        docker rmi ${REGISTRY}/${IMAGE}
     fi
 done
