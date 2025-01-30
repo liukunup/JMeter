@@ -1,7 +1,7 @@
 ARG JMETER_VERSION=5.6.3
 FROM liukunup/jmeter:${JMETER_VERSION}
 
-LABEL LIUKUN="liukunup@outlook.com"
+LABEL maintainer="liukunup@outlook.com"
 
 # JMeter
 ARG JMETER_HOME=/opt/apache-jmeter-${JMETER_VERSION}
@@ -55,7 +55,7 @@ RUN    mkdir -p /tmp/dependencies \
 # Add `Server Agent` execution path to environment variables
 ENV PATH=${PATH}:${SERVER_AGENT_HOME}
 
-# Expose ports for `Server Agent`
+# Expose port 4444 for `Server Agent` to allow remote monitoring and control
 EXPOSE 4444
 
 ENTRYPOINT ["/entrypoint.sh"]

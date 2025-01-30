@@ -1,7 +1,7 @@
 ARG ALPINE_VERSION=latest
 FROM alpine:${ALPINE_VERSION}
 
-LABEL LIUKUN="liukunup@outlook.com"
+LABEL maintainer="liukunup@outlook.com"
 
 # JMeter
 ARG JMETER_VERSION=5.6.3
@@ -18,7 +18,7 @@ ENV JMETER_WORKSPACE=/opt/workspace
 ENV JMETER_CUSTOM_PLUGINS_FOLDER=/plugins
 
 # Java Runtime Environment
-ARG JRE_VERSION=openjdk21-jre
+ARG JAVA_VERSION=openjdk21-jre
 
 # Install Python 3 (default: true)
 ARG INSTALL_PYTHON_3=true
@@ -35,7 +35,7 @@ RUN    apk update \
 	&& apk upgrade \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	&& apk add --update ${JRE_VERSION} tzdata curl bash vim tar unzip make net-tools \
+	&& apk add --update ${JAVA_VERSION} tzdata curl bash vim tar unzip make net-tools \
 	&& apk add --no-cache nss \
 	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then apk add --update --no-cache python3 py3-pip && ln -sf python3 /usr/bin/python; fi \
 	&& rm -rf /var/cache/apk/* \

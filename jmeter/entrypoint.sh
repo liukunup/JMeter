@@ -86,13 +86,13 @@ function func_mirror_server() {
   echo "${@:2}"
   echo
 
-  echo "===== MIRROR SERVER ARGS ====="
+  echo "===== MIRROR SERVER EXTRA ARGS ====="
   EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true --port 8080)
-  echo “${EXTRA_ARGS[*]}”
+  echo "${EXTRA_ARGS[*]}"
   echo
 
   echo "===== MIRROR SERVER ALL ARGS ====="
-  echo “${EXTRA_ARGS[*]}” "${@:2}"
+  echo "${EXTRA_ARGS[*]}" "${@:2}"
   echo
 
   # Start Mirror Server

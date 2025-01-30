@@ -77,7 +77,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             ALPINE_VERSION=3
-            JRE_VERSION=openjdk21-jre
+            JAVA_VERSION=openjdk21-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
       - name: Extract metadata (tags, labels) for Docker with Plugins
@@ -198,7 +198,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             ALPINE_VERSION=3
-            JRE_VERSION=openjdk8-jre
+            JAVA_VERSION=openjdk8-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
       - name: Extract metadata (tags, labels) for Docker with Plugins
