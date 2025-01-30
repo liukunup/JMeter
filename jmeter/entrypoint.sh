@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# copy custom plugins to jmeter ext folder
+# Copy custom plugins to JMeter ext folder if the custom plugins folder exists
 if [[ -d $JMETER_CUSTOM_PLUGINS_FOLDER ]]
 then
   for plugin in "${JMETER_CUSTOM_PLUGINS_FOLDER}"/*.jar; do
@@ -8,20 +8,21 @@ then
   done;
 fi
 
-# set JVM parameters
+# Set JVM parameters
 set -e
 freeMem=$(awk '/MemAvailable/ { print int($2/1024) }' /proc/meminfo)
-# assign value if empty
+# Assign default values if variables are empty
 [[ -z ${JVM_XMN} ]] && JVM_XMN=$((freeMem * 2 / 10))
 [[ -z ${JVM_XMS} ]] && JVM_XMS=$((freeMem * 8 / 10))
 [[ -z ${JVM_XMX} ]] && JVM_XMX=$((freeMem * 8 / 10))
-# assemble JVM parameters
+# Assemble JVM parameters
 [[ -z ${JVM_ARGS} ]] && JVM_ARGS="-Xmn${JVM_XMN}m -Xms${JVM_XMS}m -Xmx${JVM_XMX}m"
-# setup environment variable
+# Export JVM parameters as environment variable
 export JVM_ARGS=${JVM_ARGS}
 
 # ##################################### Operating Mode #####################################
 
+# Function to run JMeter
 function func_jmeter() {
   echo "FUNC IN - JMeter"
 
@@ -48,6 +49,7 @@ function func_jmeter() {
   echo "FUNC OUT - JMeter"
 }
 
+# Function to run JMeter Server
 function func_jmeter_server() {
   echo "FUNC IN - JMeter Server"
 
@@ -75,6 +77,7 @@ function func_jmeter_server() {
   echo "FUNC OUT - JMeter Server"
 }
 
+# Function to run Mirror Server
 function func_mirror_server() {
   echo "FUNC IN - Mirror Server"
 
@@ -101,6 +104,7 @@ function func_mirror_server() {
   echo "FUNC OUT - Mirror Server"
 }
 
+# Function to run customized command
 function func_customize() {
   echo "FUNC IN - Customize"
 
@@ -118,10 +122,11 @@ function func_customize() {
   echo "FUNC OUT - Customize"
 }
 
+# Function to keep the container alive
 function func_keepalive() {
   echo "FUNC IN - Keepalive"
 
-  # keepalive
+  # Keep the container alive
   tail -f /dev/null
 
   echo "FUNC OUT - Keepalive"
@@ -137,6 +142,7 @@ echo "=============== START Running at $(date) ==============="
 # 5. keepalive
 mode=$1
 
+# Execute the appropriate function based on the mode
 case $mode in
     jmeter)        echo "Mode ID: $$, Name: JMeter"
     echo
