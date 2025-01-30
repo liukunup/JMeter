@@ -14,7 +14,7 @@ ENV JMETER_EXT=${JMETER_HOME}/lib/ext
 ENV JMETER_LIC=${JMETER_HOME}/licenses
 ENV JMETER_WORKSPACE=/opt/workspace
 
-# Custom Plugins
+# The folder where custom plugins are stored
 ENV JMETER_CUSTOM_PLUGINS_FOLDER=/plugins
 
 # Java Runtime Environment
@@ -26,11 +26,6 @@ ARG INSTALL_PYTHON_3=true
 # Timezone (default: Asia/Shanghai)
 ARG TIMEZONE=Asia/Shanghai
 ENV TZ=${TIMEZONE}
-
-# Ports of JMeter Server & Mirror Server
-ENV SERVER_PORT=1099
-ENV SERVER_RMI_LOCALPORT=50000
-ENV MIRROR_SERVER_PORT=8080
 
 # Entrypoint
 COPY jmeter/entrypoint.sh /
@@ -61,7 +56,7 @@ RUN    chmod +x /tmp/security/patch.sh \
 ENV PATH=${PATH}:${JMETER_BIN}
 
 # Expose port for `JMeter Server` & `Mirror Server`
-EXPOSE ${SERVER_PORT} ${SERVER_RMI_LOCALPORT} ${MIRROR_SERVER_PORT}
+EXPOSE 1099 50000 8080
 
 WORKDIR ${JMETER_HOME}
 

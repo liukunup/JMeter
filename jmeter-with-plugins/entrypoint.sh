@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# install custom plugins
+# copy custom plugins to jmeter ext folder
 if [[ -d $JMETER_CUSTOM_PLUGINS_FOLDER ]]
 then
   for plugin in "${JMETER_CUSTOM_PLUGINS_FOLDER}"/*.jar; do
@@ -23,9 +23,9 @@ export JVM_ARGS=${JVM_ARGS}
 # ##################################### Operating Mode #####################################
 
 function func_jmeter() {
-  echo "FUNC IN  - JMeter"
+  echo "FUNC IN - JMeter"
 
-  echo "===== JVM_ARGS ====="
+  echo "===== JVM ARGS ====="
   echo "${JVM_ARGS}"
   echo
 
@@ -35,53 +35,48 @@ function func_jmeter() {
 
   echo "===== JMETER EXTRA ARGS ====="
   EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true)
-  echo ${EXTRA_ARGS[*]}
+  echo "${EXTRA_ARGS[*]}"
   echo
 
   echo "===== JMETER ALL ARGS ====="
-  echo ${EXTRA_ARGS[*]} "${@:2}"
+  echo "${EXTRA_ARGS[*]}" "${@:2}"
   echo
 
   # Run JMeter
-  jmeter ${EXTRA_ARGS[*]} "${@:2}"
+  jmeter ${EXTRA_ARGS[*]} ${@:2}
 
   echo "FUNC OUT - JMeter"
 }
 
 function func_jmeter_server() {
-  echo "FUNC IN  - JMeter Server"
+  echo "FUNC IN - JMeter Server"
 
-  echo "===== JVM_ARGS ====="
+  echo "===== JVM ARGS ====="
   echo "${JVM_ARGS}"
   echo
 
   echo "===== JMETER SERVER ARGS ====="
-  # Usually no need to configure parameters
   echo "${@:2}"
   echo
 
   echo "===== JMETER SERVER EXTRA ARGS ====="
-  # Default server port is 1099
-  [[ -z ${SERVER_PORT} ]] && SERVER_PORT=1099
-  # Default RMI local port is 50000
-  [[ -z ${SERVER_RMI_LOCALPORT} ]] && SERVER_RMI_LOCALPORT=50000
-  # In most cases, `server.rmi.ssl.disable=true` is set by default, so write it internally
-  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=${SERVER_PORT} -Dserver.rmi.localport=${SERVER_RMI_LOCALPORT} -Dserver.rmi.ssl.disable=true)
-  echo ${EXTRA_ARGS[*]}
+  # The `server.rmi.ssl.disable=true` property is typically set by default, so it is included directly here.
+  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true -Dserver_port=1099 -Dserver.rmi.localport=50000 -Dserver.rmi.ssl.disable=true)
+  echo "${EXTRA_ARGS[*]}"
   echo
 
   echo "===== JMETER SERVER ALL ARGS ====="
-  echo ${EXTRA_ARGS[*]} "${@:2}"
+  echo "${EXTRA_ARGS[*]}" "${@:2}"
   echo
 
   # Start JMeter Server
-  jmeter-server ${EXTRA_ARGS[*]} "${@:2}"
+  jmeter-server ${EXTRA_ARGS[*]} ${@:2}
 
   echo "FUNC OUT - JMeter Server"
 }
 
 function func_mirror_server() {
-  echo "FUNC IN  - Mirror Server"
+  echo "FUNC IN - Mirror Server"
 
   echo "===== JVM_ARGS ====="
   echo "${JVM_ARGS}"
@@ -92,24 +87,22 @@ function func_mirror_server() {
   echo
 
   echo "===== MIRROR SERVER ARGS ====="
-  # Default server port is 8080
-  [[ -z ${MIRROR_SERVER_PORT} ]] && MIRROR_SERVER_PORT=8080
-  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true --port ${MIRROR_SERVER_PORT})
-  echo ${EXTRA_ARGS[*]}
+  EXTRA_ARGS=(-Dlog4j2.formatMsgNoLookups=true --port 8080)
+  echo "${EXTRA_ARGS[*]}"
   echo
 
   echo "===== MIRROR SERVER ALL ARGS ====="
-  echo ${EXTRA_ARGS[*]} "${@:2}"
+  echo "${EXTRA_ARGS[*]}" "${@:2}"
   echo
 
   # Start Mirror Server
-  mirror-server ${EXTRA_ARGS[*]} "${@:2}"
+  mirror-server ${EXTRA_ARGS[*]} ${@:2}
 
   echo "FUNC OUT - Mirror Server"
 }
 
 function func_customize() {
-  echo "FUNC IN  - Customize"
+  echo "FUNC IN - Customize"
 
   echo "===== JVM_ARGS ====="
   echo "${JVM_ARGS}"
@@ -126,7 +119,7 @@ function func_customize() {
 }
 
 function func_keepalive() {
-  echo "FUNC IN  - Keepalive"
+  echo "FUNC IN - Keepalive"
 
   # keepalive
   tail -f /dev/null
@@ -135,13 +128,13 @@ function func_keepalive() {
 }
 
 function func_server_agent() {
-  echo "FUNC IN  - Server Agent"
+  echo "FUNC IN - Server Agent"
 
   SCRIPT="${SERVER_AGENT_HOME}/startAgent.sh"
   # Default sampling interval is 5 seconds
   [[ -z ${SA_INTERVAL} ]] && SA_INTERVAL=5
   # Start Agent Service
-  /bin/bash "${SCRIPT}" --udp-port ${SERVER_AGENT_PORT} --tcp-port ${SERVER_AGENT_PORT} --interval ${SA_INTERVAL}
+  /bin/bash "${SCRIPT}" --udp-port 4444 --tcp-port 4444 --interval ${SA_INTERVAL}
 
   echo "FUNC OUT - Server Agent"
 }
@@ -151,8 +144,10 @@ echo "=============== START Running at $(date) ==============="
 # Operating mode:
 # 1. jmeter
 # 2. jmeter server
-# 3. keepalive
-# 4. server agent (PerfMon)
+# 3. mirror server
+# 4. customize
+# 5. keepalive
+# 6. server agent (PerfMon)
 mode=$1
 
 case $mode in
