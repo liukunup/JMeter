@@ -158,30 +158,30 @@ mode=$1
 
 # Execute the appropriate function based on the mode
 case $mode in
-    jmeter)        echo "Mode ID: $$, Name: JMeter"
-    echo
-    func_jmeter "$@"
-    ;;
-    jmeter-server) echo "Mode ID: $$, Name: JMeter-Server"
-    echo
-    func_jmeter_server "$@"
-    ;;
-    mirror-server) echo "Mode ID: $$, Name: Mirror-Server"
-    echo
-    func_mirror_server "$@"
-    ;;
-    customize)     echo "Mode ID: $$, Name: Customize"
-    echo
-    func_customize "$@"
-    ;;
-    keepalive)     echo "Mode ID: $$, Name: Keepalive"
-    echo
-    func_keepalive "$@"
-    ;;
-    server-agent)  echo "Mode ID: $$, Name: Server-Agent"
-    echo
-    func_server_agent "$@"
-    ;;
+  jmeter)        echo "Mode ID: $$, Name: JMeter"
+  echo
+  func_jmeter "$@"
+  ;;
+  jmeter-server) echo "Mode ID: $$, Name: JMeter-Server"
+  echo
+  func_jmeter_server "$@"
+  ;;
+  mirror-server) echo "Mode ID: $$, Name: Mirror-Server"
+  echo
+  func_mirror_server "$@"
+  ;;
+  customize)     echo "Mode ID: $$, Name: Customize"
+  echo
+  func_customize "$@"
+  ;;
+  keepalive)     echo "Mode ID: $$, Name: Keepalive"
+  echo
+  func_keepalive "$@"
+  ;;
+  server-agent)  echo "Mode ID: $$, Name: Server-Agent"
+  echo
+  func_server_agent "$@"
+  ;;
 esac
 
 echo "=============== FINISH Running on $(date) ==============="
