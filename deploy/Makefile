@@ -23,14 +23,22 @@ TARGET_TEMP_DIR ?= $(TESTCASE_DIR)/$(PROJECT)/temp
 
 # ################################################## No changes required ##################################################
 
-# Container
+# Images
+IMG_JMETER         = liukunup/jmeter:$(JMETER_VERSION)
+IMG_JMETER_PLUGINS = liukunup/jmeter:plugins-$(JMETER_VERSION)
+
+# JMeter
 JMETER_VERSION ?= 5.6.3
 CONTAINER_NAME ?= jmeter
-CONTAINER_IMAGE = liukunup/jmeter:plugins-$(JMETER_VERSION)
 
 # JMeter Server
 JS_PORT           ?= 1099
+JS_RMI_LOCALPORT  ?= 50000
 JS_CONTAINER_NAME ?= jmeter-server
+
+# Mirror Server
+MS_PORT           ?= 8080
+MS_CONTAINER_NAME ?= mirror-server
 
 # Server Agent
 SA_PORT           ?= 4444
@@ -55,7 +63,7 @@ clean:
 run:
 	@mkdir -p $(REPORT_DIR) $(TARGET_TEMP_DIR)
 	docker run --rm --name $(CONTAINER_NAME) -i -v $(PWD):/opt/workspace -w /opt/workspace \
-      -e JVM_ARGS=$(JVM_ARGS) $(CONTAINER_IMAGE) jmeter \
+      -e JVM_ARGS=$(JVM_ARGS) $(IMG_JMETER_PLUGINS) jmeter \
       -Dlog_level.jmeter=DEBUG \
       -JTARGET_THREADS=$(TARGET_THREADS) \
       -JTARGET_PROTOCOL=$(TARGET_PROTOCOL) -JTARGET_HOST=$(TARGET_HOST) -JTARGET_PORT=$(TARGET_PORT) \
@@ -75,10 +83,33 @@ report:
 server:
 	docker run -d \
       -p $(JS_PORT):$(JS_PORT) \
-      -e SERVER_PORT=$(JS_PORT) \
+      -p $(JS_RMI_LOCALPORT):$(JS_RMI_LOCALPORT) \
       --restart=unless-stopped \
       --name=$(JS_CONTAINER_NAME) \
-      $(CONTAINER_IMAGE) jmeter-server
+      $(IMG_JMETER) jmeter-server \
+      -Djava.rmi.server.hostname=$(shell hostname -I | awk '{print $$1}')
+
+mirror:
+	docker run -d \
+      -p $(MS_PORT):$(MS_PORT) \
+      --restart=unless-stopped \
+      --name=$(MS_CONTAINER_NAME) \
+      $(IMG_JMETER) mirror-server
+
+customize:
+	docker run -d \
+      --restart=unless-stopped \
+      --name=$(CONTAINER_NAME) \
+      $(IMG_JMETER) customize jmeter -v
+
+keepalive:
+	docker run -d \
+      -v $(PWD):/opt/workspace \
+      -w /opt/workspace \
+      -e SERVER_PORT=$(JS_PORT) \
+      --restart=unless-stopped \
+      --name=$(CONTAINER_NAME) \
+      $(IMG_JMETER) keepalive
 
 agent:
 	docker run -d \
