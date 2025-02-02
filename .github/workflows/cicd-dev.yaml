@@ -1,4 +1,4 @@
-name: CI/CD Dev Pipeline for JMeter Docker Images
+name: Dev Pipeline for JMeter Docker Images
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
       - '**.md'
       - '**.jmx'
       - '**.png'
+  pull_request:
 
 env:
   JMETER_VERSION: 5.6.3 # The target JMeter version
@@ -59,6 +60,7 @@ jobs:
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
             type=sha,format=short,prefix={{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short,prefix=pr-,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and Push Docker Images
         uses: docker/build-push-action@v6
@@ -84,6 +86,7 @@ jobs:
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
             type=sha,format=short,prefix=plugins-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short,prefix=plugins-pr-,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and Push Docker Images with Plugins
         uses: docker/build-push-action@v6
@@ -107,6 +110,7 @@ jobs:
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
             type=sha,format=short,prefix=business-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short,prefix=business-pr-,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and Push Docker Images with Business
         uses: docker/build-push-action@v6
@@ -171,6 +175,7 @@ jobs:
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
             type=sha,format=short,prefix=openjdk8-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short,prefix=openjdk8-pr-,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
@@ -196,6 +201,7 @@ jobs:
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
             type=sha,format=short,prefix=openjdk8-plugins-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short,prefix=openjdk8-plugins-pr-,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and Push Docker Images with Plugins
         uses: docker/build-push-action@v6
