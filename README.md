@@ -1,122 +1,120 @@
-# JMeter
+# JMeter in Docker
 
-![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
-![JMeter](https://img.shields.io/badge/jmeter-5.6.3-blue.svg)
-![Java](https://img.shields.io/badge/java-openjdk15-blue.svg)
+[![JMeter](https://img.shields.io/badge/JMeter-5.6.3-blue.svg)](https://jmeter.apache.org)
+![Java](https://img.shields.io/badge/Java-OpenJDK%208-yellow.svg)
+![Java](https://img.shields.io/badge/Java-OpenJDK%2021-blue.svg)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/jmeter)](https://artifacthub.io/packages/search?repo=jmeter)
-[![Docker Hub](https://img.shields.io/badge/dockerhub-JMeter-brightgreen.svg)]({https://hub.docker.com/r/liukunup/jmeter})
-![MIT License](https://img.shields.io/badge/wechat-我的代码温柔如风-brightgreen.svg)
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-JMeter-brightgreen.svg)](https://hub.docker.com/r/liukunup/jmeter)
+[![GHCR](https://img.shields.io/badge/GHCR-JMeter-brightgreen.svg)](https://github.com/liukunup/JMeter/pkgs/container/jmeter)
+![ACR](https://img.shields.io/badge/ACR-JMeter-brightgreen.svg)
+![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)
+![WeChat](https://img.shields.io/badge/WeChat-我的代码温柔如风-brightgreen.svg)
 
-***JMeter in Docker***
+**业界领先的云原生性能测试解决方案** | [English](README_EN.md)
 
-[JMeter 官方网站](https://jmeter.apache.org)
+> 欢迎`Star🌟`/`Fork🍴`/`Add to favorites🗂` 🫰 🫰 🫰
 
-访问 [GitHub](https://github.com/liukunup/JMeter) 查看代码
+## 支持的标签和架构
+
+拉取镜像 `docker pull liukunup/jmeter:<version>`
+
+> docker pull liukunup/jmeter:5.6.3
+
+**标签**
+
+- [`5.6.2`](https://hub.docker.com/r/liukunup/jmeter), [`5.6.3`](https://hub.docker.com/r/liukunup/jmeter)
+- [`5.5`](https://hub.docker.com/r/liukunup/jmeter)
+
+**架构**
+
+- OpenJDK 21 `linux/amd64`, `linux/arm64`, `linux/ppc64le`, `linux/riscv64`, `linux/s390x`
+- OpenJDK 8 `linux/amd64`, `linux/arm/v6`, `linux/arm/v7`, `linux/arm64/v8`, `linux/ppc64le`, `linux/s390x`
+
+**仓库**
+
+- docker.io/liukunup/jmeter:5.6.3
+- ghcr.io/liukunup/jmeter:5.6.3
+- registry.cn-hangzhou.aliyuncs.com/liukunup/jmeter:5.6.3
+
+### 版本说明
+
+**正式版本**
+
+| 格式             | 描述                                                           | 示例             |
+|------------------|--------------------------------------------------------------|------------------|
+| `x.y.z`          | 仅包含JMeter[核心组件](jmeter/Dockerfile)                       | `5.6.3`          |
+| `plugins-x.y.z`  | 包含核心组件+[常用插件](jmeter-with-plugins/Dockerfile)          | `plugins-5.6.3`  |
+| `business-x.y.z` | 包含核心组件+常用插件+[业务样例](jmeter-with-business/Dockerfile) | `business-5.6.3` |
+| `openjdk8-x.y.z` | 使用`OpenJDK 8`的版本                                          | `openjdk8-5.6.3` |
+
+***预发版本***
+
+包含`beta`标识，用于功能预览，例如：`beta-5.6.3`。
+
+***开发版本***
+
+包含`dev`标识，禁止在生产环境使用，例如：`dev-3b84d21`。
+
+## 仓库特色
+
+- 🔐【安全可靠】尽可能地消减了已发现的安全风险
+- 📦【开箱即用】尽可能地贴近了实际使用场景，减少了环境安装成本
+- 🔌【插件生态】既预置了常用插件，又支持自定义插件引入
+- 🎛️【架构覆盖】覆盖了多版本、多架构，尽可能全面地适配
+
+## 最佳实践
+
+- [宿主机启动`JMeter Controller`作为控制节点 + `Docker Desktop`部署`JMeter Server`容器作为从节点](docs/最佳实践.md#宿主机启动jmeter-controller作为控制节点--docker-desktop部署jmeter-server容器作为从节点)
+
+## 🚀 快捷访问
+
+访问 [GitHub](https://github.com/liukunup/JMeter) 查看源代码
 
 访问 [Docker Hub](https://hub.docker.com/r/liukunup/jmeter) 选择`Docker Image`
 
 访问 [Artifact Hub](https://artifacthub.io/packages/helm/jmeter/jmeter) 选择`Helm Chart`
 
-喜欢本Repo可以`Star🌟`/`Fork🍴`/`Add to favorites🗂`，拜托啦～🫰
+## 🚀 快速上手
 
+- 快速启动`JMeter Server`(即从节点、Slave、服务端)
 
-## OKR
+```shell
+docker run -d \
+  -p 1099:1099 \
+  -p 50000:50000 \
+  --restart=unless-stopped \
+  --name=jmeter-server \
+  liukunup/jmeter:<版本号> \
+  jmeter-server \
+  -Djava.rmi.server.hostname=<宿主机IP>
+```
 
-**性能测试现状**
+本地连接时，修改配置文件`安装路径/bin/jmeter.properties`
 
-0. 绝大多数新入门的研发同学，并不十分了解性能测试；（缺乏经验）
-1. 测试执行需要一定的经验和能力，容易出现能力不足导致测试结果不准；（新手 or 外包）
-2. 总是在测试执行前，才发现脚本不好用，出现临阵磨枪；（练为战）
-3. 测试脚本包含配置参数，一边改一边测，下次又不知道从哪里开始；（数据与脚本分离）
-4. 测试指标or报告满天飞；（历史报告管理）
-5. 各大厂内部`性能测试即服务`平台很好用，一旦离开人就傻了；（平台依赖）
-6. 动不动就压挂线上服务；（毫无安全意识）
-7. 各位小老板为了绩效拼命造轮子，平台换了一波又一波，导致业务同学反复迁移性能测试工程；（平台更迭）
-8. 部分公司要求`把寒气传递给每个人`，想做性能测试但是缺乏机器资源；（缺乏资源）
+```text
+remote_hosts=localhost:1099
+```
 
-**我们要达成的目标**
+```text
+server.rmi.ssl.disable=true
+```
 
-- `O-1` **降低测试门槛**
-  - `KR-1-1` 完成**JMeter 1小时从入门到放弃**教程文档，帮助同学们快速掌握性能测试技能
-  - `KR-1-2` 专家编写JMX文件，执行者仅需维护数据即可，实现数据与脚本分离
-    - 参考`testcases`抽象方式
-  - `KR-1-2` 团队制定压测准出方案，通过自动解析JTL文件，实现程序判定压测是否通过
-- `O-2` **提高测试效率**
-  - `KR-2-1` 一键部署，一键执行，无人值守
-  - `KR-2-2` 自动梯度增压，达到收敛条件自动停止，实现自动性能探测
-- `O-3` **有效保障质量**
-  - `KR-3-1` 持续性能测试，将耗时延长、性能劣化扼杀在萌芽阶段
-- `O-4` **极致工程化，拥抱云原生**
-  - `KR-4-1` 代码开源、镜像就绪、应用发布，随时可用
-    - [GitHub](https://github.com/liukunup/JMeter) 求个`Star🌟`
-    - [Docker Hub](https://hub.docker.com/r/liukunup/jmeter) 求个`Star🌟`
-    - [Artifact Hub](https://artifacthub.io/packages/helm/jmeter/jmeter) 求个`Star🌟`
-  - `KR-4-2` 一套代码同时支持`JMeter`/`JMeter Server`/`Server Agent`三种模式
-    - [Dockerfile](jmeter/Dockerfile)
-    - [entrypoint.sh](jmeter/entrypoint.sh)
-  - `KR-4-3` 支持Docker CLI/Docker Compose/Kubernetes/Helm等不同部署执行方式
-    - `Docker CLI` 一键运行[JMeter](run_jmeter.sh)
-    - `Docker CLI` 一键拉起[JMeter Server](run_jmeter_server.sh)
-    - `Docker CLI` 一键拉起[Server Agent](run_server_agent.sh)
-    - `Docker CLI` (推荐) 通过[Makefile](Makefile)完成上述动作，如`make run`可执行测试
-    - `Docker Compose` (不推荐) 通过[Docker Compose](docker-compose.yaml)脚本一键拉起
-    - `Kubernetes` [使用指南](all-in-one/README.md)以及[YAML](all-in-one/perf.yaml)
-    - `Helm Chart` (推荐) 通过[Helm](helm-charts/README.md)安装JMeter的控制节点以及工作节点
-  - `KR-4-4` 支持Jenkins流水线
-  - `KR-4-5` 支持Grafana数据看板
-- `O-5` **卷死在座的各位** 👻
+- 在集群中快速部署性能测试工具
 
-
-## 快速上手
-
-JMeter [Getting Started](https://jmeter.apache.org/usermanual/get-started.html)
-
-## 标签&版本
-
-拉取镜像 `docker pull liukunup/jmeter:<version>`
-
-**正式版本**
-
-- `5.6.3` JMeter (仅包含JMeter的镜像)
-- `plugins-5.6.3` JMeter + Plugins (包含了常用插件的镜像)
-- `business-5.6.3` JMeter + Plugins + Example (最佳实践样例)
-- `openjdk8-xxx` 使用`OpenJDK 8`的镜像 (默认使用`OpenJDK 21`)
-
-**预发版本**
-
-包含`beta`标识，属于非正式版本，可能还存在一些不影响使用的问题。
-
-**开发版本**
-
-包含`dev`标识，临时开发调试使用，请勿使用，可能包含严重缺陷。
-
-## 使用指导
-
-## 高级功能
-
-## 特别说明
-
-> 尝试构建镜像时，可能出现无法执行`apk add openjdk21-jre`安装包
-
-最新的`OpenJDK 21`镜像，支持以下架构：
-
-- linux/amd64
-- linux/arm64
-- linux/ppc64le
-- linux/riscv64
-- linux/s390x
-
-旧版的`OpenJDK 8`镜像，支持以下架构：
-
-- linux/amd64
-- linux/arm/v6
-- linux/arm/v7
-- linux/arm64/v8
-- linux/ppc64le
-- linux/s390x
+```shell
+# 新增仓库并更新
+helm repo add jmeter https://liukunup.github.io/helm-charts
+helm repo update
+# 部署
+helm install my-jmeter jmeter/jmeter
+# 卸载
+helm uninstall my-jmeter
+```
 
 ## 参考资料
 
+- [JMeter Getting Started](https://jmeter.apache.org/usermanual/get-started.html)
+- [JMeter Distributed Testing](https://jmeter.apache.org/usermanual/jmeter_distributed_testing_step_by_step.html)
 - [justb4/docker-jmeter](https://github.com/justb4/docker-jmeter)
 - [alpine-docker/jmeter](https://github.com/alpine-docker/jmeter)
 - [JMeter InfluxDB v2.0 listener plugin](https://github.com/mderevyankoaqa/jmeter-influxdb2-listener-plugin)

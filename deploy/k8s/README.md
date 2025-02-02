@@ -1,4 +1,4 @@
-# Jenkins + JMeter + InfluxDB + Grafana
+# JMeter + InfluxDB + Grafana
 
 打造具有`极致体验`的`性能测试解决方案`
 
@@ -13,7 +13,7 @@ Tips:
 - 一键执行
 
 ```shell
-kubectl apply -f all-in-one/perf.yaml
+kubectl apply -f deploy/k8s/perf.yaml
 ```
 
 日志打印如下
@@ -261,76 +261,6 @@ OK，我们现在使用带`InfluxDB2 Listener`的JMX来尝试一下，以下是�
 执行完测试后，你将会看到下面的效果。[飞机票✈️](http://grafana.perf.com/)
 
 ![Grafana Demo](screenshot/grafana-demo.png)
-
-
----
-
-### Jenkins
-
-创建Jenkins所使用的`ServiceAccount`
-
-```shell
-kubectl apply -f all-in-one/jenkins-sa.yaml 
-```
-
-点击[http://jenkins.perf.com/](http://jenkins.perf.com/)
-
-执行以下命令来查询Jenkins的`初始管理密码`
-
-```shell
-kubectl logs $(kubectl get pods -n perf-stack | grep jenkins | awk '{print $1}') -n perf-stack
-```
-
-你将会在日志中找到如下内容，中间那一段字母数字组合便是`初始管理密码`，请拷贝它以便后续使用
-
-```text
-*************************************************************
-*************************************************************
-*************************************************************
-
-Jenkins initial setup is required. An admin user has been created and a password generated.
-Please use the following password to proceed to installation:
-
-9935ef1401fa4af2a1b9786596589e64
-
-This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
-
-*************************************************************
-*************************************************************
-*************************************************************
-```
-
-填写`初始管理密码`并逐步完成Jenkins的初始化(一路往下填写+确认就好了)
-
-![Jenkins](screenshot/jenkins-1.png)
-
-![Jenkins](screenshot/jenkins-2.png)
-
-![Jenkins](screenshot/jenkins-3.png)
-
-安装Kubernetes插件
-
-![Jenkins](screenshot/jenkins-k8s-plugin.png)
-
-配置Kubernetes
-
-路径: `Manage Jenkins` -> `Manage Nodes and Clouds` -> `Configure Clouds`
-
-除以下4项，其余保持默认即可。
-
-```text
-Kubernetes 地址
-https://kubernetes.default
-
-Kubernetes 命名空间
-perf-stack
-
-Jenkins 地址
-https://jenkins.perf-stack:8080
-
-Jenkins 通道
-jenkins.perf-stack:50000
-```
 
 
 ---

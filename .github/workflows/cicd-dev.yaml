@@ -1,0 +1,216 @@
+name: Dev Pipeline for JMeter Docker Images
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - '**.md'
+      - '**.jmx'
+      - '**.png'
+  pull_request:
+
+env:
+  JMETER_VERSION: 5.6.3 # The target JMeter version
+  DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
+
+jobs:
+
+  build:
+    name: Build with OpenJDK 21
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Aliyun Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: registry.cn-hangzhou.aliyuncs.com
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKER_HUB_REPO }}
+            ghcr.io/${{ github.repository }}
+            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+          tags: |
+            type=sha,format=short,prefix={{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short,prefix=pr-,enable=${{ github.event_name == 'pull_request' }}
+
+      - name: Build and Push Docker Images
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          file: jmeter/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            ALPINE_VERSION=3
+            JAVA_VERSION=openjdk21-jre
+            JMETER_VERSION=${{ env.JMETER_VERSION }}
+
+      - name: Extract metadata (tags, labels) for Docker with Plugins
+        id: meta-plugins
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKER_HUB_REPO }}
+            ghcr.io/${{ github.repository }}
+            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+          tags: |
+            type=sha,format=short,prefix=plugins-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short,prefix=plugins-pr-,enable=${{ github.event_name == 'pull_request' }}
+
+      - name: Build and Push Docker Images with Plugins
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          file: jmeter-with-plugins/Dockerfile
+          push: true
+          tags: ${{ steps.meta-plugins.outputs.tags }}
+          labels: ${{ steps.meta-plugins.outputs.labels }}
+          build-args: |
+            JMETER_VERSION=${{ env.JMETER_VERSION }}
+
+      - name: Extract metadata (tags, labels) for Docker with Business
+        id: meta-business
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKER_HUB_REPO }}
+            ghcr.io/${{ github.repository }}
+            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+          tags: |
+            type=sha,format=short,prefix=business-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short,prefix=business-pr-,enable=${{ github.event_name == 'pull_request' }}
+
+      - name: Build and Push Docker Images with Business
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          file: jmeter-with-business/Dockerfile
+          push: true
+          tags: ${{ steps.meta-business.outputs.tags }}
+          labels: ${{ steps.meta-business.outputs.labels }}
+          build-args: |
+            JMETER_VERSION=${{ env.JMETER_VERSION }}
+
+      - name: Update Docker Hub Repository Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ env.DOCKER_HUB_REPO }}
+
+  build-openjdk8:
+    name: Build with OpenJDK 8
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Aliyun Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: registry.cn-hangzhou.aliyuncs.com
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKER_HUB_REPO }}
+            ghcr.io/${{ github.repository }}
+            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+          tags: |
+            type=sha,format=short,prefix=openjdk8-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short,prefix=openjdk8-pr-,enable=${{ github.event_name == 'pull_request' }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          file: jmeter/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            ALPINE_VERSION=3
+            JAVA_VERSION=openjdk8-jre
+            JMETER_VERSION=${{ env.JMETER_VERSION }}
+
+      - name: Extract metadata (tags, labels) for Docker with Plugins
+        id: meta-plugins
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKER_HUB_REPO }}
+            ghcr.io/${{ github.repository }}
+            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+          tags: |
+            type=sha,format=short,prefix=openjdk8-plugins-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short,prefix=openjdk8-plugins-pr-,enable=${{ github.event_name == 'pull_request' }}
+
+      - name: Build and Push Docker Images with Plugins
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          file: jmeter-with-plugins/Dockerfile
+          push: true
+          tags: ${{ steps.meta-plugins.outputs.tags }}
+          labels: ${{ steps.meta-plugins.outputs.labels }}
+          build-args: |
+            JMETER_VERSION=openjdk8-${{ env.JMETER_VERSION }}

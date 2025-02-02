@@ -1,13 +1,34 @@
+version: '3'
+
 services:
 
-  jmeter:
-    image: liukunup/jmeter:5.6.3
-    container_name: jmeter
+  # JMeter 工作节点
+  jmeter-worker:
+    image: liukunup/jmeter:plugins-${JMETER_VERSION:-5.6.3}  # 选择合适的JMeter版本
+    container_name: worker
+    restart: unless-stopped
+    command: jmeter-server -Djava.rmi.server.hostname=${MASTER_IP:?Master IP required}  # 设置为您的宿主机IP
+    ports:
+      - 1099:1099
+      - 50000:50000
+    volumes:
+      - worker-home:/opt/apache-jmeter-${JMETER_VERSION:-5.6.3}
+      - worker-workspace:/opt/workspace  # 建议映射您的工作目录
+    working_dir: /opt/workspace
+    environment:
+      JVM_ARGS: -Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m
+    networks:
+      - perf
+
+  # JMeter 控制节点
+  jmeter-controller:
+    image: liukunup/jmeter:plugins-${JMETER_VERSION:-5.6.3}
+    container_name: controller
     restart: unless-stopped
     command: keepalive
     volumes:
-      - jmeter-home:/opt/apache-jmeter-5.6.3
-      - jmeter-workspace:/opt/workspace  # 建议映射您的工作目录
+      - controller-home:/opt/apache-jmeter-${JMETER_VERSION:-5.6.3}
+      - controller-workspace:/opt/workspace
     working_dir: /opt/workspace
     environment:
       JVM_ARGS: -Xmn256m -Xms512m -Xmx1g -XX:MaxMetaspaceSize=256m
@@ -69,8 +90,10 @@ services:
       - prometheus
 
 volumes:
-  jmeter-home:
-  jmeter-workspace:
+  worker-home:
+  worker-workspace:
+  controller-home:
+  controller-workspace:
   influxdb-data:
   influxdb-config:
   prometheus-storage:
