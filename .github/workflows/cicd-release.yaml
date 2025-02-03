@@ -1,15 +1,6 @@
 name: CI/CD Pipeline for JMeter Docker Images
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v1.2.3, ...
-    paths-ignore:
-      - '**.md'
-      - '**.jmx'
-      - '**.png'
   release:
     types: [ created, edited ]
 
@@ -26,14 +17,10 @@ jobs:
       packages: write
       contents: read
     steps:
-      # 通过tags事件触发，替换掉JMETER_VERSION的值
-      - name: Set JMeter version if tag created
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
-        run: echo "JMETER_VERSION=${{ github.ref }}" | sed 's/^refs\/tags\/v//' >> $GITHUB_ENV
       # 通过release事件触发，替换掉JMETER_VERSION的值
       - name: Set JMeter version if release created
         if: github.event_name == 'release'
-        run: echo "JMETER_VERSION=${{ github.event.release.tag_name }}" | sed 's/^v//' >> $GITHUB_ENV
+        run: echo "JMETER_VERSION=${{ github.event.release.tag_name#v }}" >> $GITHUB_ENV
 
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -71,8 +58,8 @@ jobs:
             ghcr.io/${{ github.repository }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=raw,value=${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+            type=raw,value=${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and Push Docker Images
         uses: docker/build-push-action@v6
@@ -97,8 +84,8 @@ jobs:
             ghcr.io/${{ github.repository }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=raw,value=plugins-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
-            type=raw,value=plugins-latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+            type=raw,value=plugins-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=plugins-latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and Push Docker Images with Plugins
         uses: docker/build-push-action@v6
@@ -121,8 +108,8 @@ jobs:
             ghcr.io/${{ github.repository }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=raw,value=business-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
-            type=raw,value=business-latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+            type=raw,value=business-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=business-latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and Push Docker Images with Business
         uses: docker/build-push-action@v6
@@ -150,14 +137,10 @@ jobs:
       packages: write
       contents: read
     steps:
-      # 通过tags事件触发，替换掉JMETER_VERSION的值
-      - name: Set JMeter version if tag created
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
-        run: echo "JMETER_VERSION=${{ github.ref }}" | sed 's/^refs\/tags\/v//' >> $GITHUB_ENV
       # 通过release事件触发，替换掉JMETER_VERSION的值
       - name: Set JMeter version if release created
         if: github.event_name == 'release'
-        run: echo "JMETER_VERSION=${{ github.event.release.tag_name }}" | sed 's/^v//' >> $GITHUB_ENV
+        run: echo "JMETER_VERSION=${{ github.event.release.tag_name#v }}" >> $GITHUB_ENV
 
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -195,8 +178,8 @@ jobs:
             ghcr.io/${{ github.repository }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=raw,value=openjdk8-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
-            type=raw,value=openjdk8-latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+            type=raw,value=openjdk8-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=openjdk8-latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
@@ -221,8 +204,8 @@ jobs:
             ghcr.io/${{ github.repository }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=raw,value=openjdk8-plugins-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
-            type=raw,value=openjdk8-plugins-latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+            type=raw,value=openjdk8-plugins-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=openjdk8-plugins-latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and Push Docker Images with Plugins
         uses: docker/build-push-action@v6
