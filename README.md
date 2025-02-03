@@ -3,22 +3,16 @@
 [![JMeter](https://img.shields.io/badge/JMeter-5.6.3-blue.svg)](https://jmeter.apache.org)
 ![Java](https://img.shields.io/badge/Java-OpenJDK%208-yellow.svg)
 ![Java](https://img.shields.io/badge/Java-OpenJDK%2021-blue.svg)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/jmeter)](https://artifacthub.io/packages/search?repo=jmeter)
-[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-JMeter-brightgreen.svg)](https://hub.docker.com/r/liukunup/jmeter)
-[![GHCR](https://img.shields.io/badge/GHCR-JMeter-brightgreen.svg)](https://github.com/liukunup/JMeter/pkgs/container/jmeter)
-![ACR](https://img.shields.io/badge/ACR-JMeter-brightgreen.svg)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/jmeter)](https://artifacthub.io/packages/helm/jmeter/jmeter)
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-jmeter-brightgreen.svg)](https://hub.docker.com/r/liukunup/jmeter)
+[![GHCR](https://img.shields.io/badge/GHCR-jmeter-brightgreen.svg)](https://github.com/liukunup/JMeter/pkgs/container/jmeter)
+![ACR](https://img.shields.io/badge/ACR-jmeter-brightgreen.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![WeChat](https://img.shields.io/badge/WeChat-我的代码温柔如风-brightgreen.svg)
 
 **业界领先的云原生性能测试解决方案** | [English](README_EN.md)
 
-> 欢迎`Star🌟`/`Fork🍴`/`Add to favorites🗂` 🫰 🫰 🫰
-
-## 支持的标签和架构
-
-拉取镜像 `docker pull liukunup/jmeter:<version>`
-
-> docker pull liukunup/jmeter:5.6.3
+## 支持的标签/架构/仓库
 
 **标签**
 
@@ -28,24 +22,35 @@
 **架构**
 
 - OpenJDK 21 `linux/amd64`, `linux/arm64`, `linux/ppc64le`, `linux/riscv64`, `linux/s390x`
-- OpenJDK 8 `linux/amd64`, `linux/arm/v6`, `linux/arm/v7`, `linux/arm64/v8`, `linux/ppc64le`, `linux/s390x`
+- OpenJDK 8  `linux/amd64`, `linux/arm/v6`, `linux/arm/v7`, `linux/arm64/v8`, `linux/ppc64le`, `linux/s390x`
 
 **仓库**
 
-- docker.io/liukunup/jmeter:5.6.3
-- ghcr.io/liukunup/jmeter:5.6.3
-- registry.cn-hangzhou.aliyuncs.com/liukunup/jmeter:5.6.3
+- `docker.io`/liukunup/jmeter:<version>
+- `ghcr.io`/liukunup/jmeter:<version>
+- `registry.cn-hangzhou.aliyuncs.com`/liukunup/jmeter:<version>
 
 ### 版本说明
 
 **正式版本**
 
-| 格式             | 描述                                                           | 示例             |
-|------------------|--------------------------------------------------------------|------------------|
-| `x.y.z`          | 仅包含JMeter[核心组件](jmeter/Dockerfile)                       | `5.6.3`          |
-| `plugins-x.y.z`  | 包含核心组件+[常用插件](jmeter-with-plugins/Dockerfile)          | `plugins-5.6.3`  |
-| `business-x.y.z` | 包含核心组件+常用插件+[业务样例](jmeter-with-business/Dockerfile) | `business-5.6.3` |
-| `openjdk8-x.y.z` | 使用`OpenJDK 8`的版本                                          | `openjdk8-5.6.3` |
+| 格式             | 描述                                                                | 示例             |
+|------------------|--------------------------------------------------------------------|------------------|
+| `x.y.z`          | 仅包含JMeter[核心组件](jmeter/Dockerfile)，对应JMeter官方版本        | `5.6.3`          |
+| `plugins-x.y.z`  | 包含核心组件+预装[常用插件](jmeter-with-plugins/Dockerfile)          | `plugins-5.6.3`  |
+| `business-x.y.z` | 包含核心组件+预装常用插件+[业务样例](jmeter-with-business/Dockerfile) | `business-5.6.3` |
+| `openjdk8-x.y.z` | 使用`OpenJDK 8`的版本                                               | `openjdk8-5.6.3` |
+
+**预装清单**
+
+| 插件 or Jar                  | 版本   |
+|------------------------------|--------|
+| jp@gc - Custom Thread Groups | 2.10   |
+| jp@gc - PerfMon              | 2.1    |
+| InfluxDB v2.8 Listener       | 2.8    |
+| MySQL Connector-J            | 9.1.0  |
+| WebSocket Samplers           | 1.2.10 |
+| Server Agent                 | 2.2.3  |
 
 ***预发版本***
 
@@ -62,19 +67,22 @@
 - 🔌【插件生态】既预置了常用插件，又支持自定义插件引入
 - 🎛️【架构覆盖】覆盖了多版本、多架构，尽可能全面地适配
 
-## 最佳实践
+## 🧑‍💻 最佳实践
 
 - [宿主机启动`JMeter Controller`作为控制节点 + `Docker Desktop`部署`JMeter Server`容器作为从节点](docs/最佳实践.md#宿主机启动jmeter-controller作为控制节点--docker-desktop部署jmeter-server容器作为从节点)
-
-## 🚀 快捷访问
-
-访问 [GitHub](https://github.com/liukunup/JMeter) 查看源代码
-
-访问 [Docker Hub](https://hub.docker.com/r/liukunup/jmeter) 选择`Docker Image`
-
-访问 [Artifact Hub](https://artifacthub.io/packages/helm/jmeter/jmeter) 选择`Helm Chart`
+- [宿主机启动`JMeter Controller`作为控制节点 + `Kubernetes`部署`JMeter Server`容器作为从节点](docs/最佳实践.md#宿主机启动jmeter-controller作为控制节点--kubernetes部署jmeter-server容器作为从节点)
+- [`Docker Desktop`部署`JMeter`控制节点+从节点](docs/最佳实践.md#docker-desktop部署jmeter控制节点从节点)
+- [`Kubernetes`部署`JMeter`控制节点+从节点](docs/最佳实践.md#kubernetes部署jmeter控制节点从节点)
+- [全家桶`JMeter` + `InfluxDB` + `Grafana`](docs/最佳实践.md#全家桶jmeter--influxdb--grafana)
+- [全家桶`JMeter` + `Kafka` + `ClickHouse` + `Grafana`](docs/最佳实践.md#全家桶jmeter--kafka--clickhouse--grafana)
 
 ## 🚀 快速上手
+
+- 镜像拉取 `docker pull liukunup/jmeter:<version>`
+
+```shell
+docker pull liukunup/jmeter:5.6.3
+```
 
 - 快速启动`JMeter Server`(即从节点、Slave、服务端)
 
@@ -84,12 +92,12 @@ docker run -d \
   -p 50000:50000 \
   --restart=unless-stopped \
   --name=jmeter-server \
-  liukunup/jmeter:<版本号> \
+  liukunup/jmeter:<version> \
   jmeter-server \
-  -Djava.rmi.server.hostname=<宿主机IP>
+  -Djava.rmi.server.hostname=<Docker的宿主机IP>
 ```
 
-本地连接时，修改配置文件`安装路径/bin/jmeter.properties`
+本地连接JMeter Server时，找到如下字段并修改，配置文件路径`~/apache-jmeter-<version>/bin/jmeter.properties`
 
 ```text
 remote_hosts=localhost:1099
@@ -110,6 +118,13 @@ helm install my-jmeter jmeter/jmeter
 # 卸载
 helm uninstall my-jmeter
 ```
+## ✈️ 快捷访问
+
+访问 [GitHub](https://github.com/liukunup/JMeter) 查看源代码
+
+访问 [Docker Hub](https://hub.docker.com/r/liukunup/jmeter) 选择`Docker Image`
+
+访问 [Artifact Hub](https://artifacthub.io/packages/helm/jmeter/jmeter) 选择`Helm Chart`
 
 ## 参考资料
 
