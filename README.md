@@ -26,9 +26,9 @@
 
 **仓库**
 
-- `docker.io`/liukunup/jmeter:<version>
-- `ghcr.io`/liukunup/jmeter:<version>
-- `registry.cn-hangzhou.aliyuncs.com`/liukunup/jmeter:<version>
+- `docker.io`/liukunup/jmeter
+- `ghcr.io`/liukunup/jmeter
+- `registry.cn-hangzhou.aliyuncs.com`/liukunup/jmeter
 
 ### 版本说明
 
@@ -39,7 +39,7 @@
 | `x.y.z`          | 仅包含JMeter[核心组件](jmeter/Dockerfile)，对应JMeter官方版本        | `5.6.3`          |
 | `plugins-x.y.z`  | 包含核心组件+预装[常用插件](jmeter-with-plugins/Dockerfile)          | `plugins-5.6.3`  |
 | `business-x.y.z` | 包含核心组件+预装常用插件+[业务样例](jmeter-with-business/Dockerfile) | `business-5.6.3` |
-| `openjdk8-x.y.z` | 使用`OpenJDK 8`的版本                                               | `openjdk8-5.6.3` |
+| `openjdk8-x.y.z` | 使用`OpenJDK 8`的版本(为了兼容架构而保留)                             | `openjdk8-5.6.3` |
 
 > 注意：业务镜像仅作为演示样例，我们通常并不直接提供它。
 
@@ -55,6 +55,8 @@
 | Server Agent                 | 2.2.3  |
 
 ***预发版本***
+
+> 通常不提供该版本。
 
 包含`beta`标识，用于功能预览，例如：`beta-5.6.3`。
 
@@ -128,7 +130,7 @@ helm uninstall my-jmeter
 
 访问 [Artifact Hub](https://artifacthub.io/packages/helm/jmeter/jmeter) 选择`Helm Chart`
 
-## 参考资料
+## 📄 参考资料
 
 - [JMeter Getting Started](https://jmeter.apache.org/usermanual/get-started.html)
 - [JMeter Distributed Testing](https://jmeter.apache.org/usermanual/jmeter_distributed_testing_step_by_step.html)
