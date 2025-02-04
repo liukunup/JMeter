@@ -9,7 +9,6 @@ $IMAGES = @(
     # OpenJDK 21
     "liukunup/jmeter:$JMETER_VERSION"
     "liukunup/jmeter:plugins-$JMETER_VERSION"
-    "liukunup/jmeter:business-$JMETER_VERSION"
     # OpenJDK 8
     "liukunup/jmeter:openjdk8-$JMETER_VERSION"
     "liukunup/jmeter:openjdk8-plugins-$JMETER_VERSION"
