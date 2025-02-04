@@ -1,8 +1,7 @@
 # This Dockerfile sets up a JMeter environment for running testcases.
 
 # 1. Choose the version of JMeter to use
-ARG BASE_IMAGE_VERSION=plugins-5.6.3
-FROM liukunup/jmeter:${BASE_IMAGE_VERSION}
+FROM liukunup/jmeter:plugins-5.6.3
 
 # 2. Set the working directory inside the container (don't modify)
 ENV JMETER_WORKSPACE=/opt/workspace
