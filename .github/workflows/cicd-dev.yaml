@@ -8,10 +8,13 @@ on:
       - '**.md'
       - '**.jmx'
       - '**.png'
-  pull_request:
 
 env:
-  JMETER_VERSION: 5.6.3 # The target JMeter version
+  # Define the JMeter, Java, and Alpine versions
+  JMETER_VERSION: 5.6.3
+  JAVA_VERSION: openjdk21-jre
+  ALPINE_VERSION: latest
+  # Use the same repository name for all Registries
   DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
 
 jobs:
@@ -56,11 +59,10 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ env.DOCKER_HUB_REPO }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
             type=sha,format=short,prefix={{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
-            type=sha,format=short,prefix=pr-,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and Push Docker Images
         uses: docker/build-push-action@v6
@@ -72,8 +74,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ALPINE_VERSION=3
-            JAVA_VERSION=openjdk21-jre
+            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
+            JAVA_VERSION=${{ env.JAVA_VERSION }}
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
       - name: Extract metadata (tags, labels) for Docker with Plugins
@@ -82,11 +84,10 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ env.DOCKER_HUB_REPO }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
             type=sha,format=short,prefix=plugins-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
-            type=sha,format=short,prefix=plugins-pr-,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and Push Docker Images with Plugins
         uses: docker/build-push-action@v6
@@ -98,6 +99,7 @@ jobs:
           tags: ${{ steps.meta-plugins.outputs.tags }}
           labels: ${{ steps.meta-plugins.outputs.labels }}
           build-args: |
+            BASE_IMAGE_VERSION=${{ env.JMETER_VERSION }}
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
       - name: Extract metadata (tags, labels) for Docker with Business
@@ -106,11 +108,10 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ env.DOCKER_HUB_REPO }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
             type=sha,format=short,prefix=business-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
-            type=sha,format=short,prefix=business-pr-,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and Push Docker Images with Business
         uses: docker/build-push-action@v6
@@ -122,14 +123,7 @@ jobs:
           tags: ${{ steps.meta-business.outputs.tags }}
           labels: ${{ steps.meta-business.outputs.labels }}
           build-args: |
-            JMETER_VERSION=${{ env.JMETER_VERSION }}
-
-      - name: Update Docker Hub Repository Description
-        uses: peter-evans/dockerhub-description@v4
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.DOCKER_HUB_REPO }}
+            BASE_IMAGE_VERSION=plugins-${{ env.JMETER_VERSION }}
 
   build-openjdk8:
     name: Build with OpenJDK 8
@@ -171,11 +165,10 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ env.DOCKER_HUB_REPO }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
             type=sha,format=short,prefix=openjdk8-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
-            type=sha,format=short,prefix=openjdk8-pr-,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
@@ -187,7 +180,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ALPINE_VERSION=3
+            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
             JAVA_VERSION=openjdk8-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
@@ -197,11 +190,10 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ env.DOCKER_HUB_REPO }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
             type=sha,format=short,prefix=openjdk8-plugins-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
-            type=sha,format=short,prefix=openjdk8-plugins-pr-,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and Push Docker Images with Plugins
         uses: docker/build-push-action@v6
@@ -213,4 +205,5 @@ jobs:
           tags: ${{ steps.meta-plugins.outputs.tags }}
           labels: ${{ steps.meta-plugins.outputs.labels }}
           build-args: |
+            BASE_IMAGE_VERSION=${{ env.JMETER_VERSION }}
             JMETER_VERSION=openjdk8-${{ env.JMETER_VERSION }}

@@ -1,11 +1,12 @@
 # Use the specified JMeter base image
-ARG JMETER_VERSION=5.6.3
-FROM liukunup/jmeter:${JMETER_VERSION}
+ARG BASE_IMAGE_VERSION=5.6.3
+FROM liukunup/jmeter:${BASE_IMAGE_VERSION}
 
 # Maintainer
 LABEL maintainer="liukunup@outlook.com"
 
 # Define the JMeter home directory
+ARG JMETER_VERSION=5.6.3
 ARG JMETER_HOME=/opt/apache-jmeter-${JMETER_VERSION}
 
 # Define URLs and versions for various JMeter plugins and drivers
