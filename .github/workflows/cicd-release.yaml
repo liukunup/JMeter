@@ -1,11 +1,30 @@
 name: CI/CD Pipeline for JMeter Docker Images
 
 on:
-  release:
-    types: [ created, edited ]
+  workflow_dispatch:
+    inputs:
+      jmeterVersion:
+        description: 'JMeter Version'
+        required: true
+        type: string
+        default: '5.6.3'
+      javaVersion:
+        description: 'Java Version'
+        required: true
+        type: string
+        default: 'openjdk21-jre'
+      alpineVersion:
+        description: 'Alpine Version'
+        required: true
+        type: string
+        default: 'latest'
 
 env:
-  JMETER_VERSION: 5.6.3 # The target JMeter version
+  # Define the JMeter, Java, and Alpine versions
+  JMETER_VERSION: ${{ inputs.jmeterVersion }} 
+  JAVA_VERSION: ${{ inputs.javaVersion }}
+  ALPINE_VERSION: ${{ inputs.alpineVersion }}
+  # Use the same repository name for all Registries
   DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
 
 jobs:
@@ -17,11 +36,6 @@ jobs:
       packages: write
       contents: read
     steps:
-      # 通过release事件触发，替换掉JMETER_VERSION的值
-      - name: Set JMeter version if release created
-        if: github.event_name == 'release'
-        run: echo "JMETER_VERSION=${{ github.event.release.tag_name#v }}" >> $GITHUB_ENV
-
       - name: Checkout Source Code
         uses: actions/checkout@v4
       - name: Setup QEMU
@@ -55,11 +69,11 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ env.DOCKER_HUB_REPO }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=raw,value=${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ env.JMETER_VERSION }}
+            type=raw,value=latest
 
       - name: Build and Push Docker Images
         uses: docker/build-push-action@v6
@@ -71,8 +85,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ALPINE_VERSION=3
-            JAVA_VERSION=openjdk21-jre
+            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
+            JAVA_VERSION=${{ env.JAVA_VERSION }}
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
       - name: Extract metadata (tags, labels) for Docker with Plugins
@@ -81,11 +95,11 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ env.DOCKER_HUB_REPO }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=raw,value=plugins-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=plugins-latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=plugins-${{ env.JMETER_VERSION }}
+            type=raw,value=plugins-latest
 
       - name: Build and Push Docker Images with Plugins
         uses: docker/build-push-action@v6
@@ -96,30 +110,6 @@ jobs:
           push: true
           tags: ${{ steps.meta-plugins.outputs.tags }}
           labels: ${{ steps.meta-plugins.outputs.labels }}
-          build-args: |
-            JMETER_VERSION=${{ env.JMETER_VERSION }}
-
-      - name: Extract metadata (tags, labels) for Docker with Business
-        id: meta-business
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ github.repository }}
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
-          tags: |
-            type=raw,value=business-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=business-latest,enable=${{ github.ref == 'refs/heads/main' }}
-
-      - name: Build and Push Docker Images with Business
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/riscv64,linux/s390x
-          file: jmeter-with-business/Dockerfile
-          push: true
-          tags: ${{ steps.meta-business.outputs.tags }}
-          labels: ${{ steps.meta-business.outputs.labels }}
           build-args: |
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
@@ -137,11 +127,6 @@ jobs:
       packages: write
       contents: read
     steps:
-      # 通过release事件触发，替换掉JMETER_VERSION的值
-      - name: Set JMeter version if release created
-        if: github.event_name == 'release'
-        run: echo "JMETER_VERSION=${{ github.event.release.tag_name#v }}" >> $GITHUB_ENV
-
       - name: Checkout Source Code
         uses: actions/checkout@v4
       - name: Setup QEMU
@@ -175,11 +160,11 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ env.DOCKER_HUB_REPO }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=raw,value=openjdk8-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=openjdk8-latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=openjdk8-${{ env.JMETER_VERSION }}
+            type=raw,value=openjdk8-latest
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
@@ -191,7 +176,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ALPINE_VERSION=3
+            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
             JAVA_VERSION=openjdk8-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
@@ -201,11 +186,11 @@ jobs:
         with:
           images: |
             ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ env.DOCKER_HUB_REPO }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=raw,value=openjdk8-plugins-${{ env.JMETER_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=openjdk8-plugins-latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=openjdk8-plugins-${{ env.JMETER_VERSION }}
+            type=raw,value=openjdk8-plugins-latest
 
       - name: Build and Push Docker Images with Plugins
         uses: docker/build-push-action@v6
