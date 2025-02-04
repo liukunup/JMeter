@@ -41,6 +41,8 @@
 | `business-x.y.z` | 包含核心组件+预装常用插件+[业务样例](jmeter-with-business/Dockerfile) | `business-5.6.3` |
 | `openjdk8-x.y.z` | 使用`OpenJDK 8`的版本                                               | `openjdk8-5.6.3` |
 
+> 注意：业务镜像仅作为演示样例，我们通常并不直接提供它。
+
 **预装清单**
 
 | 插件 or Jar                  | 版本   |

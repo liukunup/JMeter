@@ -113,30 +113,6 @@ jobs:
           build-args: |
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
-      - name: Extract metadata (tags, labels) for Docker with Business
-        id: meta-business
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ env.DOCKER_HUB_REPO }}
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
-          tags: |
-            type=raw,value=business-${{ env.JMETER_VERSION }}
-            type=raw,value=business-latest
-
-      - name: Build and Push Docker Images with Business
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/riscv64,linux/s390x
-          file: jmeter-with-business/Dockerfile
-          push: true
-          tags: ${{ steps.meta-business.outputs.tags }}
-          labels: ${{ steps.meta-business.outputs.labels }}
-          build-args: |
-            JMETER_VERSION=plugins-${{ env.JMETER_VERSION }}
-
       - name: Update Docker Hub Repository Description
         uses: peter-evans/dockerhub-description@v4
         with:
