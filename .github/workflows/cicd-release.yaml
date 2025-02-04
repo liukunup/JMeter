@@ -23,7 +23,7 @@ env:
   # Define the JMeter, Java, and Alpine versions
   JMETER_VERSION: ${{ inputs.jmeterVersion }} 
   JAVA_VERSION: ${{ inputs.javaVersion }}
-  ALPINE_VERSION: ${{ inputs.alpineVersion }}
+  BASE_IMAGE_VERSION: ${{ inputs.alpineVersion }}
   # Use the same repository name for all Registries
   DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
 
@@ -85,7 +85,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
+            BASE_IMAGE_VERSION=${{ env.BASE_IMAGE_VERSION }}
             JAVA_VERSION=${{ env.JAVA_VERSION }}
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
@@ -111,6 +111,7 @@ jobs:
           tags: ${{ steps.meta-plugins.outputs.tags }}
           labels: ${{ steps.meta-plugins.outputs.labels }}
           build-args: |
+            BASE_IMAGE_VERSION=${{ env.JMETER_VERSION }}
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
       - name: Update Docker Hub Repository Description
@@ -176,7 +177,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
+            BASE_IMAGE_VERSION=${{ env.BASE_IMAGE_VERSION }}
             JAVA_VERSION=openjdk8-jre
             JMETER_VERSION=${{ env.JMETER_VERSION }}
 
@@ -202,4 +203,5 @@ jobs:
           tags: ${{ steps.meta-plugins.outputs.tags }}
           labels: ${{ steps.meta-plugins.outputs.labels }}
           build-args: |
-            JMETER_VERSION=openjdk8-${{ env.JMETER_VERSION }}
+            BASE_IMAGE_VERSION=openjdk8-${{ env.JMETER_VERSION }}
+            JMETER_VERSION=${{ env.JMETER_VERSION }}

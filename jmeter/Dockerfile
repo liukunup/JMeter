@@ -1,9 +1,9 @@
-# Use the latest version of Alpine Linux as the base image
-ARG ALPINE_VERSION=latest
-FROM alpine:${ALPINE_VERSION}
+# Use the official Alpine Linux image as the base image
+ARG BASE_IMAGE_VERSION=latest
+FROM alpine:${BASE_IMAGE_VERSION}
 
 # Maintainer
-LABEL maintainer="liukunup@outlook.com"
+LABEL maintainer="LiuKun<liukunup@outlook.com>"
 
 # JMeter version & download URL
 ARG JMETER_VERSION=5.6.3

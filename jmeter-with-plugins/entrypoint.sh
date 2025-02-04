@@ -158,27 +158,27 @@ mode=$1
 
 # Execute the appropriate function based on the mode
 case $mode in
-  jmeter)        echo "Mode ID: $$, Name: JMeter"
+  jmeter)        echo "Mode ID: 1, Name: JMeter"
   echo
   func_jmeter "$@"
   ;;
-  jmeter-server) echo "Mode ID: $$, Name: JMeter-Server"
+  jmeter-server) echo "Mode ID: 2, Name: JMeter-Server"
   echo
   func_jmeter_server "$@"
   ;;
-  mirror-server) echo "Mode ID: $$, Name: Mirror-Server"
+  mirror-server) echo "Mode ID: 3, Name: Mirror-Server"
   echo
   func_mirror_server "$@"
   ;;
-  customize)     echo "Mode ID: $$, Name: Customize"
+  customize)     echo "Mode ID: 4, Name: Customize"
   echo
   func_customize "$@"
   ;;
-  keepalive)     echo "Mode ID: $$, Name: Keepalive"
+  keepalive)     echo "Mode ID: 5, Name: Keepalive"
   echo
   func_keepalive "$@"
   ;;
-  server-agent)  echo "Mode ID: $$, Name: Server-Agent"
+  server-agent)  echo "Mode ID: 6, Name: Server-Agent"
   echo
   func_server_agent "$@"
   ;;

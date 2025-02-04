@@ -3,7 +3,7 @@ ARG BASE_IMAGE_VERSION=5.6.3
 FROM liukunup/jmeter:${BASE_IMAGE_VERSION}
 
 # Maintainer
-LABEL maintainer="liukunup@outlook.com"
+LABEL maintainer="LiuKun<liukunup@outlook.com>"
 
 # Define the JMeter home directory
 ARG JMETER_VERSION=5.6.3
