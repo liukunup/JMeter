@@ -5,6 +5,13 @@ FROM liukunup/jmeter:${BASE_IMAGE_VERSION}
 # Maintainer
 LABEL maintainer="LiuKun<liukunup@outlook.com>"
 
+# Metadata
+LABEL org.opencontainers.image.title="JMeter with Plugins"
+LABEL org.opencontainers.image.authors="LiuKun<liukunup@outlook.com>"
+LABEL org.opencontainers.image.source="https://github.com/liukunup/JMeter"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.description="JMeter with Plugins is a lightweight image that provides a ready-to-use JMeter environment with additional plugins and drivers for running performance tests."
+
 # Define the JMeter home directory
 ARG JMETER_VERSION=5.6.3
 ARG JMETER_HOME=/opt/apache-jmeter-${JMETER_VERSION}

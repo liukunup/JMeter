@@ -5,6 +5,13 @@ FROM alpine:${BASE_IMAGE_VERSION}
 # Maintainer
 LABEL maintainer="LiuKun<liukunup@outlook.com>"
 
+# Metadata
+LABEL org.opencontainers.image.title="JMeter"
+LABEL org.opencontainers.image.authors="LiuKun<liukunup@outlook.com>"
+LABEL org.opencontainers.image.source="https://github.com/liukunup/JMeter"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.description="Apache JMeter is an open-source software testing tool developed by the Apache Software Foundation.\nJMeter in Docker is a lightweight image that provides a ready-to-use JMeter environment for running performance tests."
+
 # JMeter version & download URL
 ARG JMETER_VERSION=5.6.3
 ARG JMETER_DOWNLOAD_URL=https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
