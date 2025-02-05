@@ -1,4 +1,6 @@
-version: '3'
+# This Docker Compose file sets up a performance testing environment using JMeter.
+# It includes services for JMeter workers, a JMeter controller, InfluxDB for data storage,
+# Prometheus for monitoring, and Grafana for visualization.
 
 services:
 
@@ -7,7 +9,7 @@ services:
     image: liukunup/jmeter:plugins-${JMETER_VERSION:-5.6.3}  # 选择合适的JMeter版本
     container_name: worker
     restart: unless-stopped
-    command: jmeter-server -Djava.rmi.server.hostname=${MASTER_IP:?Master IP required}  # 设置为您的宿主机IP
+    command: jmeter-server
     ports:
       - 1099:1099
       - 50000:50000
@@ -47,11 +49,11 @@ services:
       - influxdb-config:/etc/influxdb2
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: ${ADMIN_USERNAME:?InfluxDB username required}
-      DOCKER_INFLUXDB_INIT_PASSWORD: ${ADMIN_PASSWORD:?InfluxDB password required}
-      DOCKER_INFLUXDB_INIT_ORG: Organization  # 修改为您的组织名称
+      DOCKER_INFLUXDB_INIT_USERNAME: ${ADMIN_USERNAME:?InfluxDB username required}  # 请修改为您的用户名
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${ADMIN_PASSWORD:?InfluxDB password required}  # 请修改为您的密码
+      DOCKER_INFLUXDB_INIT_ORG: Organization  # 建议修改为您的组织名称
       DOCKER_INFLUXDB_INIT_BUCKET: JMeter
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_ADMIN_TOKEN:?InfluxDB admin token required}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_ADMIN_TOKEN:?InfluxDB admin token required}  # 请修改为您的Token
     networks:
       - perf
   
