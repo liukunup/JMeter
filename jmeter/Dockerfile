@@ -17,15 +17,14 @@ ARG JMETER_VERSION=5.6.3
 ARG JMETER_DOWNLOAD_URL=https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
 
 # Set environment variables for JMeter
-ENV JMETER_HOME=/opt/apache-jmeter-${JMETER_VERSION}
+ENV JMETER_HOME=/opt/jmeter
 ENV JMETER_BIN=${JMETER_HOME}/bin
 ENV JMETER_LIB=${JMETER_HOME}/lib
 ENV JMETER_EXT=${JMETER_HOME}/lib/ext
 ENV JMETER_LIC=${JMETER_HOME}/licenses
-ENV JMETER_WORKSPACE=/opt/workspace
 
 # The folder where custom plugins are stored
-ENV JMETER_CUSTOM_PLUGINS_FOLDER=/plugins
+ENV JMETER_CUSTOM_PLUGINS_FOLDER=/opt/plugins
 
 # Java Runtime Environment
 ARG JAVA_VERSION=openjdk21-jre
@@ -59,6 +58,7 @@ RUN    apk update \
 	&& curl -L --silent ${JMETER_DOWNLOAD_URL} > /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz \
 	&& mkdir -p /opt \
 	&& tar -zxf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
+	&& mv /opt/apache-jmeter-${JMETER_VERSION} ${JMETER_HOME} \
 	# Make the entrypoint script executable
 	&& chmod +x /entrypoint.sh \
 	# Clean up temporary dependencies directory

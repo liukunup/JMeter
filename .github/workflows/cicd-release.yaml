@@ -112,7 +112,6 @@ jobs:
           labels: ${{ steps.meta-plugins.outputs.labels }}
           build-args: |
             BASE_IMAGE_VERSION=${{ env.JMETER_VERSION }}
-            JMETER_VERSION=${{ env.JMETER_VERSION }}
 
       - name: Update Docker Hub Repository Description
         uses: peter-evans/dockerhub-description@v4
@@ -204,4 +203,3 @@ jobs:
           labels: ${{ steps.meta-plugins.outputs.labels }}
           build-args: |
             BASE_IMAGE_VERSION=openjdk8-${{ env.JMETER_VERSION }}
-            JMETER_VERSION=${{ env.JMETER_VERSION }}

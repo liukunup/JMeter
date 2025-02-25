@@ -13,8 +13,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.description="JMeter with Plugins is a lightweight image that provides a ready-to-use JMeter environment with additional plugins and drivers for running performance tests."
 
 # Define the JMeter home directory
-ARG JMETER_VERSION=5.6.3
-ARG JMETER_HOME=/opt/apache-jmeter-${JMETER_VERSION}
+ARG JMETER_HOME=/opt/jmeter
 
 # Define URLs and versions for various JMeter plugins and drivers
 ARG JMETER_PLUGINS_MANAGER_URL=https://jmeter-plugins.org/get/

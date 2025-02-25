@@ -100,7 +100,6 @@ jobs:
           labels: ${{ steps.meta-plugins.outputs.labels }}
           build-args: |
             BASE_IMAGE_VERSION=${{ env.JMETER_VERSION }}
-            JMETER_VERSION=${{ env.JMETER_VERSION }}
 
   build-openjdk8:
     name: Build with OpenJDK 8
@@ -183,4 +182,3 @@ jobs:
           labels: ${{ steps.meta-plugins.outputs.labels }}
           build-args: |
             BASE_IMAGE_VERSION=openjdk8-${{ env.JMETER_VERSION }}
-            JMETER_VERSION=${{ env.JMETER_VERSION }}
