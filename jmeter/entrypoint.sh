@@ -132,6 +132,56 @@ function func_keepalive() {
   echo "FUNC OUT - Keepalive"
 }
 
+# Function to run Server Agent
+function func_server_agent() {
+  echo "FUNC IN - Server Agent"
+
+  SCRIPT="${SERVER_AGENT_HOME}/startAgent.sh"
+  # Default sampling interval is 5 seconds
+  [[ -z ${SA_INTERVAL} ]] && SA_INTERVAL=5
+  # Start Agent Service
+  /bin/bash "${SCRIPT}" --udp-port 4444 --tcp-port 4444 --interval ${SA_INTERVAL}
+
+  echo "FUNC OUT - Server Agent"
+}
+
+# Function to start VNC/NoVNC Server
+function func_vnc_novnc_server() {
+  echo "FUNC IN - Start VNC Server"
+
+  # 如果未设置 VNC_PASSWORD，使用默认值 "1234"
+  VNC_PASSWORD=${VNC_PASSWORD:-"1234"}
+
+  # 生成 VNC 密码文件
+  echo "$VNC_PASSWORD" | vncpasswd -f > ~/.vnc/passwd
+  chmod 600 ~/.vnc/passwd
+
+  # 启动 Xvfb（虚拟 X11 服务器）
+  Xvfb :1 -screen 0 1280x800x16 &
+  export DISPLAY=:1
+
+  # 启动 VNC 服务器
+  x11vnc -forever -usepw -display :1 &
+
+  # 启动 NoVNC（浏览器访问）
+  websockify --web /usr/share/novnc 6080 localhost:5900 &
+
+  echo "FUNC OUT - Start VNC Server"
+}
+
+# Function to start RDP Server
+function func_rdp_server() {
+  echo "FUNC IN - Start RDP Server"
+
+	echo "xfce4-session" > ~/.xsession
+
+  service xrdp start
+
+  tail -f /var/log/xrdp.log
+
+  echo "FUNC OUT - Start RDP Server"
+}
+
 echo "=============== START Running at $(date) ==============="
 
 # Operating mode:
@@ -140,6 +190,9 @@ echo "=============== START Running at $(date) ==============="
 # 3. mirror server
 # 4. customize
 # 5. keepalive
+# 6. server agent (PerfMon)
+# 7. vnc-novnc
+# 8. rdp
 mode=$1
 
 # Execute the appropriate function based on the mode
@@ -163,6 +216,21 @@ case $mode in
   keepalive)     echo "Mode ID: 5, Name: Keepalive"
   echo
   func_keepalive "$@"
+  ;;
+  server-agent)  echo "Mode ID: 6, Name: Server-Agent"
+  echo
+  func_server_agent "$@"
+  ;;
+  vnc-novnc)     echo "Mode ID: 7, Name: VNC/NoVNC Server"
+  echo
+  func_vnc_novnc_server "$@"
+  ;;
+  rdp)           echo "Mode ID: 8, Name: RDP Server"
+  echo
+  func_rdp_server "$@"
+  ;;
+  *)             echo "Unknown mode: $mode"
+  echo "Available modes: jmeter | jmeter-server | mirror-server | customize | keepalive | server-agent | vnc-novnc | rdp"
   ;;
 esac
 

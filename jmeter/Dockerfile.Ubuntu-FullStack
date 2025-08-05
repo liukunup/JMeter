@@ -27,7 +27,7 @@ ENV JMETER_LIC=${JMETER_HOME}/licenses
 ENV JMETER_CUSTOM_PLUGINS_FOLDER=/opt/plugins
 
 # Java Runtime Environment
-ARG JAVA_VERSION=openjdk21-jre
+ARG JAVA_VERSION=openjdk-21-jre
 
 # Install Python 3 (default: true)
 ARG INSTALL_PYTHON_3=true
@@ -40,21 +40,24 @@ ENV TZ=${TIMEZONE}
 COPY jmeter/entrypoint.sh /
 
 # Install necessary packages
-RUN    apt-get update \
-	&& apt-get upgrade \
+RUN    apt update \
+	&& apt upgrade -y \
 	# Add CA certificates and update
-	&& apk add ca-certificates \
+	&& apt install -y ca-certificates \
 	&& update-ca-certificates \
-	# Install Java, timezone data, curl, bash, vim, tar, unzip, make, net-tools, and nss
-	&& apk add --update ${JAVA_VERSION} tzdata curl bash vim tar unzip make net-tools \
+	# Install Java, tzdata, curl, bash, vim, tar, unzip, make, net-tools, and nss
+	&& apt install -y ${JAVA_VERSION} tzdata curl bash vim tar unzip make net-tools \
+    # Install X11
+    && apt install -y x11-apps xauth xorg xvfb \
+    # Install VNC/NoVNC
+    && apt install -y x11vnc novnc websockify \
 	# Install RDP
 	&& apt-get install -y xrdp xfce4 \
-	&& echo "xfce4-session" > ~/.xsession \
-	&& apk add --no-cache nss \
+	&& apt-get install -y libnss3 \
 	# Optionally install Python 3 if INSTALL_PYTHON_3 is true
-	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then apk add --update --no-cache python3 py3-pip && ln -sf python3 /usr/bin/python; fi \
-	# Clean up APK cache
-	&& rm -rf /var/cache/apk/* \
+	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then apt-get install -y python3 python3-pip && ln -sf python3 /usr/bin/python; fi \
+	# Clean up apt cache
+	&& rm -rf /var/lib/apt/lists/* \
 	# Create a temporary directory for dependencies
 	&& mkdir -p /tmp/dependencies \
 	# Download & Extract JMeter
@@ -74,11 +77,20 @@ RUN    chmod +x /tmp/security/patch.sh \
 	&& ./patch.sh \
 	&& rm -rf /tmp/security
 
+# 设置 DISPLAY 环境变量（用于 X11 转发）
+ENV DISPLAY=host.docker.internal:0
+
 # Add JMeter bin directory to PATH
 ENV PATH=${PATH}:${JMETER_BIN}
 
 # Expose ports for JMeter Server and Mirror Server
 EXPOSE 1099 50000 8080
+
+# Expose ports for VNC and NoVNC
+EXPOSE 5900 6080
+
+# Expose port for RDP
+EXPOSE 3389
 
 # Set the working directory
 WORKDIR ${JMETER_HOME}
