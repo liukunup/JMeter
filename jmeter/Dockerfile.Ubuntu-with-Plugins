@@ -72,7 +72,7 @@ RUN    apt update \
 	# Install Java, tzdata, curl, bash, vim, tar, unzip, make, net-tools, and nss
 	&& apt install -y ${JAVA_VERSION} tzdata curl bash vim tar unzip make net-tools \
 	# Optionally install Python 3 if INSTALL_PYTHON_3 is true
-	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then apt-get install -y python3 python3-pip && ln -sf python3 /usr/bin/python; fi \
+	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then apt install -y python3 python3-pip && ln -sf python3 /usr/bin/python; fi \
 	# Clean up apt cache
 	&& rm -rf /var/lib/apt/lists/* \
 	# Create a temporary directory for dependencies

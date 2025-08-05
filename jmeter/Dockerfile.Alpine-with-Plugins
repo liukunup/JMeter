@@ -69,7 +69,7 @@ RUN    apk update \
 	# Add CA certificates and update
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
-	# Install Java, timezone data, curl, bash, vim, tar, unzip, make, net-tools, and nss
+	# Install Java, tzdata, curl, bash, vim, tar, unzip, make, net-tools, and nss
 	&& apk add --update ${JAVA_VERSION} tzdata curl bash vim tar unzip make net-tools \
 	&& apk add --no-cache nss \
 	# Optionally install Python 3 if INSTALL_PYTHON_3 is true
