@@ -17,7 +17,7 @@ ARG PLUGIN_JPGC_PERFMON_URL=https://jmeter-plugins.org/files/packages/jpgc-perfm
 ARG PLUGIN_INFLUXDB2_LISTENER_VERSION=2.8
 ARG PLUGIN_INFLUXDB2_LISTENER_URL=https://github.com/mderevyankoaqa/jmeter-influxdb2-listener-plugin/releases/download/v${PLUGIN_INFLUXDB2_LISTENER_VERSION}/jmeter-plugins-influxdb2-listener-${PLUGIN_INFLUXDB2_LISTENER_VERSION}.jar
 # MySQL Connector-J
-ARG DRIVER_MYSQL_CONNECTOR_J_VERSION=9.1.0
+ARG DRIVER_MYSQL_CONNECTOR_J_VERSION=9.4.0
 ARG DRIVER_MYSQL_CONNECTOR_J_URL=https://cdn.mysql.com/Downloads/Connector-J/mysql-connector-j-${DRIVER_MYSQL_CONNECTOR_J_VERSION}.zip
 # WebSocket Samplers
 ARG DRIVER_WEBSOCKET_VERSION=1.2.10
