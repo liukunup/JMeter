@@ -13,7 +13,6 @@ on:
 env:
   JMETER_VERSION: 5.6.3
   DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
-  SHORT_SHA: ${{ github.sha[0,7] }}
 
 jobs:
   build-jmeter-images:
@@ -135,6 +134,10 @@ jobs:
             org.opencontainers.image.description=Apache JMeter Docker image based on ${{ matrix.os }}:${{ matrix.version }} with ${{ matrix.jre }}, including additional plugins
             org.opencontainers.image.version=${{ env.JMETER_VERSION }}
 
+      - name: Get Short SHA
+        id: get_short_sha
+        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Build and Push Docker Images
         uses: docker/build-push-action@v6
         with:
@@ -145,7 +148,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_JMETER_IMAGE_VERSION=${{ env.JMETER_VERSION }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ env.SHORT_SHA }}
+            BASE_JMETER_IMAGE_VERSION=${{ env.JMETER_VERSION }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}
 
   build-jmeter-images-with-gui:
     name: Build JMeter Images with GUI
@@ -205,6 +208,10 @@ jobs:
             org.opencontainers.image.description=Apache JMeter Docker image based on ${{ matrix.os }}:${{ matrix.version }} with ${{ matrix.jre }}, including GUI support for ${{ matrix.gui }}
             org.opencontainers.image.version=${{ env.JMETER_VERSION }}
 
+      - name: Get Short SHA
+        id: get_short_sha
+        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Build and Push Docker Images
         uses: docker/build-push-action@v6
         with:
@@ -215,4 +222,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_JMETER_IMAGE_VERSION=${{ env.JMETER_VERSION }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ env.SHORT_SHA }}
+            BASE_JMETER_IMAGE_VERSION=${{ env.JMETER_VERSION }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ steps.get_short_sha.outputs.SHORT_SHA }}
