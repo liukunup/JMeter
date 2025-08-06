@@ -1,38 +1,43 @@
 <#
 .SYNOPSIS
-Builds a JMeter Docker image with customizable versions.
+Docker Image Builder for JMeter
 
 .DESCRIPTION
-This script builds a Docker image for JMeter with options to specify versions of the base image, JMeter, and Java.
+Builds a JMeter Docker image with customizable parameters.
 
-.PARAMETER Image
-Base image version (default: latest)
+.PARAMETER Dockerfile
+Specify Dockerfile to build (default: jmeter/Dockerfile.Ubuntu)
+
+.PARAMETER Prefix
+Tag prefix for the built image (default: ubuntu)
+
+.PARAMETER Base
+Base OS image version (default: 24.04)
 
 .PARAMETER JMeter
 JMeter version (default: 5.6.3)
 
-.PARAMETER Java
-Java version (default: openjdk-21-jre)
-
-.EXAMPLE
-.\build.ps1 -Image latest -JMeter 5.6.3 -Java openjdk-21-jre
+.PARAMETER JRE
+Java Runtime Environment version (default: openjdk-21-jre)
 #>
 
 param (
-    [string]$Image = "latest",
+    [string]$Dockerfile = "jmeter/Dockerfile.Ubuntu",
+    [string]$Prefix = "ubuntu",
+    [string]$Base = "24.04",
     [string]$JMeter = "5.6.3",
-    [string]$Java = "openjdk-21-jre"
+    [string]$JRE = "openjdk-21-jre"
 )
 
-# Configuration
-$TargetDockerfile = "jmeter/Dockerfile.Ubuntu"
-$ImageTag = "jmeter:ubuntu"
-
-# Build Docker image
+# ------------------------- Image Building -------------------------
+# Build Docker image with specified parameters
 docker build `
-    --build-arg IMAGE_VERSION="$Image" `
+    --build-arg BASE_IMAGE_VERSION="$Base" `
     --build-arg JMETER_VERSION="$JMeter" `
-    --build-arg JAVA_VERSION="$Java" `
-    -t "$ImageTag" `
-    -f "$TargetDockerfile" `
+    --build-arg JRE_VERSION="$JRE" `
+    -t "jmeter:${Prefix}-${Base}" `
+    -f "$Dockerfile" `
     .
+
+# Show image list 
+docker images

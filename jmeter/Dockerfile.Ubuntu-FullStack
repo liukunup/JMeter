@@ -1,6 +1,6 @@
 # Use the official Ubuntu Linux image as the base image
-ARG IMAGE_VERSION=latest
-FROM ubuntu:${IMAGE_VERSION}
+ARG BASE_IMAGE_VERSION=latest
+FROM ubuntu:${BASE_IMAGE_VERSION}
 
 # Maintainer
 LABEL maintainer="LiuKun<liukunup@outlook.com>"
@@ -27,7 +27,7 @@ ENV JMETER_LIC=${JMETER_HOME}/licenses
 ENV JMETER_CUSTOM_PLUGINS_FOLDER=/opt/plugins
 
 # Java Runtime Environment
-ARG JAVA_VERSION=openjdk-21-jre
+ARG JRE_VERSION=openjdk-21-jre
 
 # Install Python 3 (default: true)
 ARG INSTALL_PYTHON_3=true
@@ -46,7 +46,7 @@ RUN    apt update \
 	&& apt install -y ca-certificates \
 	&& update-ca-certificates \
 	# Install Java, tzdata, curl, bash, vim, tar, unzip, make, net-tools, and nss
-	&& apt install -y ${JAVA_VERSION} tzdata curl bash vim tar unzip make net-tools \
+	&& apt install -y ${JRE_VERSION} tzdata curl bash vim tar unzip make net-tools \
     # Install X11
     && apt install -y x11-apps xauth xorg xvfb \
     # Install VNC/NoVNC

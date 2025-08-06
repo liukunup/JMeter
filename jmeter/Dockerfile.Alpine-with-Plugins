@@ -1,6 +1,6 @@
 # Use the official Alpine Linux image as the base image
-ARG IMAGE_VERSION=latest
-FROM alpine:${IMAGE_VERSION}
+ARG BASE_IMAGE_VERSION=latest
+FROM alpine:${BASE_IMAGE_VERSION}
 
 # Maintainer
 LABEL maintainer="LiuKun<liukunup@outlook.com>"
@@ -27,7 +27,7 @@ ENV JMETER_LIC=${JMETER_HOME}/licenses
 ENV JMETER_CUSTOM_PLUGINS_FOLDER=/opt/plugins
 
 # Java Runtime Environment
-ARG JAVA_VERSION=openjdk21-jre
+ARG JRE_VERSION=openjdk21-jre
 
 # Install Python 3 (default: true)
 ARG INSTALL_PYTHON_3=true
@@ -70,7 +70,7 @@ RUN    apk update \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
 	# Install Java, tzdata, curl, bash, vim, tar, unzip, make, net-tools, and nss
-	&& apk add --update ${JAVA_VERSION} tzdata curl bash vim tar unzip make net-tools \
+	&& apk add --update ${JRE_VERSION} tzdata curl bash vim tar unzip make net-tools \
 	&& apk add --no-cache nss \
 	# Optionally install Python 3 if INSTALL_PYTHON_3 is true
 	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then apk add --update --no-cache python3 py3-pip && ln -sf python3 /usr/bin/python; fi \
