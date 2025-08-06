@@ -191,7 +191,7 @@ echo "=============== START Running at $(date) ==============="
 # 4. customize
 # 5. keepalive
 # 6. server agent (PerfMon)
-# 7. vnc-novnc
+# 7. vnc
 # 8. rdp
 mode=$1
 
@@ -221,7 +221,7 @@ case $mode in
   echo
   func_server_agent "$@"
   ;;
-  vnc-novnc)     echo "Mode ID: 7, Name: VNC/NoVNC Server"
+  vnc)           echo "Mode ID: 7, Name: VNC/NoVNC Server"
   echo
   func_vnc_novnc_server "$@"
   ;;

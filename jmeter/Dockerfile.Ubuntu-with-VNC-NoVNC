@@ -1,88 +1,12 @@
-# Use the official Ubuntu Linux image as the base image
-ARG BASE_IMAGE_VERSION=latest
-FROM ubuntu:${BASE_IMAGE_VERSION}
+# Use the specified JMeter image as the base image
+ARG BASE_JMETER_IMAGE_VERSION=latest
+FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
 
-# Maintainer
-LABEL maintainer="LiuKun<liukunup@outlook.com>"
-
-# Metadata
-LABEL org.opencontainers.image.title="JMeter"
-LABEL org.opencontainers.image.authors="LiuKun<liukunup@outlook.com>"
-LABEL org.opencontainers.image.source="https://github.com/liukunup/JMeter"
-LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.description="Apache JMeter is an open-source software testing tool developed by the Apache Software Foundation.\nJMeter in Docker is a lightweight image that provides a ready-to-use JMeter environment for running performance tests."
-
-# JMeter version & download URL
-ARG JMETER_VERSION=5.6.3
-ARG JMETER_DOWNLOAD_URL=https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
-
-# Set environment variables for JMeter
-ENV JMETER_HOME=/opt/jmeter
-ENV JMETER_BIN=${JMETER_HOME}/bin
-ENV JMETER_LIB=${JMETER_HOME}/lib
-ENV JMETER_EXT=${JMETER_HOME}/lib/ext
-ENV JMETER_LIC=${JMETER_HOME}/licenses
-
-# The folder where custom plugins are stored
-ENV JMETER_CUSTOM_PLUGINS_FOLDER=/opt/plugins
-
-# Java Runtime Environment
-ARG JRE_VERSION=openjdk-21-jre
-
-# Install Python 3 (default: true)
-ARG INSTALL_PYTHON_3=true
-
-# Timezone (default: Asia/Shanghai)
-ARG TIMEZONE=Asia/Shanghai
-ENV TZ=${TIMEZONE}
-
-# Copy the entrypoint script to the root directory
-COPY jmeter/entrypoint.sh /
-
-# Install necessary packages
-RUN    apt update \
-	&& apt upgrade -y \
-	# Add CA certificates and update
-	&& apt install -y ca-certificates \
-	&& update-ca-certificates \
-	# Install Java, tzdata, curl, bash, vim, tar, unzip, make, net-tools, and nss
-	&& apt install -y ${JRE_VERSION} tzdata curl bash vim tar unzip make net-tools \
-    # Install VNC/NoVNC
-    && apt install -y xvfb x11vnc novnc websockify \
-	# Optionally install Python 3 if INSTALL_PYTHON_3 is true
-	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then apt install -y python3 python3-pip && ln -sf python3 /usr/bin/python; fi \
-	# Clean up apt cache
-	&& rm -rf /var/lib/apt/lists/* \
-	# Create a temporary directory for dependencies
-	&& mkdir -p /tmp/dependencies \
-	# Download & Extract JMeter
-	&& curl -L --silent ${JMETER_DOWNLOAD_URL} > /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz \
-	&& mkdir -p /opt \
-	&& tar -zxf /tmp/dependencies/apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
-	&& mv /opt/apache-jmeter-${JMETER_VERSION} ${JMETER_HOME} \
-	# Make the entrypoint script executable
-	&& chmod +x /entrypoint.sh \
-	# Clean up temporary dependencies directory
-	&& rm -rf /tmp/dependencies
-
-# Install security patch (update vulnerable jar packages)
-COPY security /tmp/security/
-RUN    chmod +x /tmp/security/patch.sh \
-	&& cd /tmp/security \
-	&& ./patch.sh \
-	&& rm -rf /tmp/security
-
-# Add JMeter bin directory to PATH
-ENV PATH=${PATH}:${JMETER_BIN}
-
-# Expose ports for JMeter Server and Mirror Server
-EXPOSE 1099 50000 8080
+# Install VNC/NoVNC
+RUN apt install -y xvfb x11vnc novnc websockify
 
 # Expose ports for VNC and NoVNC
 EXPOSE 5900 6080
 
-# Set the working directory
-WORKDIR ${JMETER_HOME}
-
-# Set the entrypoint script
-ENTRYPOINT ["/entrypoint.sh"]
+# Start VNC and NoVNC server
+ENTRYPOINT ["/entrypoint.sh", "vnc"]
