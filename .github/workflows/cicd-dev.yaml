@@ -13,6 +13,7 @@ on:
 env:
   JMETER_VERSION: 5.6.3
   DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
+  SHORT_SHA: ${{ github.sha && github.sha.substr(0, 7) }}
 
 jobs:
   build-jmeter-images:
@@ -144,7 +145,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_JMETER_IMAGE_VERSION=${{ env.JMETER_VERSION }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ github.sha | substring(0, 7) }}
+            BASE_JMETER_IMAGE_VERSION=${{ env.JMETER_VERSION }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ env.SHORT_SHA }}
 
   build-jmeter-images-with-gui:
     name: Build JMeter Images with GUI
@@ -209,9 +210,9 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          file: jmeter/Dockerfile.Plugins
+          file: ${{ matrix.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_JMETER_IMAGE_VERSION=${{ env.JMETER_VERSION }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ github.sha | substring(0, 7) }}
+            BASE_JMETER_IMAGE_VERSION=${{ env.JMETER_VERSION }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ env.SHORT_SHA }}
