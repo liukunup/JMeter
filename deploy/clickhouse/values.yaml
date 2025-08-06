@@ -1,0 +1,33 @@
+global:
+  storageClass: "standard" # 根据你的集群修改存储类
+
+architecture: replication # 使用复制模式
+replicaCount: 2 # 副本数量
+
+auth:
+  username: "admin" # 管理员用户名
+  password: "your-strong-password" # 设置强密码
+
+persistence:
+  enabled: true
+  size: 8Gi # 根据需求调整存储大小
+
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "1"
+  limits:
+    memory: "4Gi"
+    cpu: "2"
+
+metrics:
+  enabled: true # 启用 Prometheus 指标
+  serviceMonitor:
+    enabled: true # 如果使用 Prometheus Operator
+
+service:
+  type: LoadBalancer # 或者 NodePort 根据你的环境选择
+  ports:
+    http: 8123
+    tcp: 9000
+    interserver: 9009
