@@ -1,30 +1,51 @@
-name: Dev Pipeline for JMeter Docker Images
+name: JMeter Docker Images CI/CD
 
 on:
   push:
     branches:
       - dev
+      - feature/*
     paths-ignore:
       - '**.md'
       - '**.jmx'
       - '**.png'
 
 env:
-  # Define the JMeter, Java, and Alpine versions
   JMETER_VERSION: 5.6.3
-  JAVA_VERSION: openjdk21-jre
-  BASE_IMAGE_VERSION: latest
-  # Use the same repository name for all Registries
   DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
 
 jobs:
-
-  build:
-    name: Build with OpenJDK 21
+  build-jmeter-images:
+    name: Build JMeter Images
     runs-on: ubuntu-24.04
     permissions:
       packages: write
       contents: read
+    strategy:
+      matrix:
+        include:
+          # Alpine
+          - dockerfile: "jmeter/Dockerfile.Alpine"
+            os: "alpine"
+            version: "3"
+            jmeter: "5.6.3"
+            jre: "openjdk21-jre"
+          - dockerfile: "jmeter/Dockerfile.Alpine"
+            os: "alpine"
+            version: "3"
+            jmeter: "5.6.3"
+            jre: "openjdk8-jre"
+          # Ubuntu
+          - dockerfile: "jmeter/Dockerfile.Ubuntu"
+            os: "ubuntu"
+            version: "24.04"
+            jmeter: "5.6.3"
+            jre: "openjdk-21-jre"
+          - dockerfile: "jmeter/Dockerfile.Ubuntu"
+            os: "ubuntu"
+            version: "24.04"
+            jmeter: "5.6.3"
+            jre: "openjdk-8-jre"
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -62,123 +83,24 @@ jobs:
             ghcr.io/${{ env.DOCKER_HUB_REPO }}
             registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
           tags: |
-            type=sha,format=short,prefix={{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
+            type=sha,format=short
+          flavor: |
+            prefix=${{ env.JMETER_VERSION }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-
+          labels: |
+            org.opencontainers.image.title=JMeter
+            org.opencontainers.image.description=Apache JMeter Docker image based on ${{ matrix.os }}:${{ matrix.version }} with ${{ matrix.jre }}
+            org.opencontainers.image.version=${{ env.JMETER_VERSION }}
 
       - name: Build and Push Docker Images
         uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64
-          file: jmeter/Dockerfile
+          file: ${{ matrix.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE_VERSION=${{ env.BASE_IMAGE_VERSION }}
-            JAVA_VERSION=${{ env.JAVA_VERSION }}
+            BASE_IMAGE_VERSION=${{ matrix.version }}
             JMETER_VERSION=${{ env.JMETER_VERSION }}
-
-      - name: Extract metadata (tags, labels) for Docker with Plugins
-        id: meta-plugins
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ env.DOCKER_HUB_REPO }}
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
-          tags: |
-            type=sha,format=short,prefix=plugins-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
-
-      - name: Build and Push Docker Images with Plugins
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64
-          file: jmeter-with-plugins/Dockerfile
-          push: true
-          tags: ${{ steps.meta-plugins.outputs.tags }}
-          labels: ${{ steps.meta-plugins.outputs.labels }}
-          build-args: |
-            BASE_IMAGE_VERSION=${{ env.JMETER_VERSION }}
-
-  build-openjdk8:
-    name: Build with OpenJDK 8
-    runs-on: ubuntu-24.04
-    permissions:
-      packages: write
-      contents: read
-    steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Login to Aliyun Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: registry.cn-hangzhou.aliyuncs.com
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ env.DOCKER_HUB_REPO }}
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
-          tags: |
-            type=sha,format=short,prefix=openjdk8-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64
-          file: jmeter/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            BASE_IMAGE_VERSION=${{ env.BASE_IMAGE_VERSION }}
-            JAVA_VERSION=openjdk8-jre
-            JMETER_VERSION=${{ env.JMETER_VERSION }}
-
-      - name: Extract metadata (tags, labels) for Docker with Plugins
-        id: meta-plugins
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.DOCKER_HUB_REPO }}
-            ghcr.io/${{ env.DOCKER_HUB_REPO }}
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
-          tags: |
-            type=sha,format=short,prefix=openjdk8-plugins-{{branch}}-,enable=${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
-
-      - name: Build and Push Docker Images with Plugins
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64
-          file: jmeter-with-plugins/Dockerfile
-          push: true
-          tags: ${{ steps.meta-plugins.outputs.tags }}
-          labels: ${{ steps.meta-plugins.outputs.labels }}
-          build-args: |
-            BASE_IMAGE_VERSION=openjdk8-${{ env.JMETER_VERSION }}
+            JRE_VERSION=${{ matrix.jre }}

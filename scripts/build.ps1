@@ -12,7 +12,7 @@ Specify Dockerfile to build (default: jmeter/Dockerfile.Ubuntu)
 Tag prefix for the built image (default: ubuntu)
 
 .PARAMETER Base
-Base OS image version (default: 24.04)
+Base image version (default: 24.04)
 
 .PARAMETER JMeter
 JMeter version (default: 5.6.3)
@@ -30,7 +30,7 @@ param (
 )
 
 # ------------------------- Image Building -------------------------
-# Build Docker image with specified parameters
+# Build docker image with specified parameters
 docker build `
     --build-arg BASE_IMAGE_VERSION="$Base" `
     --build-arg JMETER_VERSION="$JMeter" `

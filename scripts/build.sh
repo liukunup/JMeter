@@ -38,7 +38,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # ------------------------- Image Building -------------------------
-# Build Docker image with specified parameters
+# Build docker image with specified parameters
 docker build \
     --build-arg BASE_IMAGE_VERSION="${BASE_IMAGE_VERSION}" \
     --build-arg JMETER_VERSION="${JMETER_VERSION}" \
