@@ -54,8 +54,6 @@ RUN    mkdir -p /tmp/dependencies \
     && mv /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}/* ${SERVER_AGENT_HOME}/ \
     # Make Server Agent scripts executable
     && chmod +x ${SERVER_AGENT_HOME}/*.sh \
-    # Make the entrypoint script executable
-    && chmod +x /entrypoint.sh \
     # Clean up temporary files
     && rm -rf /tmp/dependencies
 
