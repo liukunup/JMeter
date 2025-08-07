@@ -191,7 +191,7 @@ jobs:
             version: "24.04"
             jre: "openjdk-21-jre"
             gui: "rdp"
-          - dockerfile: "jmeter/Dockerfile.Ubuntu-with-FullStack"
+          - dockerfile: "jmeter/Dockerfile.Ubuntu-FullStack"
             os: "ubuntu"
             version: "24.04"
             jre: "openjdk-21-jre"
