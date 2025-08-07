@@ -3,16 +3,21 @@ ARG BASE_JMETER_IMAGE_VERSION=latest
 FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
 
 # Install necessary packages for X11 VNC/NoVNC and RDP
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     # Install X11
-    x11-apps xauth xorg xvfb \
+    xvfb xauth \
+    $(if [ "$(lsb_release -cs)" = "focal" ]; then echo "x11-apps xorg"; else echo "x11-utils xserver-xorg-core"; fi) \
     # Install VNC/NoVNC
     x11vnc novnc websockify \
     # Install RDP
-    xrdp xfce4
+    xrdp xfce4 xfce4-goodies && \
+    # Clean up
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set DISPLAY environment variable (for X11 forwarding)
-ENV DISPLAY=host.docker.internal:0
+ENV DISPLAY=:99
 
 # Expose ports for VNC/NoVNC and RDP
 EXPOSE 5900 6080 3389

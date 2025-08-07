@@ -250,7 +250,7 @@ run_vnc_server() {
   log_section "Starting VNC/NoVNC Server"
 
   local LOG_DIR="/var/log/vnc"
-  local XVFB_DISPLAY=":1"
+  local XVFB_DISPLAY="${DISPLAY:-:99}"
   local VNC_PORT=5900
   local NOVNC_PORT=6080
   local SCREEN_RESOLUTION="1280x800x16"
@@ -298,7 +298,6 @@ run_vnc_server() {
     log_error "Xvfb failed to start. Check $LOG_DIR/Xvfb.log for details"
     exit 1
   fi
-  export DISPLAY="$XVFB_DISPLAY"
 
   # Start x11vnc server
   log_info "Starting x11vnc on port $VNC_PORT"
