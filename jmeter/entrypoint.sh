@@ -4,11 +4,11 @@
 # Entry Point Script for JMeter Docker Container
 # 
 # This script sets up and runs JMeter in various modes including:
-# - GUI mode
+# - Console mode
 # - Server mode
 # - Mirror Server mode
 # - Custom commands
-# - Server agent for monitoring
+# - Server Agent for monitoring
 # - VNC/NoVNC Server
 # - RDP Server
 # =============================================
@@ -16,6 +16,7 @@
 # ------------ Constants (Do not modify) ------------
 readonly SCRIPT_VERSION="1.0.0"
 readonly SCRIPT_NAME=$(basename "$0")
+readonly LOCK_FILE="/tmp/${SCRIPT_NAME%.*}.lock"
 readonly LOG_FILE="/var/log/${SCRIPT_NAME%.*}.log"
 
 # ------------ Initialization ------------
@@ -36,88 +37,158 @@ log() {
 
   # Write to stderr (with color for terminal)
   if [ -t 2 ]; then
-      case $level in
-          ERROR)   echo -e "\033[1;31m${log_entry}\033[0m" >&2 ;;
-          WARNING) echo -e "\033[1;33m${log_entry}\033[0m" >&2 ;;
-          SUCCESS) echo -e "\033[1;32m${log_entry}\033[0m" >&2 ;;
-          INFO)    echo -e "\033[1;34m${log_entry}\033[0m" >&2 ;;
-          *)       echo "$log_entry" >&2 ;;
-      esac
+    case $level in
+      ERROR)   echo -e "\033[1;31m${log_entry}\033[0m" >&2 ;;
+      WARNING) echo -e "\033[1;33m${log_entry}\033[0m" >&2 ;;
+      SUCCESS) echo -e "\033[1;32m${log_entry}\033[0m" >&2 ;;
+      INFO)    echo -e "\033[1;34m${log_entry}\033[0m" >&2 ;;
+      *)       echo "$log_entry" >&2 ;;
+    esac
   else
-      echo "$log_entry" >&2
+    echo "$log_entry" >&2
   fi
 }
 
-# Specific log level functions
 log_info()    { log "INFO" "$1"; }
 log_warning() { log "WARNING" "$1"; }
 log_error()   { log "ERROR" "$1"; }
 log_success() { log "SUCCESS" "$1"; }
 
-# Section headers
 log_section() {
-    log_info "========================================"
-    log_info "$1"
-    log_info "========================================"
+  log_info "========================================"
+  log_info "$1"
+  log_info "========================================"
 }
 
-# Copy custom plugins to JMeter ext folder if the custom plugins folder exists
-if [[ -d $JMETER_CUSTOM_PLUGINS_FOLDER ]]
-then
-  for plugin in "${JMETER_CUSTOM_PLUGINS_FOLDER}"/*.jar; do
-    cp "$plugin" "${JMETER_EXT}"
-  done;
-fi
+# Create lock file to prevent multiple instances
+create_lock() {
+  if [ -f "$LOCK_FILE" ]; then
+    log_error "Lock file exists: $LOCK_FILE. Another instance may be running."
+    exit 1
+  fi
+  touch "$LOCK_FILE"
+  trap 'rm -f "$LOCK_FILE"' EXIT
+}
 
-# Set JVM parameters
-set -e
-freeMem=$(awk '/MemAvailable/ { print int($2/1024) }' /proc/meminfo)
-# Assign default values if variables are empty
-[[ -z ${JVM_XMN} ]] && JVM_XMN=$((freeMem * 2 / 10))
-[[ -z ${JVM_XMS} ]] && JVM_XMS=$((freeMem * 8 / 10))
-[[ -z ${JVM_XMX} ]] && JVM_XMX=$((freeMem * 8 / 10))
-# Assemble JVM parameters
-[[ -z ${JVM_ARGS} ]] && JVM_ARGS="-Xmn${JVM_XMN}m -Xms${JVM_XMS}m -Xmx${JVM_XMX}m"
-# Export JVM parameters as environment variable
-export JVM_ARGS=${JVM_ARGS}
+# Get container memory limit in MB
+get_container_memory_limit() {
+  local mem_limit
 
-# Run JMeter
-function run_jmeter() {
+  # Check cgroup v2
+  if [ -f "/sys/fs/cgroup/memory.max" ]; then
+    mem_limit=$(cat /sys/fs/cgroup/memory.max)
+    # If "max" (no limit), fall back to host memory
+    if [ "$mem_limit" = "max" ]; then
+      mem_limit=$(awk '/MemTotal/ { print int($2 * 1024) }' /proc/meminfo)
+    fi
+  # Check cgroup v1
+  elif [ -f "/sys/fs/cgroup/memory/memory.limit_in_bytes" ]; then
+    mem_limit=$(cat /sys/fs/cgroup/memory/memory.limit_in_bytes)
+  # Non-container environment, use 80% of host memory
+  else
+    mem_limit=$(awk '/MemTotal/ { print int($2 * 1024 * 0.8) }' /proc/meminfo)
+  fi
+
+  # Convert to MB (for JVM parameters)
+  echo $(( mem_limit / 1024 / 1024 ))
+}
+
+# Get Java version
+get_java_version() {
+  local java_version
+  java_version=$(${JAVA_HOME}/bin/java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+  echo "$java_version"
+}
+
+# Calculate and set JVM memory parameters
+calculate_jvm_memory() {
+  local container_mem=$(get_container_memory_limit)
+  local java_version=$(get_java_version)
+  local jvm_opts=""
+
+  log_info "Container memory limit: ${container_mem}MB"
+  log_info "Java version: ${java_version}"
+
+  # Extract major version (e.g., "1.8.0_312" → 8, "11.0.14" → 11)
+  local major_version
+  if [[ "$java_version" =~ ^1\.8 ]]; then
+      major_version=8
+  else
+      major_version=$(echo "$java_version" | cut -d '.' -f 1)
+  fi
+
+  # Java 8u131+ needs explicit container support
+  if [ "$major_version" -eq 8 ]; then
+      jvm_opts="$jvm_opts -XX:+UseContainerSupport"
+      # Use 70% of container memory for heap
+      local heap_size=$(( container_mem * 70 / 100 ))
+      jvm_opts="$jvm_opts -Xms${heap_size}m -Xmx${heap_size}m"
+  # Java 10+ supports dynamic memory allocation
+  elif [ "$major_version" -ge 10 ]; then
+      jvm_opts="$jvm_opts -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
+  else
+      # Fallback for other versions
+      local heap_size=$(( container_mem * 70 / 100 ))
+      jvm_opts="$jvm_opts -Xms${heap_size}m -Xmx${heap_size}m"
+  fi
+
+  # Common JVM optimizations
+  jvm_opts="$jvm_opts -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof"
+
+  export JVM_ARGS=${jvm_opts}
+  log_info "JVM arguments set to: $JVM_ARGS"
+}
+
+# Copy custom plugins to JMeter
+copy_plugins() {
+  if [[ -d "${JMETER_CUSTOM_PLUGINS_FOLDER:-}" ]]; then
+      log_section "Copying custom JMeter plugins"
+      local plugin_count=0
+      
+      for plugin in "${JMETER_CUSTOM_PLUGINS_FOLDER}"/*.jar; do
+          if [ -f "$plugin" ]; then
+              cp -v "$plugin" "${JMETER_HOME}/lib/ext/" >> "$LOG_FILE" 2>&1
+              ((plugin_count++))
+          fi
+      done
+      
+      log_info "Copied $plugin_count plugin(s) to JMeter"
+  fi
+}
+
+# Run JMeter in console mode
+run_jmeter() {
   log_section "Starting JMeter in Console mode"
-
-  local args=("$@")
-  [ ${#args[@]} -eq 0 ] && log_warning "No arguments provided to JMeter"
+  [ $# -eq 0 ] && log_warning "No arguments provided to JMeter"
 
   log_info "JVM args: $JVM_ARGS"
-  log_info "JMeter args: ${args[*]}"
+  log_info "JMeter args: $*"
 
-  jmeter -Dlog4j2.formatMsgNoLookups=true "${args[@]}"
+  exec jmeter -Dlog4j2.formatMsgNoLookups=true "$@"
 }
 
 # Run JMeter Server
-function run_jmeter_server() {
+run_jmeter_server() {
   log_section "Starting JMeter Server"
 
-  local args=("$@")
   local server_args=(
-    -Dlog4j2.formatMsgNoLookups=true
-    -Dserver_port=1099
-    -Dserver.rmi.localport=50000
-    -Dserver.rmi.ssl.disable=true
+      -Dlog4j2.formatMsgNoLookups=true
+      -Dserver_port=1099
+      -Dserver.rmi.localport=50000
+      -Dserver.rmi.ssl.disable=true
   )
 
   log_info "JVM args: $JVM_ARGS"
   log_info "Server args: ${server_args[*]}"
-  log_info "Additional args: ${args[*]}"
+  log_info "Additional args: $*"
 
-  jmeter-server "${server_args[@]}" "${args[@]}"
+  exec jmeter-server "${server_args[@]}" "$@"
 }
 
 # Run Mirror server
-function run_mirror_server() {
+run_mirror_server() {
   log_section "Starting Mirror Server"
 
-  local args=("$@")
   local mirror_args=(
       -Dlog4j2.formatMsgNoLookups=true
       --port 8080
@@ -125,33 +196,33 @@ function run_mirror_server() {
 
   log_info "JVM args: $JVM_ARGS"
   log_info "Mirror Server args: ${mirror_args[*]}"
-  log_info "Additional args: ${args[*]}"
+  log_info "Additional args: $*"
 
-  mirror-server "${mirror_args[@]}" "${args[@]}"
+  exec mirror-server "${mirror_args[@]}" "$@"
 }
 
 # Run custom command
-function run_custom_command() {
+run_custom_command() {
   log_section "Running Custom Command"
   
   if [ $# -eq 0 ]; then
       log_error "No command specified"
-      return 1
+      exit 1
   fi
 
   log_info "Executing: $*"
-  eval "$@"
+  exec "$@"
 }
 
 # Keep container alive
-function func_keepalive() {
+run_keepalive() {
   log_section "Keepalive Mode"
   log_info "Container will remain running indefinitely"
-  tail -f /dev/null
+  exec tail -f /dev/null
 }
 
 # Run Server Agent
-function run_server_agent() {
+run_server_agent() {
   log_section "Starting Server Agent"
 
   local agent_home=${SERVER_AGENT_HOME:-"/opt/server-agent"}
@@ -160,16 +231,16 @@ function run_server_agent() {
 
   if [ ! -f "$script" ]; then
       log_error "Server Agent script not found at $script"
-      return 1
+      exit 1
   fi
 
   log_info "Starting Server Agent with interval ${interval}s"
-  /bin/bash "$script" --udp-port 4444 --tcp-port 4444 --interval "$interval"
+  exec /bin/bash "$script" --udp-port 4444 --tcp-port 4444 --interval "$interval"
 }
 
 # Run VNC/NoVNC Server
-function run_vnc_server() {
-  log_section "start VNC/NoVNC Server"
+run_vnc_server() {
+  log_section "Starting VNC/NoVNC Server"
 
   local LOG_DIR="/var/log/vnc"
   local XVFB_DISPLAY=":1"
@@ -179,152 +250,132 @@ function run_vnc_server() {
 
   log_info "Display: $XVFB_DISPLAY | VNC Port: $VNC_PORT | NoVNC Port: $NOVNC_PORT"
   
-  # 创建日志目录
+  # Create log directory
   mkdir -p "$LOG_DIR" || {
-    log_error "Failed to create log directory: $LOG_DIR"
-    return 1
+      log_error "Failed to create log directory: $LOG_DIR"
+      exit 1
   }
 
-  # 优先使用环境变量设置值，否则生成随机密码
-  if [[ -n "${VNC_PASSWORD}" ]]; then
-    log_info "Using VNC password from environment variable VNC_PASSWORD"
-    local PASSWORD_SOURCE="Environment variable"
+  # Use environment variable or generate random password
+  if [[ -n "${VNC_PASSWORD:-}" ]]; then
+      log_info "Using VNC password from environment variable"
   else
-    # 生成随机密码 (12个字符，包含大小写字母和数字)
-    VNC_PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
-    local PASSWORD_SOURCE="Automatically generated"
-    log_info "Generated random VNC password: $VNC_PASSWORD"
+      VNC_PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
+      log_info "Generated random VNC password: $VNC_PASSWORD"
   fi
 
-  # 将密码保存到临时文件以便后续使用
-  local PASSWD_FILE=$(mktemp)
-  echo "$VNC_PASSWORD" > "$PASSWD_FILE"
-
-  # 准备VNC目录和密码文件
+  # Prepare VNC password file
   mkdir -p ~/.vnc || {
-    log_error "Failed to create ~/.vnc directory"
-    rm -f "$PASSWD_FILE"
-    return 1
+      log_error "Failed to create ~/.vnc directory"
+      exit 1
   }
 
-  if ! echo "$VNC_PASSWORD" | vncpasswd -f > ~/.vnc/passwd; then
-    log_error "Failed to generate VNC password file"
-    rm -f "$PASSWD_FILE"
-    return 1
-  fi
+  echo "$VNC_PASSWORD" | vncpasswd -f > ~/.vnc/passwd || {
+      log_error "Failed to generate VNC password file"
+      exit 1
+  }
   chmod 600 ~/.vnc/passwd || {
-    log_error "Failed to set permissions on VNC password file"
-    rm -f "$PASSWD_FILE"
-    return 1
+      log_error "Failed to set permissions on VNC password file"
+      exit 1
   }
 
-  # 启动Xvfb虚拟显示器
+  # Start Xvfb
   log_info "Starting Xvfb on display $XVFB_DISPLAY"
   Xvfb "$XVFB_DISPLAY" -screen 0 "$SCREEN_RESOLUTION" -ac -nolisten tcp \
-    > "$LOG_DIR/Xvfb.log" 2>&1 &
+      > "$LOG_DIR/Xvfb.log" 2>&1 &
   local XVFB_PID=$!
   
-  # 等待Xvfb启动
+  # Wait for Xvfb to start
   sleep 2
   if ! kill -0 "$XVFB_PID" >/dev/null 2>&1; then
-    log_error "Xvfb failed to start. Check $LOG_DIR/Xvfb.log for details"
-    rm -f "$PASSWD_FILE"
-    return 1
+      log_error "Xvfb failed to start. Check $LOG_DIR/Xvfb.log for details"
+      exit 1
   fi
   export DISPLAY="$XVFB_DISPLAY"
 
-  # 启动x11vnc服务器
+  # Start x11vnc server
   log_info "Starting x11vnc on port $VNC_PORT"
   x11vnc -forever -usepw -display "$XVFB_DISPLAY" -rfbport "$VNC_PORT" \
-    -bg -o "$LOG_DIR/x11vnc.log" -noxdamage \
-    -passwdfile "$PASSWD_FILE" || {
-    log_error "Failed to start x11vnc"
-    rm -f "$PASSWD_FILE"
-    return 1
+      -bg -o "$LOG_DIR/x11vnc.log" -noxdamage || {
+      log_error "Failed to start x11vnc"
+      exit 1
   }
 
-  # 启动NoVNC
+  # Start NoVNC
   log_info "Starting NoVNC on port $NOVNC_PORT"
   websockify --web /usr/share/novnc "$NOVNC_PORT" "localhost:$VNC_PORT" \
-    > "$LOG_DIR/novnc.log" 2>&1 &
+      > "$LOG_DIR/novnc.log" 2>&1 &
   local NOVNC_PID=$!
 
-  # 验证服务是否运行
+  # Verify services are running
   sleep 1
   if ! kill -0 "$NOVNC_PID" >/dev/null 2>&1; then
-    log_error "NoVNC failed to start. Check $LOG_DIR/novnc.log for details"
-    rm -f "$PASSWD_FILE"
-    return 1
+      log_error "NoVNC failed to start. Check $LOG_DIR/novnc.log for details"
+      exit 1
   fi
 
-  # 清理临时密码文件
-  rm -f "$PASSWD_FILE"
+  # Output connection information
+  log_success "VNC/NoVNC Server started successfully"
+  log_info "VNC Connection: localhost:$VNC_PORT"
+  log_info "NoVNC (Web) Connection: http://localhost:$NOVNC_PORT/vnc.html"
+  log_info "Password: $VNC_PASSWORD"
 
-  # 输出连接信息
-  echo "VNC/NoVNC Server started successfully"
-  echo "================================================"
-  echo "VNC Connection:"
-  echo "  Address: localhost:$VNC_PORT"
-  echo "  Password: $VNC_PASSWORD (${PASSWORD_SOURCE})"
-  echo ""
-  echo "NoVNC (Web) Connection:"
-  echo "  URL: http://localhost:$NOVNC_PORT/vnc.html"
-  echo "  Password: $VNC_PASSWORD (${PASSWORD_SOURCE})"
-  echo "================================================"
-
-  # Keep the script running to maintain the RDP server
+  # Keep the script running
   wait
 }
 
 # Run RDP Server
-function run_rdp_server() {
+run_rdp_server() {
   log_section "Starting RDP Server"
 
   # Prepare X session
   echo "xfce4-session" > ~/.xsession || {
-    log_error "Failed to create ~/.xsession file"
-    return 1
+      log_error "Failed to create ~/.xsession file"
+      exit 1
   }
 
   # Start xrdp service
   if ! service xrdp start > /var/log/xrdp-start.log 2>&1; then
-    log_error "Failed to start xrdp service"
-    return 1
+      log_error "Failed to start xrdp service"
+      exit 1
   fi
-  log_info "RDP Server started successfully"
+  
+  log_success "RDP Server started successfully"
   log_info "RDP Server is running on port 3389"
 
+  # Tail logs in background
   tail -f /var/log/xrdp.log /var/log/xrdp-sesman.log &
 
-  # Keep the script running to maintain the RDP server
+  # Keep the script running
   wait
 }
 
 # Show help
 show_help() {
-    cat <<EOF
+  cat <<EOF
 Usage: $SCRIPT_NAME <mode> [options]
 
 Available modes:
-  jmeter          Run JMeter in GUI mode
-  jmeter-server   Run JMeter in server mode
-  mirror-server   Run mirror server
-  customize       Run custom command
-  keepalive       Keep container alive
-  server-agent    Run Server Agent for monitoring
-  vnc             Start VNC/NoVNC server
-  rdp             Start RDP server
+jmeter          Run JMeter in GUI mode
+jmeter-server   Run JMeter in server mode
+mirror-server   Run mirror server
+customize       Run custom command
+keepalive       Keep container alive
+server-agent    Run Server Agent for monitoring
+vnc             Start VNC/NoVNC server
+rdp             Start RDP server
 
 Environment Variables:
-  JMETER_HOME               - Path to JMeter installation (required)
-  JMETER_CUSTOM_PLUGINS_FOLDER - Path to custom JMeter plugins
-  JVM_XMS, JVM_XMX, JVM_XMN - JVM memory settings
-  VNC_PASSWORD              - Password for VNC server
+JAVA_HOME                 - Path to Java installation (required)
+JMETER_HOME               - Path to JMeter installation (required)
+JMETER_CUSTOM_PLUGINS_FOLDER - Path to custom JMeter plugins
+VNC_PASSWORD              - Password for VNC server
+SERVER_AGENT_HOME         - Path to Server Agent installation
+SA_INTERVAL               - Server Agent polling interval (default: 5s)
 EOF
 }
 
 # ------------ Main Script ------------
-
 main() {
   create_lock
   validate_env
@@ -333,34 +384,34 @@ main() {
 
   log_section "Starting $SCRIPT_NAME v$SCRIPT_VERSION"
   log_info "Running as: $(id)"
+  log_info "Java version: $(java -version 2>&1 | head -1)"
+  log_info "JMeter version: $(jmeter --version 2>&1)"
   log_info "Log file: $LOG_FILE"
   
   if [ $# -eq 0 ]; then
-      show_help
-      exit 1
+    show_help
+    exit 1
   fi
-  
+
   local mode=$1
   shift
   
   case $mode in
-      jmeter)        run_jmeter "$@" ;;
-      jmeter-server) run_jmeter_server "$@" ;;
-      mirror-server) run_mirror_server "$@" ;;
-      customize)     run_custom_command "$@" ;;
-      keepalive)     run_keepalive ;;
-      server-agent)  run_server_agent ;;
-      vnc)           run_vnc_server ;;
-      rdp)           run_rdp_server ;;
-      help|--help|-h) show_help ;;
-      *) 
-          log_error "Unknown mode: $mode"
-          show_help
-          exit 1
-          ;;
+    jmeter)         run_jmeter "$@" ;;
+    jmeter-server)  run_jmeter_server "$@" ;;
+    mirror-server)  run_mirror_server "$@" ;;
+    customize)      run_custom_command "$@" ;;
+    keepalive)      run_keepalive ;;
+    server-agent)   run_server_agent ;;
+    vnc)            run_vnc_server ;;
+    rdp)            run_rdp_server ;;
+    help|--help|-h) show_help ;;
+    *) 
+      log_error "Unknown mode: $mode"
+      show_help
+      exit 1
+      ;;
   esac
-  
-  log_success "Operation completed successfully"
 }
 
 main "$@"
