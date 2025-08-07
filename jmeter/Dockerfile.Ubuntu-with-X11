@@ -3,7 +3,7 @@ ARG BASE_JMETER_IMAGE_VERSION=latest
 FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
 
 # Install X11
-RUN apt install -y x11-apps xauth xorg xvfb
+RUN apt-get update && apt-get install -y x11-apps xauth xorg xvfb
 
 # Set DISPLAY environment variable (for X11 forwarding)
 ENV DISPLAY=host.docker.internal:0

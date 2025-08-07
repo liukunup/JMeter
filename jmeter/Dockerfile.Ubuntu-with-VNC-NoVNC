@@ -3,7 +3,7 @@ ARG BASE_JMETER_IMAGE_VERSION=latest
 FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
 
 # Install VNC/NoVNC
-RUN apt install -y xvfb x11vnc novnc websockify
+RUN apt-get update && apt-get install -y xvfb x11vnc novnc websockify
 
 # Expose ports for VNC and NoVNC
 EXPOSE 5900 6080

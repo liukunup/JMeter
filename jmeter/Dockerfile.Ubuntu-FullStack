@@ -3,7 +3,7 @@ ARG BASE_JMETER_IMAGE_VERSION=latest
 FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
 
 # Install necessary packages for X11 VNC/NoVNC and RDP
-RUN apt update && apt install -y \
+RUN apt-get update && apt-get install -y \
     # Install X11
     x11-apps xauth xorg xvfb \
     # Install VNC/NoVNC

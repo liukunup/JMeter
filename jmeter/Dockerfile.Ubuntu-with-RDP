@@ -3,7 +3,7 @@ ARG BASE_JMETER_IMAGE_VERSION=latest
 FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
 
 # Install RDP
-RUN apt-get install -y xrdp xfce4
+RUN apt-get update && apt-get install -y xrdp xfce4
 
 # Expose port for RDP
 EXPOSE 3389
