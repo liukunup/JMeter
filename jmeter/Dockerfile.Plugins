@@ -27,7 +27,7 @@ ARG DRIVER_WEBSOCKET_URL=https://jmeter-plugins.org/files/packages/websocket-sam
 ARG SERVER_AGENT_VERSION=2.2.3
 ARG SERVER_AGENT_URL=https://github.com/undera/perfmon-agent/releases/download/${SERVER_AGENT_VERSION}/ServerAgent-${SERVER_AGENT_VERSION}.zip
 # Set the Server Agent home directory
-ENV SERVER_AGENT_HOME=/opt/ServerAgent
+ENV SERVER_AGENT_HOME=/opt/server-agent
 
 # Install plugins and drivers
 RUN    mkdir -p /tmp/dependencies \

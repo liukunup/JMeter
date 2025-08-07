@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - dev
-      # - feature/*
+      - feature/*
     paths-ignore:
       - 'README.md'
       - 'README_EN.md'
