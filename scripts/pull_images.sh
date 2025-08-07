@@ -6,12 +6,20 @@ REGISTRY="docker.io"
 JMETER_VERSION="5.6.3"
 
 IMAGES=(
-    # OpenJDK 21
-    "liukunup/jmeter:${JMETER_VERSION}"
-    "liukunup/jmeter:plugins-${JMETER_VERSION}"
-    # OpenJDK 8
-    "liukunup/jmeter:openjdk8-${JMETER_VERSION}"
-    "liukunup/jmeter:openjdk8-plugins-${JMETER_VERSION}"
+    # Alpine
+    "liukunup/jmeter:${JMETER_VERSION}-alpine-3-openjdk21-jre"
+    "liukunup/jmeter:${JMETER_VERSION}-alpine-3-openjdk21-jre-plugins"
+    "liukunup/jmeter:${JMETER_VERSION}-alpine-3-openjdk8-jre"
+    "liukunup/jmeter:${JMETER_VERSION}-alpine-3-openjdk8-jre-plugins"
+    # Ubuntu
+    "liukunup/jmeter:${JMETER_VERSION}-ubuntu-24.04-openjdk-21-jre"
+    "liukunup/jmeter:${JMETER_VERSION}-ubuntu-24.04-openjdk-21-jre-plugins"
+    "liukunup/jmeter:${JMETER_VERSION}-ubuntu-24.04-openjdk-8-jre"
+    "liukunup/jmeter:${JMETER_VERSION}-ubuntu-24.04-openjdk-8-jre-plugins"
+    "liukunup/jmeter:${JMETER_VERSION}-ubuntu-24.04-openjdk-21-jre-fullstack"
+    "liukunup/jmeter:${JMETER_VERSION}-ubuntu-24.04-openjdk-21-jre-x11"
+    "liukunup/jmeter:${JMETER_VERSION}-ubuntu-24.04-openjdk-21-jre-vnc-novnc"
+    "liukunup/jmeter:${JMETER_VERSION}-ubuntu-24.04-openjdk-21-jre-rdp"
 )
 
 for IMAGE in "${IMAGES[@]}"; do
