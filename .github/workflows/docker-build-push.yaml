@@ -391,7 +391,7 @@ jobs:
       matrix:  # format: {jmeter}-{os}-{version}-{jre}-business
         jmeter: ["5.6.3"]
         jre: ["openjdk-21-jre", "openjdk-8-jre"]
-        version: ["3"]
+        version: ["24.04"]
         os: ["ubuntu"]
         include:
           - dockerfile: "jmeter/Dockerfile.Business"

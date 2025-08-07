@@ -1,31 +1,56 @@
 # Power Shell
 
-# Usage: .\pull_images.ps1
+# Usage: .\pull_images.ps1 [-Sha <git_short_sha>]
 
-$REGISTRY = "docker.io"
-$JMETER_VERSION = "5.6.3"
+param(
+    [string]$Sha = ""
+)
+
+$COMMON_PARAMS = @{
+    Registry = "docker.io"
+    Jmeter = "5.6.3"
+    ImageBase = "liukunup/jmeter"
+    OS = @{
+        Alpine = "alpine-3"
+        Ubuntu = "ubuntu-24.04"
+    }
+    AlpineJRE = @{
+        JDK21 = "openjdk21-jre"
+        JDK8 = "openjdk8-jre"
+    }
+    UbuntuJRE = @{
+        JDK21 = "openjdk-21-jre"
+        JDK8 = "openjdk-8-jre"
+    }
+}
 
 $IMAGES = @(
-    # Alpine
-    "liukunup/jmeter:$JMETER_VERSION-alpine-3-openjdk21-jre"
-    "liukunup/jmeter:$JMETER_VERSION-alpine-3-openjdk21-jre-plugins"
-    "liukunup/jmeter:$JMETER_VERSION-alpine-3-openjdk8-jre"
-    "liukunup/jmeter:$JMETER_VERSION-alpine-3-openjdk8-jre-plugins"
-    # Ubuntu
-    "liukunup/jmeter:$JMETER_VERSION-ubuntu-24.04-openjdk-21-jre"
-    "liukunup/jmeter:$JMETER_VERSION-ubuntu-24.04-openjdk-21-jre-plugins"
-    "liukunup/jmeter:$JMETER_VERSION-ubuntu-24.04-openjdk-8-jre"
-    "liukunup/jmeter:$JMETER_VERSION-ubuntu-24.04-openjdk-8-jre-plugins"
-    "liukunup/jmeter:$JMETER_VERSION-ubuntu-24.04-openjdk-21-jre-fullstack"
-    "liukunup/jmeter:$JMETER_VERSION-ubuntu-24.04-openjdk-21-jre-x11"
-    "liukunup/jmeter:$JMETER_VERSION-ubuntu-24.04-openjdk-21-jre-vnc-novnc"
-    "liukunup/jmeter:$JMETER_VERSION-ubuntu-24.04-openjdk-21-jre-rdp"
+    # Alpine images
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Alpine)-$($COMMON_PARAMS.AlpineJRE.JDK21)"
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Alpine)-$($COMMON_PARAMS.AlpineJRE.JDK21)-plugins"
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Alpine)-$($COMMON_PARAMS.AlpineJRE.JDK8)"
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Alpine)-$($COMMON_PARAMS.AlpineJRE.JDK8)-plugins"
+
+    # Ubuntu images
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Ubuntu)-$($COMMON_PARAMS.UbuntuJRE.JDK21)"
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Ubuntu)-$($COMMON_PARAMS.UbuntuJRE.JDK21)-plugins"
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Ubuntu)-$($COMMON_PARAMS.UbuntuJRE.JDK8)"
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Ubuntu)-$($COMMON_PARAMS.UbuntuJRE.JDK8)-plugins"
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Ubuntu)-$($COMMON_PARAMS.UbuntuJRE.JDK21)-fullstack"
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Ubuntu)-$($COMMON_PARAMS.UbuntuJRE.JDK21)-x11"
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Ubuntu)-$($COMMON_PARAMS.UbuntuJRE.JDK21)-vnc-novnc"
+    "$($COMMON_PARAMS.ImageBase):$($COMMON_PARAMS.Jmeter)-$($COMMON_PARAMS.OS.Ubuntu)-$($COMMON_PARAMS.UbuntuJRE.JDK21)-rdp"
 )
 
 foreach ($IMAGE in $IMAGES) {
-    docker pull "$REGISTRY/$IMAGE-f42dd01"
-    if ($REGISTRY -ne "docker.io") {
-        docker tag "$REGISTRY/$IMAGE-f42dd01" "docker.io/$IMAGE-f42dd01"
-        docker rmi "$REGISTRY/$IMAGE-f42dd01"
+    $imageRef = "$($COMMON_PARAMS.Registry)/$IMAGE"
+    if (-not [string]::IsNullOrEmpty($Sha)) {
+        $imageRef += "-$Sha"
+    }
+
+    docker pull $imageRef
+    if ($COMMON_PARAMS.Registry -ne "docker.io") {
+        docker tag $imageRef "docker.io/$IMAGE"
+        docker rmi $imageRef
     }
 }
