@@ -3,6 +3,7 @@
 ```plaintext
 ├── Alpine                   # 以 Alpine 作为基础镜像
 │   └── Alpine with Plugins  # Alpine 基础镜像 + 常用插件
+|       └── Business         # 业务镜像示例
 └── Ubuntu                   # 以 Ubuntu 作为基础镜像
     └── Ubuntu with Plugins  # Ubuntu 基础镜像 + 常用插件
         ├── FullStack        # 同时支持 X11 + VNC + NoVNC + RDP
