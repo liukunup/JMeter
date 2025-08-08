@@ -48,6 +48,9 @@ readonly YELLOW='\033[0;33m'
 readonly BLUE='\033[0;34m'
 readonly NC='\033[0m' # No Color
 
+# Ensure log file exists and is empty
+> "$LOG_FILE"
+
 log() {
   local level=$1
   local message=$2
@@ -128,6 +131,9 @@ test_smoke() {
     rm "$TEMP_LOG"
     exit 1
   fi
+
+  # Clean up
+  rm "$TEMP_LOG"
 
   log_passed "冒烟测试通过"
 }
