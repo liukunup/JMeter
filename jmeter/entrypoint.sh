@@ -133,8 +133,7 @@ calculate_jvm_memory() {
   local java_version=$(get_java_version)
   local jvm_opts=""
 
-  log_info "Container memory limit: ${container_mem}MB"
-  log_info "Java version: ${java_version}"
+  log_info "Container memory limit: ${container_mem} MB"
 
   # Extract major version (e.g., "1.8.0_312" → 8, "11.0.14" → 11)
   local major_version
@@ -163,7 +162,6 @@ calculate_jvm_memory() {
   jvm_opts="$jvm_opts -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof"
 
   export JVM_ARGS=${jvm_opts}
-  log_info "JVM arguments set to: $JVM_ARGS"
 }
 
 # Copy custom plugins to JMeter
@@ -405,13 +403,17 @@ EOF
 # ------------ Main Script ------------
 main() {
   create_lock
+
+  log_section "Starting $SCRIPT_NAME v$SCRIPT_VERSION"
+  log_info "Running as $(id)"
+
   calculate_jvm_memory
   copy_plugins
 
-  log_section "Starting $SCRIPT_NAME v$SCRIPT_VERSION"
-  log_info "Running as: $(id)"
-  log_info "Java version: $(java -version 2>&1 | head -1)"
-  log_info "JMeter version: $(jmeter --version 2>&1)"
+  log_info "Java   version: $(java -version 2>&1 | head -1)"
+  log_info "JMeter version: $(jmeter -version 2>&1 | sed -n '/____/s/.* \([0-9]\+\.[0-9]\+\.[0-9]\+\)$/\1/p')"
+  log_info "JMeter HOME: $JMETER_HOME"
+  log_info "JVM args: $JVM_ARGS"
   log_info "Log file: $LOG_FILE"
 
   if [ $# -eq 0 ]; then
