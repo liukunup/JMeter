@@ -24,11 +24,7 @@ declare -A OS=(
 )
 
 # JRE versions
-declare -A JRE_ALPINE=(
-  ["JDK21"]="openjdk21-jre"
-  ["JDK8"]="openjdk8-jre"
-)
-declare -A JRE_UBUNTU=(
+declare -A JRE=(
   ["JDK21"]="openjdk-21-jre"
   ["JDK8"]="openjdk-8-jre"
 )
@@ -36,20 +32,20 @@ declare -A JRE_UBUNTU=(
 # List of images to pull
 IMAGES=(
   # Alpine images
-  "${IMAGE_BASE}:${JMETER}-${OS[ALPINE]}-${JRE_ALPINE[JDK21]}"
-  "${IMAGE_BASE}:${JMETER}-${OS[ALPINE]}-${JRE_ALPINE[JDK21]}-plugins"
-  "${IMAGE_BASE}:${JMETER}-${OS[ALPINE]}-${JRE_ALPINE[JDK8]}"
-  "${IMAGE_BASE}:${JMETER}-${OS[ALPINE]}-${JRE_ALPINE[JDK8]}-plugins"
+  "${IMAGE_BASE}:${JMETER}-${OS[ALPINE]}-${JRE[JDK21]}"
+  "${IMAGE_BASE}:${JMETER}-${OS[ALPINE]}-${JRE[JDK21]}-plugins"
+  "${IMAGE_BASE}:${JMETER}-${OS[ALPINE]}-${JRE[JDK8]}"
+  "${IMAGE_BASE}:${JMETER}-${OS[ALPINE]}-${JRE[JDK8]}-plugins"
 
   # Ubuntu images
-  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE_UBUNTU[JDK21]}"
-  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE_UBUNTU[JDK21]}-plugins"
-  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE_UBUNTU[JDK8]}"
-  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE_UBUNTU[JDK8]}-plugins"
-  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE_UBUNTU[JDK21]}-fullstack"
-  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE_UBUNTU[JDK21]}-x11"
-  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE_UBUNTU[JDK21]}-vnc-novnc"
-  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE_UBUNTU[JDK21]}-rdp"
+  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE[JDK21]}"
+  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE[JDK21]}-plugins"
+  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE[JDK8]}"
+  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE[JDK8]}-plugins"
+  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE[JDK21]}-fullstack"
+  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE[JDK21]}-x11"
+  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE[JDK21]}-vnc-novnc"
+  "${IMAGE_BASE}:${JMETER}-${OS[UBUNTU]}-${JRE[JDK21]}-rdp"
 )
 
 # Pull images
