@@ -78,24 +78,41 @@ create_lock() {
 # Get container memory limit in MB
 get_container_memory_limit() {
   local mem_limit
+  local max_sane_memory=$(( 128 * 1024 * 1024 * 1024 )) # 128GB in bytes (防止极端值)
 
-  # Check cgroup v2
+  # 1. 优先检查 cgroup v2 (Alpine 3.x+/Ubuntu 22.04+ 默认)
   if [ -f "/sys/fs/cgroup/memory.max" ]; then
     mem_limit=$(cat /sys/fs/cgroup/memory.max)
-    # If "max" (no limit), fall back to host memory
-    if [ "$mem_limit" = "max" ]; then
-      mem_limit=$(awk '/MemTotal/ { print int($2 * 1024) }' /proc/meminfo)
-    fi
-  # Check cgroup v1
+    [ "$mem_limit" = "max" ] && mem_limit=$(awk '/MemTotal/ { print int($2 * 1024) }' /proc/meminfo)
+
+  # 2. 检查 cgroup v1 (旧版 Docker/Kubernetes)
   elif [ -f "/sys/fs/cgroup/memory/memory.limit_in_bytes" ]; then
     mem_limit=$(cat /sys/fs/cgroup/memory/memory.limit_in_bytes)
-  # Non-container environment, use 80% of host memory
+
+  # 3. 非容器环境或 systemd 容器 (Ubuntu 24.04 可能用 systemd)
+  elif [ -f "/proc/self/cgroup" ] && grep -q "memory:" /proc/self/cgroup; then
+    local cgroup_path=$(grep "memory:" /proc/self/cgroup | cut -d: -f3)
+    if [ -f "/sys/fs/cgroup/memory$cgroup_path/memory.limit_in_bytes" ]; then
+      mem_limit=$(cat "/sys/fs/cgroup/memory$cgroup_path/memory.limit_in_bytes")
+    else
+      mem_limit=$(awk '/MemTotal/ { print int($2 * 1024 * 0.8) }' /proc/meminfo)
+    fi
+
+  # 4. 兜底方案 (非容器环境)
   else
     mem_limit=$(awk '/MemTotal/ { print int($2 * 1024 * 0.8) }' /proc/meminfo)
   fi
 
-  # Convert to MB (for JVM parameters)
-  echo $(( mem_limit / 1024 / 1024 ))
+  # 5. 处理超大的内存限制 (如 Kubernetes 未设限时可能返回 2^64)
+  if [ "$mem_limit" -gt "$max_sane_memory" ]; then
+    mem_limit=$(awk '/MemTotal/ { print int($2 * 1024 * 0.8) }' /proc/meminfo)
+  fi
+
+  # 6. 转换为 MB (并确保最小值为 256MB)
+  mem_limit=$(( mem_limit / 1024 / 1024 ))
+  [ "$mem_limit" -lt 256 ] && mem_limit=256
+
+  echo "$mem_limit"
 }
 
 # Get Java version
