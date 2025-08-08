@@ -167,7 +167,7 @@ run_jmeter() {
 
   [ $# -eq 0 ] && log_warning "No arguments provided to JMeter"
 
-  log_info "JVM    Args: $JVM_ARGS"
+  log_info "JVM Args: $JVM_ARGS"
   log_info "JMeter Args: $*"
 
   exec jmeter -Dlog4j2.formatMsgNoLookups=true "$@"
@@ -184,8 +184,8 @@ run_jmeter_server() {
     -Dserver.rmi.ssl.disable=true
   )
 
-  log_info "JVM        Args: $JVM_ARGS"
-  log_info "Server     Args: ${server_args[*]}"
+  log_info "JVM Args: $JVM_ARGS"
+  log_info "Server Args: ${server_args[*]}"
   log_info "Additional Args: $*"
 
   exec jmeter-server "${server_args[@]}" "$@"
@@ -200,9 +200,9 @@ run_mirror_server() {
     --port 8080
   )
 
-  log_info "JVM           Args: $JVM_ARGS"
+  log_info "JVM Args: $JVM_ARGS"
   log_info "Mirror Server Args: ${mirror_args[*]}"
-  log_info "Additional    Args: $*"
+  log_info "Additional Args: $*"
 
   exec mirror-server "${mirror_args[@]}" "$@"
 }
@@ -389,7 +389,7 @@ main() {
 
   log_section "Starting $SCRIPT_NAME v$SCRIPT_VERSION"
   log_info "Running as: $(id)"
-  log_info "Java   version: $(java -version 2>&1 | head -1)"
+  log_info "Java version: $(java -version 2>&1 | head -1)"
   log_info "JMeter version: $(jmeter --version 2>&1)"
   log_info "Log file: $LOG_FILE"
 
