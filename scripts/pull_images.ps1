@@ -1,9 +1,9 @@
 # Power Shell
 
-# Usage: .\pull_images.ps1 [-Sha <git_short_sha>]
+# Usage: .\pull_images.ps1 [-SHA <git_short_sha>]
 
 param(
-    [string]$Sha = ""
+    [string]$SHA = ""
 )
 
 $COMMON_PARAMS = @{
@@ -40,8 +40,8 @@ $IMAGES = @(
 
 foreach ($IMAGE in $IMAGES) {
     $imageRef = "$($COMMON_PARAMS.Registry)/$IMAGE"
-    if (-not [string]::IsNullOrEmpty($Sha)) {
-        $imageRef += "-$Sha"
+    if (-not [string]::IsNullOrEmpty($SHA)) {
+        $imageRef += "-$SHA"
     }
 
     docker pull $imageRef
