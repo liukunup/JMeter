@@ -101,8 +101,13 @@ get_container_memory_limit() {
 # Get Java version
 get_java_version() {
   local java_version
-  java_version=$(${JAVA_HOME}/bin/java -version 2>&1 | awk -F '"' '/version/ {print $2}')
-  echo "$java_version"
+  if command -v java > /dev/null 2>&1; then
+    java_version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
+    echo "$java_version"
+  else
+    echo "ERROR: Java not found in PATH!" >&2
+    exit 1
+  fi
 }
 
 # Calculate and set JVM memory parameters
@@ -372,7 +377,6 @@ vnc             Start VNC/NoVNC server
 rdp             Start RDP server
 
 Environment Variables:
-JAVA_HOME                    - Path to Java installation (required)
 JMETER_HOME                  - Path to JMeter installation (required)
 JMETER_CUSTOM_PLUGINS_FOLDER - Path to custom JMeter plugins
 SERVER_AGENT_HOME            - Path to Server Agent installation
