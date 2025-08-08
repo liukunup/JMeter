@@ -145,17 +145,17 @@ calculate_jvm_memory() {
 
   # Java 8u131+ needs explicit container support
   if [ "$major_version" -eq 8 ]; then
-    jvm_opts="$jvm_opts -XX:+UseContainerSupport"
+    jvm_opts="-XX:+UseContainerSupport"
     # Use 70% of container memory for heap
     local heap_size=$(( container_mem * 70 / 100 ))
     jvm_opts="$jvm_opts -Xms${heap_size}m -Xmx${heap_size}m"
   # Java 10+ supports dynamic memory allocation
   elif [ "$major_version" -ge 10 ]; then
-    jvm_opts="$jvm_opts -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
+    jvm_opts="-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
   else
     # Fallback for other versions
     local heap_size=$(( container_mem * 70 / 100 ))
-    jvm_opts="$jvm_opts -Xms${heap_size}m -Xmx${heap_size}m"
+    jvm_opts="-Xms${heap_size}m -Xmx${heap_size}m"
   fi
 
   # Common JVM optimizations
@@ -185,56 +185,63 @@ copy_plugins() {
 run_jmeter() {
   log_section "Starting JMeter in Console mode"
 
-  [ $# -eq 0 ] && log_warning "No arguments provided to JMeter"
+  local args=(
+    -Dlog4j2.formatMsgNoLookups=true
+    -Dlog4j2.logger.org.apache.logging.log4j.status.StatusConsoleListener.level=ERROR
+  )
+
+  [ $# -eq 0 ] && log_warning "No test file or arguments provided (usage: jmeter <testfile.jmx> [options])"
 
   log_info "JVM Args: $JVM_ARGS"
-  log_info "JMeter Args: $*"
+  log_info "JMeter Args: ${args[*]}"
+  [ $# -gt 0 ] && log_info "Additional Args: $*"
 
-  exec jmeter -Dlog4j2.formatMsgNoLookups=true "$@"
+  exec jmeter "${args[@]}" "$@"
 }
 
 # Run JMeter Server
 run_jmeter_server() {
   log_section "Starting JMeter Server"
 
-  local server_args=(
+  local args=(
     -Dlog4j2.formatMsgNoLookups=true
+    -Dlog4j2.logger.org.apache.logging.log4j.status.StatusConsoleListener.level=ERROR
     -Dserver_port=1099
     -Dserver.rmi.localport=50000
     -Dserver.rmi.ssl.disable=true
   )
 
   log_info "JVM Args: $JVM_ARGS"
-  log_info "Server Args: ${server_args[*]}"
-  log_info "Additional Args: $*"
+  log_info "JMeter Server Args: ${args[*]}"
+  [ $# -gt 0 ] && log_info "Additional Args: $*"
 
-  exec jmeter-server "${server_args[@]}" "$@"
+  exec jmeter-server "${args[@]}" "$@"
 }
 
 # Run Mirror Server
 run_mirror_server() {
   log_section "Starting Mirror Server"
 
-  local mirror_args=(
-    -Dlog4j2.formatMsgNoLookups=true
+  export JVM_ARGS="$JVM_ARGS -Dlog4j2.formatMsgNoLookups=true \
+    -Dlog4j2.logger.org.apache.logging.log4j.status.StatusConsoleListener.level=ERROR"
+
+  local args=(
     --port 8080
+    --loglevel DEBUG
   )
 
   log_info "JVM Args: $JVM_ARGS"
-  log_info "Mirror Server Args: ${mirror_args[*]}"
-  log_info "Additional Args: $*"
+  log_info "Mirror Server Args: ${args[*]}"
+  [ $# -gt 0 ] && log_info "Additional Args: $*"
 
-  exec mirror-server "${mirror_args[@]}" "$@"
+  exec mirror-server "${args[@]}" "$@"
 }
 
 # Run custom commands
 run_custom_command() {
   log_section "Run Custom Commands"
-  
-  if [ $# -eq 0 ]; then
-    log_error "No command specified"
-    exit 1
-  fi
+
+  [ $# -eq 0 ] && { log_error "No command specified"; exit 1; }
 
   log_info "Executing: $*"
   exec "$@"
@@ -252,7 +259,7 @@ run_keepalive() {
 run_server_agent() {
   log_section "Starting Server Agent"
 
-  local agent_home=${SERVER_AGENT_HOME:-"/opt/server-agent"}
+  local agent_home=${SERVER_AGENT_HOME:-"/opt/ServerAgent"}
   local interval=${SA_INTERVAL:-5}
   local script="${agent_home}/startAgent.sh"
 
