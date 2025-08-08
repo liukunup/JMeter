@@ -187,14 +187,13 @@ run_jmeter() {
 
   local args=(
     -Dlog4j2.formatMsgNoLookups=true
-    -Dlog4j2.logger.org.apache.logging.log4j.status.StatusConsoleListener.level=ERROR
   )
 
-  [ $# -eq 0 ] && log_warning "No test file or arguments provided (usage: jmeter <testfile.jmx> [options])"
+  [ $# -eq 0 ] && { log_error "No test file or arguments provided (usage: jmeter <test.jmx> [options])"; exit 1; }
 
-  log_info "JVM Args: $JVM_ARGS"
-  log_info "JMeter Args: ${args[*]}"
-  [ $# -gt 0 ] && log_info "Additional Args: $*"
+  log_info "Using JVM Args: $JVM_ARGS"
+  log_info "Using JMeter Args: ${args[*]}"
+  [ $# -gt 0 ] && log_info "Using Additional Args: $*"
 
   exec jmeter "${args[@]}" "$@"
 }
@@ -205,15 +204,14 @@ run_jmeter_server() {
 
   local args=(
     -Dlog4j2.formatMsgNoLookups=true
-    -Dlog4j2.logger.org.apache.logging.log4j.status.StatusConsoleListener.level=ERROR
     -Dserver_port=1099
     -Dserver.rmi.localport=50000
     -Dserver.rmi.ssl.disable=true
   )
 
-  log_info "JVM Args: $JVM_ARGS"
-  log_info "JMeter Server Args: ${args[*]}"
-  [ $# -gt 0 ] && log_info "Additional Args: $*"
+  log_info "Using JVM Args: $JVM_ARGS"
+  log_info "Using JMeter Server Args: ${args[*]}"
+  [ $# -gt 0 ] && log_info "Using Additional Args: $*"
 
   exec jmeter-server "${args[@]}" "$@"
 }
@@ -222,26 +220,23 @@ run_jmeter_server() {
 run_mirror_server() {
   log_section "Starting Mirror Server"
 
-  export JVM_ARGS="$JVM_ARGS -Dlog4j2.formatMsgNoLookups=true \
-    -Dlog4j2.logger.org.apache.logging.log4j.status.StatusConsoleListener.level=ERROR"
-
   local args=(
     --port 8080
-    --loglevel DEBUG
+    --loglevel INFO
   )
 
-  log_info "JVM Args: $JVM_ARGS"
-  log_info "Mirror Server Args: ${args[*]}"
-  [ $# -gt 0 ] && log_info "Additional Args: $*"
+  log_info "Using JVM Args: $JVM_ARGS"
+  log_info "Using Mirror Server Args: ${args[*]}"
+  [ $# -gt 0 ] && log_info "Using Additional Args: $*"
 
   exec mirror-server "${args[@]}" "$@"
 }
 
-# Run custom commands
+# Run custom command
 run_custom_command() {
-  log_section "Run Custom Commands"
+  log_section "Run Custom Command"
 
-  [ $# -eq 0 ] && { log_error "No command specified"; exit 1; }
+  [ $# -eq 0 ] && { log_error "No command provided"; exit 1; }
 
   log_info "Executing: $*"
   exec "$@"
@@ -252,6 +247,7 @@ run_keepalive() {
   log_section "Keepalive mode"
 
   log_info "Container will remain running indefinitely"
+
   exec tail -f /dev/null
 }
 
@@ -281,8 +277,6 @@ run_vnc_server() {
   local VNC_PORT=5900
   local NOVNC_PORT=6080
   local SCREEN_RESOLUTION="1280x800x16"
-
-  log_info "Display: $XVFB_DISPLAY | VNC Port: $VNC_PORT | NoVNC Port: $NOVNC_PORT"
 
   # Create log directory
   mkdir -p "$LOG_DIR" || {
@@ -315,7 +309,7 @@ run_vnc_server() {
 
   # Start Xvfb
   log_info "Starting Xvfb on display $XVFB_DISPLAY"
-  Xvfb "$XVFB_DISPLAY" -screen 0 "$SCREEN_RESOLUTION" -ac -nolisten tcp \
+  Xvfb "$XVFB_DISPLAY" -screen 0 "$SCREEN_RESOLUTION" -ac +extension RANDR -nolisten tcp \
       > "$LOG_DIR/Xvfb.log" 2>&1 &
   local XVFB_PID=$!
 
@@ -325,18 +319,19 @@ run_vnc_server() {
     log_error "Xvfb failed to start. Check $LOG_DIR/Xvfb.log for details"
     exit 1
   fi
+  disown $XVFB_PID
 
   # Start x11vnc server
   log_info "Starting x11vnc on port $VNC_PORT"
   x11vnc -forever -usepw -display "$XVFB_DISPLAY" -rfbport "$VNC_PORT" \
-    -bg -o "$LOG_DIR/x11vnc.log" -noxdamage || {
+    -bg -o "$LOG_DIR/x11vnc.log" -noxdamage -shared -loop || {
     log_error "Failed to start x11vnc"
     exit 1
   }
 
   # Start NoVNC
   log_info "Starting NoVNC on port $NOVNC_PORT"
-  websockify --web /usr/share/novnc "$NOVNC_PORT" "localhost:$VNC_PORT" \
+  websockify --daemon --web /usr/share/novnc "$NOVNC_PORT" "localhost:$VNC_PORT" \
       > "$LOG_DIR/novnc.log" 2>&1 &
   local NOVNC_PID=$!
 
@@ -347,14 +342,21 @@ run_vnc_server() {
     exit 1
   fi
 
+  # Verify VNC service is responding
+  sleep 2
+  if ! nc -z localhost $VNC_PORT; then
+    log_error "VNC service not responding"
+    exit 1
+  fi
+
   # Output connection information
   log_success "VNC/NoVNC Server started successfully"
-  log_info "VNC Connection: localhost:$VNC_PORT"
-  log_info "NoVNC (Web) Connection: http://localhost:$NOVNC_PORT/vnc.html"
-  log_info "Password: $VNC_PASSWORD"
+  log_info "• VNC: vnc://localhost:$VNC_PORT"
+  log_info "• Web: http://localhost:$NOVNC_PORT/vnc.html"
+  log_info "• Password: $VNC_PASSWORD"
+  log_info "• Logs: $LOG_DIR/*.log"
 
-  # Keep the script running
-  wait
+  exec tail -f /dev/null
 }
 
 # Run RDP Server
@@ -372,15 +374,11 @@ run_rdp_server() {
     log_error "Failed to start xrdp service"
     exit 1
   fi
-  
+
   log_success "RDP Server started successfully"
   log_info "RDP Server is running on port 3389"
 
-  # Tail logs in background
-  tail -f /var/log/xrdp.log /var/log/xrdp-sesman.log &
-
-  # Keep the script running
-  wait
+  exec tail -f /dev/null
 }
 
 # Show help
