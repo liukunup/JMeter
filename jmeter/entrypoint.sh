@@ -363,20 +363,35 @@ run_vnc_server() {
 run_rdp_server() {
   log_section "Starting RDP Server"
 
-  # Prepare X session
-  echo "xfce4-session" > ~/.xsession || {
-    log_error "Failed to create ~/.xsession file"
-    exit 1
-  }
+  # Check if user 'jmeter' exists, if not create it
+  if ! id jmeter >/dev/null 2>&1; then
+      groupadd --gid 1024 jmeter
+      useradd --shell /bin/bash --uid 1024 --gid 1024 --groups sudo \
+              --password "$(openssl passwd -6 jmeter)" \
+              --create-home --home-dir /home/jmeter jmeter
+      echo "jmeter ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+  fi
 
-  # Start xrdp service
-  if ! service xrdp start > /var/log/xrdp-start.log 2>&1; then
+  # Remove existing sesman/xrdp PID files to prevent rdp sessions hanging on container restart
+  [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
+  [ ! -f /var/run/xrdp/xrdp.pid ] || rm -f /var/run/xrdp/xrdp.pid
+
+  if ! service dbus start > /var/log/dbus-start.log 2>&1; then
+    log_error "Failed to start dbus service"
+    exit 1
+  fi
+
+  if ! service xrdp-sesman start 2>&1; then
+    log_error "Failed to start xrdp-sesman service"
+    exit 1
+  fi
+
+  if ! service xrdp start 2>&1; then
     log_error "Failed to start xrdp service"
     exit 1
   fi
 
-  log_success "RDP Server started successfully"
-  log_info "RDP Server is running on port 3389"
+  log_info "RDP Server started on port 3389"
 
   exec tail -f /dev/null
 }

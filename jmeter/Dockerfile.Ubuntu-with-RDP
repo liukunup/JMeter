@@ -2,15 +2,32 @@
 ARG BASE_JMETER_IMAGE_VERSION=latest
 FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install RDP
-RUN apt-get update && \
-    apt-get install -y xrdp xfce4 xfce4-goodies && \
-    # Clean up
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    dbus-x11 \
+    sudo \
+    nano \
+    pavucontrol \
+    pulseaudio \
+    pulseaudio-utils \
+    xfce4 \
+    xfce4-terminal \
+    xfce4-goodies \
+    xfce4-pulseaudio-plugin \
+    xrdp xorg xorgxrdp \
+    xubuntu-icon-theme \
+    software-properties-common \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    # Configure xrdp
+    && echo "xfce4-session" > /etc/skel/.xsession \
+    && echo "startxfce4" > /etc/xrdp/startwm.sh \
+    && chmod +x /etc/xrdp/startwm.sh
 
 # Expose port for RDP
-EXPOSE 3389
+EXPOSE 3389/tcp
 
 # Start RDP server
 ENTRYPOINT ["/entrypoint.sh", "rdp"]
