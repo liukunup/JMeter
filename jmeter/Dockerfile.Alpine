@@ -46,7 +46,7 @@ RUN    apk update \
 	&& apk add ca-certificates \
 	&& update-ca-certificates \
 	# Install Java, tzdata, curl, bash, vim, tar, unzip, make, net-tools, and nss
-	&& apk add --update ${JRE_VERSION} tzdata curl bash vim tar unzip make net-tools \
+	&& apk add --update ${JRE_VERSION} tzdata curl bash vim tar unzip make net-tools git \
 	&& apk add --no-cache nss \
 	# Optionally install Python 3 if INSTALL_PYTHON_3 is true
 	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then apk add --update --no-cache python3 py3-pip && ln -sf python3 /usr/bin/python; fi \
