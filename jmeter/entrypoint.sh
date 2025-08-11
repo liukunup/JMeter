@@ -365,11 +365,21 @@ run_rdp_server() {
 
   # Check if user 'jmeter' exists, if not create it
   if ! id jmeter >/dev/null 2>&1; then
-      groupadd --gid 1024 jmeter
-      useradd --shell /bin/bash --uid 1024 --gid 1024 --groups sudo \
-              --password "$(openssl passwd -6 jmeter)" \
-              --create-home --home-dir /home/jmeter jmeter
-      echo "jmeter ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    if ! groupadd --gid 1024 jmeter; then
+      log_error "Failed to create jmeter group"
+      exit 1
+    fi
+    if ! useradd --shell /bin/bash --uid 1024 --gid 1024 --groups sudo \
+                 --password $(openssl passwd -6 "jmeter") \
+                 --create-home --home-dir /home/jmeter jmeter; then
+      log_error "Failed to create jmeter user"
+      exit 1
+    fi
+    echo "jmeter ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    visudo -c || {
+      log_error "Invalid sudoers file after modification"
+      exit 1
+    }
   fi
 
   # Remove existing sesman/xrdp PID files to prevent rdp sessions hanging on container restart
@@ -381,12 +391,12 @@ run_rdp_server() {
     exit 1
   fi
 
-  if ! service xrdp-sesman start 2>&1; then
+  if ! /usr/sbin/xrdp-sesman 2>&1; then
     log_error "Failed to start xrdp-sesman service"
     exit 1
   fi
 
-  if ! service xrdp start 2>&1; then
+  if ! /usr/sbin/xrdp --nodaemon 2>&1; then
     log_error "Failed to start xrdp service"
     exit 1
   fi
