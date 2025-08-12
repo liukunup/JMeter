@@ -268,95 +268,72 @@ run_server_agent() {
   exec /bin/bash "$script" --udp-port 4444 --tcp-port 4444 --interval "$interval"
 }
 
-# Run VNC/NoVNC Server
+# Run VNC Server
 run_vnc_server() {
-  log_section "Starting VNC/NoVNC Server"
+  log_section "Starting VNC Server"
 
-  local LOG_DIR="/var/log/vnc"
-  local XVFB_DISPLAY="${DISPLAY:-:99}"
-  local VNC_PORT=5900
-  local NOVNC_PORT=6080
-  local SCREEN_RESOLUTION="1280x800x16"
-
-  # Create log directory
-  mkdir -p "$LOG_DIR" || {
-    log_error "Failed to create log directory: $LOG_DIR"
-    exit 1
-  }
+  # Set default username
+  local username="${VNC_USERNAME:-jmeter}"
 
   # Use environment variable or generate random password
   if [[ -n "${VNC_PASSWORD:-}" ]]; then
-    log_info "Using VNC password from environment variable"
+    log_info "Using password from environment variable"
   else
     VNC_PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
-    log_info "Generated random VNC password: $VNC_PASSWORD"
+    log_info "Generated random password: $VNC_PASSWORD"
+  fi
+
+  # Check if user exists, if not create it
+  if ! id $username >/dev/null 2>&1; then
+    if ! groupadd --gid 1024 $username; then
+      log_error "Failed to create $username group"
+      exit 1
+    fi
+    if ! useradd --shell /bin/bash --uid 1024 --gid 1024 --groups sudo \
+                 --password $(openssl passwd -6 "$VNC_PASSWORD") \
+                 --create-home --home-dir /home/$username $username; then
+      log_error "Failed to create $username user"
+      exit 1
+    fi
+    echo "$username ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    visudo -c || {
+      log_error "Invalid sudoers file after modification"
+      exit 1
+    }
   fi
 
   # Prepare VNC password file
-  mkdir -p ~/.vnc || {
-    log_error "Failed to create ~/.vnc directory"
+  mkdir -p /home/$username/.vnc || {
+    log_error "Failed to create /home/$username/.vnc directory"
     exit 1
   }
 
-  echo "$VNC_PASSWORD" | vncpasswd -f > ~/.vnc/passwd || {
+  echo "$VNC_PASSWORD" | vncpasswd -f > /home/$username/.vnc/passwd || {
     log_error "Failed to generate VNC password file"
     exit 1
   }
-  chmod 600 ~/.vnc/passwd || {
+  chmod 600 /home/$username/.vnc/passwd || {
     log_error "Failed to set permissions on VNC password file"
     exit 1
   }
 
-  # Start Xvfb
-  log_info "Starting Xvfb on display $XVFB_DISPLAY"
-  Xvfb "$XVFB_DISPLAY" -screen 0 "$SCREEN_RESOLUTION" -ac +extension RANDR -nolisten tcp \
-      > "$LOG_DIR/Xvfb.log" 2>&1 &
-  local XVFB_PID=$!
-
-  # Wait for Xvfb to start
-  sleep 2
-  if ! kill -0 "$XVFB_PID" >/dev/null 2>&1; then
-    log_error "Xvfb failed to start. Check $LOG_DIR/Xvfb.log for details"
-    exit 1
-  fi
-  disown $XVFB_PID
-
-  # Start x11vnc server
-  log_info "Starting x11vnc on port $VNC_PORT"
-  x11vnc -forever -usepw -display "$XVFB_DISPLAY" -rfbport "$VNC_PORT" \
-    -bg -o "$LOG_DIR/x11vnc.log" -noxdamage -shared -loop || {
-    log_error "Failed to start x11vnc"
+  # Generate self-signed certificate
+  mkdir -p /opt/novnc/certs || {
+    log_error "Failed to create SSL private directory"
     exit 1
   }
 
-  # Start NoVNC
-  log_info "Starting NoVNC on port $NOVNC_PORT"
-  websockify --daemon --web /usr/share/novnc "$NOVNC_PORT" "localhost:$VNC_PORT" \
-      > "$LOG_DIR/novnc.log" 2>&1 &
-  local NOVNC_PID=$!
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -sha256 \
+    -keyout /opt/novnc/certs/vnc.key -out /opt/novnc/certs/vnc.crt \
+    -subj "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN=localhost" || {
+    log_error "Failed to generate self-signed certificate"
+    exit 1
+  }
 
-  # Verify services are running
-  sleep 1
-  if ! kill -0 "$NOVNC_PID" >/dev/null 2>&1; then
-    log_error "NoVNC failed to start. Check $LOG_DIR/novnc.log for details"
+  if ! /usr/bin/supervisord --nodaemon 2>&1; then
+    log_error "Failed to start supervisord"
     exit 1
   fi
-
-  # Verify VNC service is responding
-  sleep 2
-  if ! nc -z localhost $VNC_PORT; then
-    log_error "VNC service not responding"
-    exit 1
-  fi
-
-  # Output connection information
-  log_success "VNC/NoVNC Server started successfully"
-  log_info "• VNC: vnc://localhost:$VNC_PORT"
-  log_info "• Web: http://localhost:$NOVNC_PORT/vnc.html"
-  log_info "• Password: $VNC_PASSWORD"
-  log_info "• Logs: $LOG_DIR/*.log"
-
-  exec tail -f /dev/null
 }
 
 # Run RDP Server
