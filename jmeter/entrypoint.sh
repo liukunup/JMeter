@@ -379,6 +379,46 @@ run_rdp_server() {
   fi
 }
 
+# Run NoMachine Server
+run_nomachine_server() {
+  log_section "Starting NoMachine Server"
+
+  # Set default username
+  local username="${NOMACHINE_USERNAME:-jmeter}"
+
+  # Use environment variable or generate random password
+  if [[ -n "${NOMACHINE_PASSWORD:-}" ]]; then
+    log_info "Using password from environment variable"
+  else
+    NOMACHINE_PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
+    log_info "Generated random password: $NOMACHINE_PASSWORD"
+  fi
+
+  # Check if user exists, if not create it
+  if ! id $username >/dev/null 2>&1; then
+    if ! groupadd --gid 1024 $username; then
+      log_error "Failed to create $username group"
+      exit 1
+    fi
+    if ! useradd --shell /bin/bash --uid 1024 --gid 1024 --groups sudo \
+                 --password $(openssl passwd -6 "$NOMACHINE_PASSWORD") \
+                 --create-home --home-dir /home/$username $username; then
+      log_error "Failed to create $username user"
+      exit 1
+    fi
+    echo "$username ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    visudo -c || {
+      log_error "Invalid sudoers file after modification"
+      exit 1
+    }
+  fi
+
+  /etc/init.d/dbus start
+  /etc/NX/nxserver --startup
+
+  exec tail -f /usr/NX/var/log/nxserver.log
+}
+
 # Show help
 show_help() {
   cat <<EOF
@@ -393,6 +433,7 @@ keepalive       Just keep container alive
 server-agent    Run Server Agent for monitoring
 vnc             Start VNC/NoVNC server
 rdp             Start RDP server
+nomachine       Start NoMachine server
 
 Environment Variables:
 JMETER_HOME                  - Path to JMeter installation (required)
@@ -436,6 +477,7 @@ main() {
     server-agent)   run_server_agent ;;
     vnc)            run_vnc_server ;;
     rdp)            run_rdp_server ;;
+    nomachine)      run_nomachine_server ;;
     help|--help|-h) show_help ;;
     *) 
       log_error "Unknown mode: $mode"
