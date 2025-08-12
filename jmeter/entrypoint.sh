@@ -413,8 +413,15 @@ run_nomachine_server() {
     }
   fi
 
-  /etc/init.d/dbus start
-  /etc/NX/nxserver --startup
+  if ! /etc/init.d/dbus start 2>&1; then
+    log_error "Failed to start dbus"
+    exit 1
+  fi
+
+  if ! /etc/NX/nxserver --startup 2>&1; then
+    log_error "Failed to start NoMachine server"
+    exit 1
+  fi
 
   exec tail -f /usr/NX/var/log/nxserver.log
 }
