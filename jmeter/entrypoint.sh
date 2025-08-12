@@ -400,10 +400,6 @@ run_rdp_server() {
     log_error "Failed to start xrdp service"
     exit 1
   fi
-
-  log_info "RDP Server started on port 3389"
-
-  exec tail -f /dev/null
 }
 
 # Show help
