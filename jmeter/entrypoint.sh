@@ -278,29 +278,49 @@ create_user() {
 
   # Check if user exists, if not create it
   if ! id "$username" >/dev/null 2>&1; then
-
     log_info "Creating user '$username' with UID:GID $uid:$gid"
 
+    # Create group
     if ! groupadd --gid "$gid" "$username"; then
-      log_error "Failed to create $username group"
+      log_error "Failed to create group '$username' (GID: $gid)"
       exit 1
     fi
 
-    if ! useradd --shell /bin/bash --uid "$uid" --gid "$gid" --groups sudo \
-                 --password "$(openssl passwd -6 "$password")" \
-                 --create-home --home-dir "/home/$username" "$username"; then
-      log_error "Failed to create $username user"
+    # Create user with sudo privileges
+    if ! useradd --shell /bin/bash \
+                 --uid "$uid" \
+                 --gid "$gid" \
+                 --groups sudo \
+                 --password "$(openssl passwd -6 -salt "$(openssl rand -base64 12)" "$password")" \
+                 --create-home \
+                 --home-dir "/home/$username" \
+                 "$username"; then
+      log_error "Failed to create user '$username' (UID: $uid)"
       exit 1
     fi
 
-    echo "$username ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    # Add sudo rule safely
+    temp_sudoers=$(mktemp)
+    {
+        echo "# Temporary sudoers addition for $username"
+        echo "$username ALL=(ALL) NOPASSWD: ALL"
+    } > "$temp_sudoers"
+    # Validate temporary file
+    if ! visudo -cf "$temp_sudoers" >/dev/null 2>&1; then
+        log_error "Invalid sudoers file"
+        rm -f "$temp_sudoers"
+        exit 1
+    fi
+    # Append to /etc/sudoers
+    if ! cat "$temp_sudoers" >> /etc/sudoers; then
+        log_error "Failed to update /etc/sudoers"
+        rm -f "$temp_sudoers"
+        exit 1
+    fi
+    # Clean up temporary file
+    rm -f "$temp_sudoers"
 
-    visudo -c || {
-      log_error "Invalid sudoers file after modification"
-      exit 1
-    }
-
-    log_info "User '$username' created with password: $password"
+    log_info "User '$username' created with password: $password (Remember it! You will see it only once)"
   fi
 
   export USERNAME="$username"
@@ -357,7 +377,7 @@ run_rdp_server() {
   [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
   [ ! -f /var/run/xrdp/xrdp.pid ] || rm -f /var/run/xrdp/xrdp.pid
 
-  if ! service dbus start > /var/log/dbus-start.log 2>&1; then
+  if ! service dbus start 2>&1; then
     log_error "Failed to start dbus service"
     exit 1
   fi
