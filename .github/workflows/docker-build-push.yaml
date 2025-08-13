@@ -45,10 +45,11 @@ jobs:
         os: ["alpine"]
         include:
           - dockerfile: "jmeter/Dockerfile.Alpine"
-          - jre_map: '{
-              "openjdk-21-jre": "openjdk21-jre",
-              "openjdk-8-jre": "openjdk8-jre"
-            }'
+          - jre_map: |
+              {
+                "openjdk-21-jre": "openjdk21-jre",
+                "openjdk-8-jre": "openjdk8-jre"
+              }
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
