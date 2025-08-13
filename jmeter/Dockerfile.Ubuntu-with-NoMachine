@@ -8,16 +8,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 # link https://kb.nomachine.com/DT08U00297?s=docker
 RUN apt-get update && apt-get install -y \
     apt-utils vim xterm cups curl \
-        xfce4 \
+    xfce4 \
     xfce4-goodies \
     xubuntu-icon-theme \
-
-curl -fSL "https://www.nomachine.com/free/linux/64/deb" -o nomachine.deb \
-&& dpkg -i nomachine.deb \
+    && curl -fSL "https://www.nomachine.com/free/linux/64/deb" -o nomachine.deb \
+    && dpkg -i nomachine.deb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
-
-COPY entrypoint.sh /entrypoint.sh
 
 # Start NoMachine server
 ENTRYPOINT ["/entrypoint.sh", "nomachine"]
