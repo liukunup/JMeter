@@ -327,11 +327,82 @@ create_user() {
   export PASSWORD="$password"
 }
 
+# Create desktop shortcut for JMeter
+create_desktop_shortcut() {
+    local username="${1:-$DEFAULT_USER}"
+    local user_home="/home/$username"
+    local user_desktop_dir="$user_home/Desktop"
+    local desktop_shortcut_file="$user_desktop_dir/jmeter.desktop"
+
+    # Check if user already exists
+    if ! id -u "$username" >/dev/null 2>&1; then
+        log_error "User '$username' does not exist"
+        exit 1
+    fi
+
+    # Ensure home directory exists
+    if [ ! -d "$user_home" ]; then
+        log_error "Home directory $user_home does not exist"
+        exit 1
+    fi
+
+    # Create Desktop directory if needed
+    if [ ! -d "$user_desktop_dir" ]; then
+        log_info "Creating Desktop directory at $user_desktop_dir"
+        if ! mkdir -p "$user_desktop_dir"; then
+            log_error "Failed to create Desktop directory at $user_desktop_dir"
+            exit 1
+        fi
+        chown "$username:$username" "$user_desktop_dir" || {
+            log_error "Failed to set ownership for $user_desktop_dir"
+            exit 1
+        }
+    fi
+
+    # Check if shortcut already exists
+    if [ -f "$desktop_shortcut_file" ]; then
+        log_info "Desktop shortcut already exists at $desktop_shortcut_file"
+        exit 0
+    fi
+
+    # Create desktop shortcut
+    log_info "Creating JMeter desktop shortcut at $desktop_shortcut_file"
+    if ! cat > "$desktop_shortcut_file" <<'EOL'
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=JMeter
+Comment=Start JMeter
+Exec=jmeter
+Icon=utilities-terminal
+Terminal=false
+StartupNotify=true
+EOL
+    then
+        log_error "Failed to create desktop shortcut file"
+        exit 1
+    fi
+
+    # Set permissions
+    if ! chmod +x "$desktop_shortcut_file"; then
+        log_error "Failed to make shortcut executable"
+        exit 1
+    fi
+
+    if ! chown "$username:$username" "$desktop_shortcut_file"; then
+        log_error "Failed to set ownership for shortcut file"
+        exit 1
+    fi
+
+    log_success "Successfully created JMeter desktop shortcut"
+}
+
 # Run VNC Server
 run_vnc_server() {
   log_section "Starting VNC Server"
 
   create_user "$DEFAULT_USER" "$VNC_PASSWORD"
+  create_desktop_shortcut "$DEFAULT_USER"
 
   # Prepare VNC password file
   mkdir -p /home/$USERNAME/.vnc || {
@@ -372,6 +443,7 @@ run_rdp_server() {
   log_section "Starting RDP Server"
 
   create_user "$DEFAULT_USER" "$RDP_PASSWORD"
+  create_desktop_shortcut "$DEFAULT_USER"
 
   # Remove existing sesman/xrdp PID files to prevent rdp sessions hanging on container restart
   [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
@@ -398,6 +470,7 @@ run_nomachine_server() {
   log_section "Starting NoMachine Server"
 
   create_user "$DEFAULT_USER" "$NM_PASSWORD"
+  create_desktop_shortcut "$DEFAULT_USER"
 
   if ! /etc/init.d/dbus start 2>&1; then
     log_error "Failed to start dbus"
