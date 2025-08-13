@@ -272,25 +272,19 @@ run_server_agent() {
 run_vnc_server() {
   log_section "Starting VNC Server"
 
-  # Set default username
   local username="${VNC_USERNAME:-jmeter}"
-
-  # Use environment variable or generate random password
-  if [[ -n "$VNC_PASSWORD" ]]; then
-    log_info "Using password from environment variable"
-  else
-    VNC_PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
-    log_info "Generated random password: $VNC_PASSWORD"
-  fi
+  local password="${VNC_PASSWORD:-$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)}"
+  local uid=$(shuf -i 2000-60000 -n 1)
+  local gid=$uid
 
   # Check if user exists, if not create it
   if ! id $username >/dev/null 2>&1; then
-    if ! groupadd --gid 1024 $username; then
+    if ! groupadd --gid $gid $username; then
       log_error "Failed to create $username group"
       exit 1
     fi
-    if ! useradd --shell /bin/bash --uid 1024 --gid 1024 --groups sudo \
-                 --password $(openssl passwd -6 "$VNC_PASSWORD") \
+    if ! useradd --shell /bin/bash --uid $uid --gid $gid --groups sudo \
+                 --password $(openssl passwd -6 "$password") \
                  --create-home --home-dir /home/$username $username; then
       log_error "Failed to create $username user"
       exit 1
@@ -308,7 +302,7 @@ run_vnc_server() {
     exit 1
   }
 
-  echo "$VNC_PASSWORD" | vncpasswd -f > /home/$username/.vnc/passwd || {
+  echo "$password" | vncpasswd -f > /home/$username/.vnc/passwd || {
     log_error "Failed to generate VNC password file"
     exit 1
   }
@@ -323,7 +317,7 @@ run_vnc_server() {
     exit 1
   }
 
-  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -sha256 \
+  [ -f /opt/certs/vnc.crt ] || openssl req -x509 -nodes -days 365 -newkey rsa:2048 -sha256 \
     -keyout /opt/certs/vnc.key -out /opt/certs/vnc.crt \
     -subj "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN=localhost" || {
     log_error "Failed to generate self-signed certificate"
