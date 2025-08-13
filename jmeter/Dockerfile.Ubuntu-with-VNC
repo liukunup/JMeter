@@ -2,11 +2,14 @@
 ARG BASE_JMETER_IMAGE_VERSION=latest
 FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    VNC_USERNAME=jmeter \
+    VNC_PASSWORD=jmeter \
+    DISPLAY=:1
 
 # Install packages
 RUN apt-get update && apt-get install -y \
-    # Pulse Audio
+    # PulseAudio
     pulseaudio \
     pulseaudio-utils \
     pavucontrol \
@@ -20,10 +23,12 @@ RUN apt-get update && apt-get install -y \
     xvfb \
     novnc \
     websockify \
-    && chmod +x /entrypoint.sh \
+    openssl \
     && apt-get autoclean \
     && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
+
+COPY jmeter/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 5900 6080
 

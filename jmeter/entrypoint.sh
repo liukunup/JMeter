@@ -318,13 +318,13 @@ run_vnc_server() {
   }
 
   # Generate self-signed certificate
-  mkdir -p /opt/novnc/certs || {
+  mkdir -p /opt/certs || {
     log_error "Failed to create SSL private directory"
     exit 1
   }
 
   openssl req -x509 -nodes -days 365 -newkey rsa:2048 -sha256 \
-    -keyout /opt/novnc/certs/vnc.key -out /opt/novnc/certs/vnc.crt \
+    -keyout /opt/certs/vnc.key -out /opt/certs/vnc.crt \
     -subj "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN=localhost" || {
     log_error "Failed to generate self-signed certificate"
     exit 1
