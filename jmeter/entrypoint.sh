@@ -276,7 +276,7 @@ run_vnc_server() {
   local username="${VNC_USERNAME:-jmeter}"
 
   # Use environment variable or generate random password
-  if [[ -n "${VNC_PASSWORD:-}" ]]; then
+  if [[ -n "$VNC_PASSWORD" ]]; then
     log_info "Using password from environment variable"
   else
     VNC_PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
