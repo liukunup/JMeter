@@ -32,7 +32,7 @@ env:
 jobs:
   # Alpine
   build-alpine-jmeter-images:
-    name: Build Alpine JMeter Images
+    name: Alpine
     runs-on: ubuntu-24.04
     permissions:
       packages: write
@@ -99,7 +99,7 @@ jobs:
             JRE_VERSION=${{ steps.get_jre.outputs.JRE_PKG }}
 
   build-alpine-jmeter-images-with-plugins:
-    name: Build Alpine JMeter Images with Plugins
+    name: Alpine - Plugins
     needs: build-alpine-jmeter-images
     runs-on: ubuntu-24.04
     permissions:
@@ -158,7 +158,7 @@ jobs:
             BASE_JMETER_IMAGE=${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}
 
   build-alpine-jmeter-images-with-business:
-    name: Build Alpine JMeter Images with Business
+    name: Alpine - Business
     needs: build-alpine-jmeter-images-with-plugins
     runs-on: ubuntu-24.04
     permissions:
@@ -218,7 +218,7 @@ jobs:
 
   # Ubuntu
   build-ubuntu-jmeter-images:
-    name: Build Ubuntu JMeter Images
+    name: Ubuntu
     runs-on: ubuntu-24.04
     permissions:
       packages: write
@@ -274,7 +274,7 @@ jobs:
             JRE_VERSION=${{ matrix.jre }}
 
   build-ubuntu-jmeter-images-with-plugins:
-    name: Build Ubuntu JMeter Images with Plugins
+    name: Ubuntu - Plugins
     needs: build-ubuntu-jmeter-images
     runs-on: ubuntu-24.04
     permissions:
@@ -333,7 +333,7 @@ jobs:
             BASE_JMETER_IMAGE=${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}
 
   build-ubuntu-jmeter-images-with-gui:
-    name: Build Ubuntu JMeter Images with GUI
+    name: Ubuntu - GUI
     needs: build-ubuntu-jmeter-images-with-plugins
     runs-on: ubuntu-24.04
     permissions:
@@ -417,7 +417,7 @@ jobs:
             BASE_JMETER_IMAGE=${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ steps.get_short_sha.outputs.SHORT_SHA }}
 
   build-ubuntu-jmeter-images-with-business:
-    name: Build Ubuntu JMeter Images with Business
+    name: Ubuntu - Business
     needs: build-ubuntu-jmeter-images-with-plugins
     runs-on: ubuntu-24.04
     permissions:
