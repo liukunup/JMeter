@@ -1,8 +1,10 @@
 # Use the specified JMeter image as the base image
-ARG BASE_JMETER_IMAGE_VERSION=latest
-FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
+ARG BASE_JMETER_IMAGE
+FROM ${BASE_JMETER_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+ENV RDP_PASSWORD=""
 
 # Install RDP
 RUN apt-get update && apt-get install -y \
@@ -29,5 +31,6 @@ RUN apt-get update && apt-get install -y \
 # Expose port for RDP
 EXPOSE 3389/tcp
 
-# Start RDP server
-ENTRYPOINT ["/entrypoint.sh", "rdp"]
+ENTRYPOINT [ "/entrypoint.sh" ]
+
+CMD [ "rdp" ]

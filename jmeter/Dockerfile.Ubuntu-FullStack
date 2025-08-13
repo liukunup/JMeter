@@ -1,6 +1,6 @@
 # Use the specified JMeter image as the base image
-ARG BASE_JMETER_IMAGE_VERSION=latest
-FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
+ARG BASE_JMETER_IMAGE
+FROM ${BASE_JMETER_IMAGE}
 
 # Install necessary packages for X11 VNC/NoVNC and RDP
 RUN apt-get update && \
@@ -17,7 +17,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Set DISPLAY environment variable (for X11 forwarding)
-ENV DISPLAY=:99
+ENV DISPLAY=":1"
 
 # Expose ports for VNC/NoVNC and RDP
 EXPOSE 5900 6080 3389

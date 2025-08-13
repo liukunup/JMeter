@@ -26,7 +26,8 @@ on:
       - 'scripts/**'
 
 env:
-  DOCKER_HUB_REPO: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
+  REGISTRY: registry.cn-hangzhou.aliyuncs.com
+  REPOSITORY: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
 
 jobs:
   # Alpine
@@ -75,7 +76,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}
           tags: |
             type=sha,format=short,prefix=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-
           labels: |
@@ -132,7 +133,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}
           tags: |
             type=sha,format=short,prefix=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-
           labels: |
@@ -154,7 +155,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_JMETER_IMAGE_VERSION=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}
+            BASE_JMETER_IMAGE=${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}
 
   build-alpine-jmeter-images-with-business:
     name: Build Alpine JMeter Images with Business
@@ -191,7 +192,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}
           tags: |
             type=sha,format=short,prefix=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-business-
           labels: |
@@ -213,7 +214,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_JMETER_IMAGE_VERSION=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ steps.get_short_sha.outputs.SHORT_SHA }}
+            BASE_JMETER_IMAGE=${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ steps.get_short_sha.outputs.SHORT_SHA }}
 
   # Ubuntu
   build-ubuntu-jmeter-images:
@@ -250,7 +251,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}
           tags: |
             type=sha,format=short,prefix=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-
           labels: |
@@ -307,7 +308,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}
           tags: |
             type=sha,format=short,prefix=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-
           labels: |
@@ -329,7 +330,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_JMETER_IMAGE_VERSION=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}
+            BASE_JMETER_IMAGE=${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ steps.get_short_sha.outputs.SHORT_SHA }}
 
   build-ubuntu-jmeter-images-with-gui:
     name: Build Ubuntu JMeter Images with GUI
@@ -391,7 +392,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}
           tags: |
             type=sha,format=short,prefix=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-${{ matrix.gui }}-
           labels: |
@@ -413,7 +414,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_JMETER_IMAGE_VERSION=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ steps.get_short_sha.outputs.SHORT_SHA }}
+            BASE_JMETER_IMAGE=${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ steps.get_short_sha.outputs.SHORT_SHA }}
 
   build-ubuntu-jmeter-images-with-business:
     name: Build Ubuntu JMeter Images with Business
@@ -450,7 +451,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            registry.cn-hangzhou.aliyuncs.com/${{ env.DOCKER_HUB_REPO }}
+            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}
           tags: |
             type=sha,format=short,prefix=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-business-
           labels: |
@@ -472,4 +473,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_JMETER_IMAGE_VERSION=${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ steps.get_short_sha.outputs.SHORT_SHA }}
+            BASE_JMETER_IMAGE=${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ matrix.jmeter }}-${{ matrix.os }}-${{ matrix.version }}-${{ matrix.jre }}-plugins-${{ steps.get_short_sha.outputs.SHORT_SHA }}

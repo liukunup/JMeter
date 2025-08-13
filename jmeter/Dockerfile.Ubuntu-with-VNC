@@ -1,11 +1,12 @@
 # Use the specified JMeter image as the base image
-ARG BASE_JMETER_IMAGE_VERSION=latest
-FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
+ARG BASE_JMETER_IMAGE
+FROM ${BASE_JMETER_IMAGE}
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    VNC_USERNAME=jmeter \
-    VNC_PASSWORD=jmeter \
-    DISPLAY=:1
+ENV DISPLAY=":1"
+
+ENV VNC_PASSWORD=""
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install packages
 RUN apt-get update && apt-get install -y \
@@ -32,4 +33,6 @@ COPY jmeter/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 5900 6080
 
-ENTRYPOINT ["/entrypoint.sh", "vnc"]
+ENTRYPOINT [ "/entrypoint.sh" ]
+
+CMD [ "vnc" ]

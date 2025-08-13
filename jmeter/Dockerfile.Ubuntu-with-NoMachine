@@ -1,8 +1,10 @@
 # Use the specified JMeter image as the base image
-ARG BASE_JMETER_IMAGE_VERSION=latest
-FROM liukunup/jmeter:${BASE_JMETER_IMAGE_VERSION}
+ARG BASE_JMETER_IMAGE
+FROM ${BASE_JMETER_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+ENV NM_PASSWORD=""
 
 # Install NoMachine
 # link https://kb.nomachine.com/DT08U00297?s=docker
@@ -18,5 +20,6 @@ RUN apt-get update && apt-get install -y \
 
 ENV DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
 
-# Start NoMachine server
-ENTRYPOINT ["/entrypoint.sh", "nomachine"]
+ENTRYPOINT [ "/entrypoint.sh" ]
+
+CMD [ "nomachine" ]

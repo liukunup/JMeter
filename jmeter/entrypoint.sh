@@ -18,6 +18,7 @@ readonly SCRIPT_VERSION="1.0.0"
 readonly SCRIPT_NAME=$(basename "$0")
 readonly LOCK_FILE="/tmp/${SCRIPT_NAME%.*}.lock"
 readonly LOG_FILE="/var/log/${SCRIPT_NAME%.*}.log"
+readonly DEFAULT_USER="jmeter"
 
 # Colors for logging (if terminal supports it)
 readonly RED='\033[0;31m'
@@ -268,45 +269,61 @@ run_server_agent() {
   exec /bin/bash "$script" --udp-port 4444 --tcp-port 4444 --interval "$interval"
 }
 
-# Run VNC Server
-run_vnc_server() {
-  log_section "Starting VNC Server"
-
-  local username="${VNC_USERNAME:-jmeter}"
-  local password="${VNC_PASSWORD:-$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)}"
+# Create user with sudo privileges
+create_user() {
+  local username="${1:-$DEFAULT_USER}"
+  local password="${2:-$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)}"
   local uid=$(shuf -i 2000-60000 -n 1)
   local gid=$uid
 
   # Check if user exists, if not create it
-  if ! id $username >/dev/null 2>&1; then
-    if ! groupadd --gid $gid $username; then
+  if ! id "$username" >/dev/null 2>&1; then
+
+    log_info "Creating user '$username' with UID:GID $uid:$gid"
+
+    if ! groupadd --gid "$gid" "$username"; then
       log_error "Failed to create $username group"
       exit 1
     fi
-    if ! useradd --shell /bin/bash --uid $uid --gid $gid --groups sudo \
-                 --password $(openssl passwd -6 "$password") \
-                 --create-home --home-dir /home/$username $username; then
+
+    if ! useradd --shell /bin/bash --uid "$uid" --gid "$gid" --groups sudo \
+                 --password "$(openssl passwd -6 "$password")" \
+                 --create-home --home-dir "/home/$username" "$username"; then
       log_error "Failed to create $username user"
       exit 1
     fi
+
     echo "$username ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
     visudo -c || {
       log_error "Invalid sudoers file after modification"
       exit 1
     }
+
+    log_info "User '$username' created with password: $password"
   fi
 
+  export USERNAME="$username"
+  export PASSWORD="$password"
+}
+
+# Run VNC Server
+run_vnc_server() {
+  log_section "Starting VNC Server"
+
+  create_user "$DEFAULT_USER" "$VNC_PASSWORD"
+
   # Prepare VNC password file
-  mkdir -p /home/$username/.vnc || {
-    log_error "Failed to create /home/$username/.vnc directory"
+  mkdir -p /home/$USERNAME/.vnc || {
+    log_error "Failed to create /home/$USERNAME/.vnc directory"
     exit 1
   }
 
-  echo "$password" | vncpasswd -f > /home/$username/.vnc/passwd || {
+  echo "$PASSWORD" | vncpasswd -f > /home/$USERNAME/.vnc/passwd || {
     log_error "Failed to generate VNC password file"
     exit 1
   }
-  chmod 600 /home/$username/.vnc/passwd || {
+  chmod 600 /home/$USERNAME/.vnc/passwd || {
     log_error "Failed to set permissions on VNC password file"
     exit 1
   }
@@ -334,24 +351,7 @@ run_vnc_server() {
 run_rdp_server() {
   log_section "Starting RDP Server"
 
-  # Check if user 'jmeter' exists, if not create it
-  if ! id jmeter >/dev/null 2>&1; then
-    if ! groupadd --gid 1024 jmeter; then
-      log_error "Failed to create jmeter group"
-      exit 1
-    fi
-    if ! useradd --shell /bin/bash --uid 1024 --gid 1024 --groups sudo \
-                 --password $(openssl passwd -6 "jmeter") \
-                 --create-home --home-dir /home/jmeter jmeter; then
-      log_error "Failed to create jmeter user"
-      exit 1
-    fi
-    echo "jmeter ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-    visudo -c || {
-      log_error "Invalid sudoers file after modification"
-      exit 1
-    }
-  fi
+  create_user "$DEFAULT_USER" "$RDP_PASSWORD"
 
   # Remove existing sesman/xrdp PID files to prevent rdp sessions hanging on container restart
   [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
@@ -377,35 +377,7 @@ run_rdp_server() {
 run_nomachine_server() {
   log_section "Starting NoMachine Server"
 
-  # Set default username
-  local username="${NOMACHINE_USERNAME:-jmeter}"
-
-  # Use environment variable or generate random password
-  if [[ -n "${NOMACHINE_PASSWORD:-}" ]]; then
-    log_info "Using password from environment variable"
-  else
-    NOMACHINE_PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
-    log_info "Generated random password: $NOMACHINE_PASSWORD"
-  fi
-
-  # Check if user exists, if not create it
-  if ! id $username >/dev/null 2>&1; then
-    if ! groupadd --gid 1024 $username; then
-      log_error "Failed to create $username group"
-      exit 1
-    fi
-    if ! useradd --shell /bin/bash --uid 1024 --gid 1024 --groups sudo \
-                 --password $(openssl passwd -6 "$NOMACHINE_PASSWORD") \
-                 --create-home --home-dir /home/$username $username; then
-      log_error "Failed to create $username user"
-      exit 1
-    fi
-    echo "$username ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-    visudo -c || {
-      log_error "Invalid sudoers file after modification"
-      exit 1
-    }
-  fi
+  create_user "$DEFAULT_USER" "$NM_PASSWORD"
 
   if ! /etc/init.d/dbus start 2>&1; then
     log_error "Failed to start dbus"
