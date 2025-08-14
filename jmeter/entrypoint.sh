@@ -454,28 +454,56 @@ run_vnc_server() {
   create_user "$DEFAULT_USER" "$VNC_PASSWORD"
   create_desktop_shortcut "$DEFAULT_USER"
 
-  # Prepare VNC password file
-  mkdir -p /home/$USERNAME/.vnc || {
-    log_error "Failed to create /home/$USERNAME/.vnc directory"
+  # Generate VNC password file
+  mkdir -p "/home/$USERNAME/.vnc" || {
+    log_error "Failed to create required directories"
     exit 1
   }
-
-  x11vnc -storepasswd "$PASSWORD" /home/$USERNAME/.vnc/passwd >/dev/null 2>&1 || {
+  /usr/bin/x11vnc -storepasswd "$PASSWORD" "/home/$USERNAME/.vnc/passwd" >/dev/null 2>&1 || {
     log_error "Failed to generate VNC password file"
     exit 1
   }
-  chmod 600 /home/$USERNAME/.vnc/passwd || {
+  chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.vnc"
+  chmod 600 "/home/$USERNAME/.vnc/passwd" || {
     log_error "Failed to set permissions on VNC password file"
     exit 1
   }
 
   # Generate self-signed certificate
-  create_self_signed_cert "/home/$USERNAME/.certs" "vnc"
-
-  if ! /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf 2>&1; then
-    log_error "Failed to start supervisord"
+  create_self_signed_cert "/home/$USERNAME/.certs" "vnc" || {
+    log_error "Failed to generate SSL certificate"
     exit 1
-  fi
+  }
+
+  # Update supervisord configuration
+  log_info "Updating supervisord configuration"
+  sed -i "s/%DISPLAY%/$DISPLAY/g"   /etc/supervisor/conf.d/supervisord.conf
+  sed -i "s/%USERNAME%/$USERNAME/g" /etc/supervisor/conf.d/supervisord.conf
+
+  # Setup Xauth
+  log_info "Setting up Xauth for VNC"
+  xauth add $DISPLAY . $(mcookie) || {
+    log_error "Failed to setup Xauth"
+    exit 1
+  }
+
+  # Start D-Bus
+  log_info "Starting D-Bus"
+  dbus-daemon --system --nofork || {
+    log_error "Failed to start D-Bus"
+    exit 1
+  }
+
+  # Start supervisord with logging
+  log_info "Starting supervisord with VNC services"
+  exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf 2>&1 | \
+    while read -r line; do
+      log_info "supervisord: $line"
+    done
+
+  # This point should theoretically never be reached due to exec
+  log_error "Supervisord unexpectedly exited"
+  exit 1
 }
 
 # Run RDP Server
@@ -492,7 +520,7 @@ run_rdp_server() {
   [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
   [ ! -f /var/run/xrdp/xrdp.pid ] || rm -f /var/run/xrdp/xrdp.pid
 
-  if ! service dbus start 2>&1; then
+  if ! dbus-daemon --system --nofork 2>&1; then
     log_error "Failed to start dbus service"
     exit 1
   fi

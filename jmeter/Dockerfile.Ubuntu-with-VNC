@@ -15,13 +15,18 @@ RUN apt-get update && apt-get install -y \
     # 
     xvfb \
     xfce4 xfce4-goodies \
-    x11vnc \
+    x11vnc xauth \
     novnc websockify \
     supervisor \
-    # 
+    # Install DBus for inter-process communication
+    dbus-x11 \
+    # Install PulseAudio for audio support
     pulseaudio pulseaudio-utils pavucontrol \
     && apt-get autoclean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    # 
+    && touch /tmp/.Xauthority \
+    && chmod 644 /tmp/.Xauthority
 
 COPY jmeter/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
