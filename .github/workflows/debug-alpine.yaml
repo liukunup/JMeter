@@ -1,7 +1,6 @@
 name: JMeter Docker Images CI/CD
 
-# Disable trigger
-# on:
+on:
 #   push:
 #     branches:
 #       - dev
