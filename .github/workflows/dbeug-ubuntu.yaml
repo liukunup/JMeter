@@ -156,12 +156,6 @@ jobs:
     strategy:
       matrix:  # format: {jmeter}-{os}-{version}-{jre}-{gui}
         include:
-          - dockerfile: "jmeter/Dockerfile.Ubuntu-with-X11"
-            jmeter: "5.6.3"
-            jre: "openjdk-21-jre"
-            os: "ubuntu"
-            version: "24.04"
-            gui: "x11"
           - dockerfile: "jmeter/Dockerfile.Ubuntu-with-VNC"
             jmeter: "5.6.3"
             jre: "openjdk-21-jre"

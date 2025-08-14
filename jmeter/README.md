@@ -8,7 +8,6 @@
     └── Ubuntu with Plugins  # Ubuntu 基础镜像 + 常用插件
         ├── Business         # 业务镜像示例
         ├── FullStack        # 同时支持 X11 + VNC + NoVNC + RDP
-        ├── X11              # 仅支持 X11（适用于本地开发调试）
         ├── VNC and NoVNC    # 支持 VNC & NoVNC（使用到端口 5900 和 6080）
         └── RDP              # 仅支持 RDP（使用到端口3389）
 ```
@@ -22,3 +21,18 @@ Xvfb（提供图形输出）
   └─ Xrdp（直接通过RDP协议访问）
 Supervisor（监控所有后台服务）
 ```
+
+xhost +
+xhost +local:docker
+
+echo $DISPLAY
+
+sudo apt-get install xauth
+
+xauth list
+
+docker run -it --rm \
+ -e DISPLAY=$DISPLAY \
+ -v /tmp/.X11-unix:/tmp/.X11-unix \
+ -v $HOME/.Xauthority:/root/.Xauthority \
+ your-image-name
