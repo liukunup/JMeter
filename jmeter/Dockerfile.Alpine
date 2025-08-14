@@ -80,5 +80,6 @@ EXPOSE 1099 50000 8080
 # Set the working directory
 WORKDIR ${JMETER_HOME}
 
-# Set the entrypoint script
 ENTRYPOINT ["/entrypoint.sh"]
+
+CMD [ "keepalive" ]
