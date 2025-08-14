@@ -393,12 +393,10 @@ EOL
         log_error "Failed to set ownership for shortcut file"
         return 1
     fi
-
-    log_success "Successfully created JMeter desktop shortcut"
 }
 
 create_self_signed_cert() {
-  log_section "Creating self-signed SSL certificate"
+  log_info "Creating self-signed SSL certificate"
 
   local cert_dir="$1"
   local cert_filename="${2:-selfsigned}"
@@ -480,19 +478,12 @@ run_vnc_server() {
   sed -i "s/%DISPLAY%/$DISPLAY/g"   /etc/supervisor/conf.d/supervisord.conf
   sed -i "s/%USERNAME%/$USERNAME/g" /etc/supervisor/conf.d/supervisord.conf
 
-  # Setup Xauth
-  log_info "Setting up Xauth for VNC"
-  xauth add $DISPLAY . $(mcookie) || {
-    log_error "Failed to setup Xauth"
-    exit 1
-  }
-
-  # Start D-Bus
-  log_info "Starting D-Bus"
-  dbus-daemon --system --nofork & || {
-    log_error "Failed to start D-Bus"
-    exit 1
-  }
+  # Print
+  log_info "Starting VNC/NoVNC Server"
+  log_info "• VNC: vnc://localhost:5900"
+  log_info "• Web: http://localhost:6080/vnc.html"
+  log_info "• Username: $USERNAME"
+  log_info "• Password: $PASSWORD"
 
   # Start supervisord with logging
   log_info "Starting supervisord with VNC services"
