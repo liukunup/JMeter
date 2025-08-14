@@ -283,7 +283,7 @@ create_user() {
     # Create group
     if ! groupadd --gid "$gid" "$username"; then
       log_error "Failed to create group '$username' (GID: $gid)"
-      exit 1
+      return 1
     fi
 
     # Create user with sudo privileges
@@ -296,7 +296,7 @@ create_user() {
                  --home-dir "/home/$username" \
                  "$username"; then
       log_error "Failed to create user '$username' (UID: $uid)"
-      exit 1
+      return 1
     fi
 
     # Add sudo rule safely
@@ -309,13 +309,13 @@ create_user() {
     if ! visudo -cf "$temp_sudoers" >/dev/null 2>&1; then
         log_error "Invalid sudoers file"
         rm -f "$temp_sudoers"
-        exit 1
+        return 1
     fi
     # Append to /etc/sudoers
     if ! cat "$temp_sudoers" >> /etc/sudoers; then
         log_error "Failed to update /etc/sudoers"
         rm -f "$temp_sudoers"
-        exit 1
+        return 1
     fi
     # Clean up temporary file
     rm -f "$temp_sudoers"
@@ -337,13 +337,13 @@ create_desktop_shortcut() {
     # Check if user already exists
     if ! id -u "$username" >/dev/null 2>&1; then
         log_error "User '$username' does not exist"
-        exit 1
+        return 1
     fi
 
     # Ensure home directory exists
     if [ ! -d "$user_home" ]; then
         log_error "Home directory $user_home does not exist"
-        exit 1
+        return 1
     fi
 
     # Create Desktop directory if needed
@@ -351,18 +351,18 @@ create_desktop_shortcut() {
         log_info "Creating Desktop directory at $user_desktop_dir"
         if ! mkdir -p "$user_desktop_dir"; then
             log_error "Failed to create Desktop directory at $user_desktop_dir"
-            exit 1
+            return 1
         fi
         chown "$username:$username" "$user_desktop_dir" || {
             log_error "Failed to set ownership for $user_desktop_dir"
-            exit 1
+            return 1
         }
     fi
 
     # Check if shortcut already exists
     if [ -f "$desktop_shortcut_file" ]; then
         log_info "Desktop shortcut already exists at $desktop_shortcut_file"
-        return
+        return 0
     fi
 
     # Create desktop shortcut
@@ -380,18 +380,18 @@ StartupNotify=true
 EOL
     then
         log_error "Failed to create desktop shortcut file"
-        exit 1
+        return 1
     fi
 
     # Set permissions
     if ! chmod +x "$desktop_shortcut_file"; then
         log_error "Failed to make shortcut executable"
-        exit 1
+        return 1
     fi
 
     if ! chown "$username:$username" "$desktop_shortcut_file"; then
         log_error "Failed to set ownership for shortcut file"
-        exit 1
+        return 1
     fi
 
     log_success "Successfully created JMeter desktop shortcut"
@@ -445,8 +445,6 @@ create_self_signed_cert() {
     log_error "Failed to create self-signed certificate"
     return 1
   fi
-
-  return 0
 }
 
 # Run VNC Server
