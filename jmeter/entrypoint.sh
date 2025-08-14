@@ -489,7 +489,7 @@ run_vnc_server() {
 
   # Start D-Bus
   log_info "Starting D-Bus"
-  dbus-daemon --system --nofork || {
+  dbus-daemon --system --nofork & || {
     log_error "Failed to start D-Bus"
     exit 1
   }
