@@ -449,8 +449,8 @@ create_self_signed_cert() {
 run_vnc_server() {
   log_section "Starting VNC Server"
 
-  create_user "$DEFAULT_USER" "$VNC_PASSWORD"
-  create_desktop_shortcut "$DEFAULT_USER"
+  create_user "$VNC_USERNAME" "$VNC_PASSWORD"  # export USERNAME and PASSWORD
+  create_desktop_shortcut "$USERNAME"
 
   # Generate VNC password file
   mkdir -p "/home/$USERNAME/.vnc" || {
@@ -468,26 +468,21 @@ run_vnc_server() {
   }
 
   # Generate self-signed certificate
-  create_self_signed_cert "/home/$USERNAME/.certs" "vnc" || {
+  create_self_signed_cert "/root/.certs" "vnc" || {
     log_error "Failed to generate SSL certificate"
     exit 1
   }
 
-  # Update supervisord configuration
-  log_info "Updating supervisord configuration"
-  sed -i "s/%DISPLAY%/$DISPLAY/g"   /etc/supervisor/conf.d/supervisord.conf
-  sed -i "s/%USERNAME%/$USERNAME/g" /etc/supervisor/conf.d/supervisord.conf
-
-  # Print
-  log_info "Starting VNC/NoVNC Server"
+  # Print connection information
+  log_info "VNC/NoVNC Server is configured with the following details:"
   log_info "• VNC: vnc://localhost:5900"
-  log_info "• Web: http://localhost:6080/vnc.html"
+  log_info "• Web: https://localhost:6080/vnc.html"
   log_info "• Username: $USERNAME"
   log_info "• Password: $PASSWORD"
 
   # Start supervisord with logging
   log_info "Starting supervisord with VNC services"
-  exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf 2>&1 | \
+  exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf 2>&1 | \
     while read -r line; do
       log_info "supervisord: $line"
     done
