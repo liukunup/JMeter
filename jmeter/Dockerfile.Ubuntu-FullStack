@@ -33,10 +33,10 @@ RUN apt-get update && \
 COPY jmeter/supervisord-fullstack.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose ports for RDP and VNC/NoVNC
-# - 3389 : RDP
+# - 3390 : RDP
 # - 5900 : VNC
 # - 6080 : NoVNC
-EXPOSE 3389 5900 6080
+EXPOSE 3390 5900 6080
 
 ENTRYPOINT [ "/entrypoint.sh" ]
 

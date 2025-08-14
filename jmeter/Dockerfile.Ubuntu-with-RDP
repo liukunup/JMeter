@@ -25,12 +25,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     # Set the default X session to XFCE for new users by writing to /etc/skel/.xsession
     && echo "xfce4-session" > /etc/skel/.xsession \
+    # Change xRDP port to avoid default port conflicts
+    && sed -i 's/port=3389/port=3390/g' /etc/xrdp/xrdp.ini \
     # Configure xRDP to start the XFCE desktop environment by updating /etc/xrdp/startwm.sh
     && echo "startxfce4" > /etc/xrdp/startwm.sh \
     # Ensure /etc/xrdp/startwm.sh is executable so xRDP can launch the session script
     && chmod +x /etc/xrdp/startwm.sh
 
-EXPOSE 3389/tcp
+EXPOSE 3390/tcp
 
 ENTRYPOINT [ "/entrypoint.sh" ]
 
