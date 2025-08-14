@@ -362,7 +362,7 @@ create_desktop_shortcut() {
     # Check if shortcut already exists
     if [ -f "$desktop_shortcut_file" ]; then
         log_info "Desktop shortcut already exists at $desktop_shortcut_file"
-        exit 0
+        return
     fi
 
     # Create desktop shortcut
