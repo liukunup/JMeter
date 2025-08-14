@@ -400,25 +400,26 @@ EOL
 create_self_signed_cert() {
   log_section "Creating self-signed SSL certificate"
 
-  local username="${1:-$DEFAULT_USER}"
-  local user_home="/home/$username"
-  local cert_dir="$user_home/.certs"
-  local custom_name="${2:-server}"
-  local cert_file="${cert_dir}/${custom_name}.crt"
-  local key_file="${cert_dir}/${custom_name}.key"
+  local cert_dir="$1"
+  local cert_filename="${2:-selfsigned}"
+  local cert_file="${cert_dir}/${cert_filename}.crt"
+  local key_file="${cert_dir}/${cert_filename}.key"
   local days=365
 
   # Check if certificate already exists
   if [ -f "${cert_file}" ] && [ -f "${key_file}" ]; then
-    log_info "Self-signed certificate already exists:"
+    log_info "Self-signed certificate already exists."
     log_info "  Certificate: ${cert_file}"
-    log_info "  Private key: ${key_file}"
-    log_info "  Valid for: ${days} days"
+    log_info "  Private Key: ${key_file}"
+    log_info "  Valid   for: ${days} days"
     return 0
   fi
 
   # Create directories if they don't exist
-  mkdir -p "${cert_dir}"
+  mkdir -p "${cert_dir}" || {
+    log_error "Failed to create certificate directory: ${cert_dir}"
+    return 1
+  }
 
   # Check if OpenSSL is installed
   if ! command -v openssl &> /dev/null; then
@@ -436,10 +437,10 @@ create_self_signed_cert() {
   chmod 600 "${key_file}"
 
   if [[ -f "${cert_file}" && -f "${key_file}" ]]; then
-    log_info "Self-signed certificate created successfully:"
+    log_info "Self-signed certificate created successfully"
     log_info "  Certificate: ${cert_file}"
-    log_info "  Private key: ${key_file}"
-    log_info "  Valid for: ${days} days"
+    log_info "  Private Key: ${key_file}"
+    log_info "  Valid   for: ${days} days"
   else
     log_error "Failed to create self-signed certificate"
     return 1
@@ -471,7 +472,7 @@ run_vnc_server() {
   }
 
   # Generate self-signed certificate
-  create_self_signed_cert "$DEFAULT_USER" "vnc"
+  create_self_signed_cert "/home/$USERNAME/.certs" "vnc"
 
   if ! /usr/bin/supervisord 2>&1; then
     log_error "Failed to start supervisord"
@@ -485,6 +486,9 @@ run_rdp_server() {
 
   create_user "$DEFAULT_USER" "$RDP_PASSWORD"
   create_desktop_shortcut "$DEFAULT_USER"
+
+  # Generate self-signed certificate
+  create_self_signed_cert "/home/$USERNAME/.certs" "rdp"
 
   # Remove existing sesman/xrdp PID files to prevent rdp sessions hanging on container restart
   [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
