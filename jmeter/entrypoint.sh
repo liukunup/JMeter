@@ -460,7 +460,7 @@ run_vnc_server() {
     exit 1
   }
 
-  x11vnc -storepasswd "$PASSWORD" /home/$USERNAME/.vnc/passwd || {
+  x11vnc -storepasswd "$PASSWORD" /home/$USERNAME/.vnc/passwd >/dev/null 2>&1; || {
     log_error "Failed to generate VNC password file"
     exit 1
   }
