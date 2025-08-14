@@ -397,6 +397,57 @@ EOL
     log_success "Successfully created JMeter desktop shortcut"
 }
 
+create_self_signed_cert() {
+  log_section "Creating self-signed SSL certificate"
+
+  local username="${1:-$DEFAULT_USER}"
+  local user_home="/home/$username"
+  local cert_dir="$user_home/.certs"
+  local custom_name="${2:-server}"
+  local cert_file="${cert_dir}/${custom_name}.crt"
+  local key_file="${cert_dir}/${custom_name}.key"
+  local days=365
+
+  # Check if certificate already exists
+  if [ -f "${cert_file}" ] && [ -f "${key_file}" ]; then
+    log_info "Self-signed certificate already exists:"
+    log_info "  Certificate: ${cert_file}"
+    log_info "  Private key: ${key_file}"
+    log_info "  Valid for: ${days} days"
+    return 0
+  fi
+
+  # Create directories if they don't exist
+  mkdir -p "${cert_dir}"
+
+  # Check if OpenSSL is installed
+  if ! command -v openssl &> /dev/null; then
+    log_error "OpenSSL is not installed. Please install it first."
+    return 1
+  fi
+
+  # Generate certificate  
+  openssl req -x509 -nodes -days ${days} -newkey rsa:2048 -sha256 \
+    -keyout "${key_file}" -out "${cert_file}" \
+    -subj "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN=localhost" 2>/dev/null
+
+  # Set proper permissions
+  chmod 644 "${cert_file}"
+  chmod 600 "${key_file}"
+
+  if [[ -f "${cert_file}" && -f "${key_file}" ]]; then
+    log_info "Self-signed certificate created successfully:"
+    log_info "  Certificate: ${cert_file}"
+    log_info "  Private key: ${key_file}"
+    log_info "  Valid for: ${days} days"
+  else
+    log_error "Failed to create self-signed certificate"
+    return 1
+  fi
+
+  return 0
+}
+
 # Run VNC Server
 run_vnc_server() {
   log_section "Starting VNC Server"
@@ -410,7 +461,7 @@ run_vnc_server() {
     exit 1
   }
 
-  echo "$PASSWORD" | vncpasswd -f > /home/$USERNAME/.vnc/passwd || {
+  x11vnc -storepasswd "$PASSWORD" /home/$USERNAME/.vnc/passwd || {
     log_error "Failed to generate VNC password file"
     exit 1
   }
@@ -420,17 +471,7 @@ run_vnc_server() {
   }
 
   # Generate self-signed certificate
-  mkdir -p /opt/certs || {
-    log_error "Failed to create SSL private directory"
-    exit 1
-  }
-
-  [ -f /opt/certs/vnc.crt ] || openssl req -x509 -nodes -days 365 -newkey rsa:2048 -sha256 \
-    -keyout /opt/certs/vnc.key -out /opt/certs/vnc.crt \
-    -subj "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN=localhost" || {
-    log_error "Failed to generate self-signed certificate"
-    exit 1
-  }
+  create_self_signed_cert "$DEFAULT_USER" "vnc"
 
   if ! /usr/bin/supervisord --nodaemon 2>&1; then
     log_error "Failed to start supervisord"
