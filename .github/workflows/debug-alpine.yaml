@@ -1,29 +1,28 @@
 name: JMeter Docker Images CI/CD
 
 on:
-#   push:
-#     branches:
-#       - dev
-#       - feature/*
-#     paths-ignore:
-#       - 'README.md'
-#       - 'README_EN.md'
-#       - 'LICENSE'
-#       - 'deploy/**'
-#       - 'docs/**'
-#       - 'helm-charts/**'
-#       - 'scripts/**'
-#   pull_request:
-#     branches:
-#       - dev
-#     paths-ignore:
-#       - 'README.md'
-#       - 'README_EN.md'
-#       - 'LICENSE'
-#       - 'deploy/**'
-#       - 'docs/**'
-#       - 'helm-charts/**'
-#       - 'scripts/**'
+  push:
+    branches:
+      - disable/*
+    paths-ignore:
+      - 'README.md'
+      - 'README_EN.md'
+      - 'LICENSE'
+      - 'deploy/**'
+      - 'docs/**'
+      - 'helm-charts/**'
+      - 'scripts/**'
+  pull_request:
+    branches:
+      - disable/*
+    paths-ignore:
+      - 'README.md'
+      - 'README_EN.md'
+      - 'LICENSE'
+      - 'deploy/**'
+      - 'docs/**'
+      - 'helm-charts/**'
+      - 'scripts/**'
 
 env:
   REGISTRY: docker.io
