@@ -7,11 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     RDP_PASSWORD=""
 
 RUN apt-get update && apt-get install -y \
-    sudo \
-    # Install PulseAudio for sound support
-    pulseaudio \
-    pulseaudio-utils \
-    pavucontrol \
+    sudo openssl \
     # Install XFCE desktop environment
     xfce4 \
     xfce4-goodies \
@@ -19,6 +15,10 @@ RUN apt-get update && apt-get install -y \
     xrdp xorg xorgxrdp \
     # Install DBus for inter-process communication
     dbus-x11 \
+    # Install PulseAudio for sound support
+    pulseaudio \
+    pulseaudio-utils \
+    pavucontrol \
     # Clean up apt cache to reduce image size
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
