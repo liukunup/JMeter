@@ -2,35 +2,32 @@
 ARG BASE_JMETER_IMAGE
 FROM ${BASE_JMETER_IMAGE}
 
-ENV DISPLAY=":1"
-
+# Set your password for VNC access, or use auto-generated password
 ENV VNC_PASSWORD=""
+
+ENV DISPLAY=":1"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install packages
 RUN apt-get update && apt-get install -y \
-    # PulseAudio
-    pulseaudio \
-    pulseaudio-utils \
-    pavucontrol \
-    # Xfce 4
-    xfce4 \
-    xfce4-goodies \
-    # Other dependencies
-    sudo \
-    supervisor \
-    x11vnc \
+    # 
+    sudo openssl \
+    # 
     xvfb \
-    novnc \
-    websockify \
-    openssl \
+    xfce4 xfce4-goodies \
+    x11vnc \
+    novnc websockify \
+    supervisor \
+    # 
+    pulseaudio pulseaudio-utils pavucontrol \
     && apt-get autoclean \
-    && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
 
 COPY jmeter/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Expose ports for VNC and NoVNC
+# - 5900 : VNC
+# - 6080 : NoVNC
 EXPOSE 5900 6080
 
 ENTRYPOINT [ "/entrypoint.sh" ]

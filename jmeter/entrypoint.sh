@@ -473,7 +473,7 @@ run_vnc_server() {
   # Generate self-signed certificate
   create_self_signed_cert "$DEFAULT_USER" "vnc"
 
-  if ! /usr/bin/supervisord --nodaemon 2>&1; then
+  if ! /usr/bin/supervisord 2>&1; then
     log_error "Failed to start supervisord"
     exit 1
   fi

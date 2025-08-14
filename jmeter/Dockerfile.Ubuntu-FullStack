@@ -2,14 +2,18 @@
 ARG BASE_JMETER_IMAGE
 FROM ${BASE_JMETER_IMAGE}
 
-# Set your password for RDP access, or use auto-generated password
+# Set your password for access, or use auto-generated password
 ENV RDP_PASSWORD=""
+ENV VNC_PASSWORD=""
+
+# Set DISPLAY environment variable (for X11 forwarding)
+ENV DISPLAY=":1"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    sudo git \
+    sudo openssl \
     # 
     xvfb \
     xfce4 xfce4-goodies \
@@ -27,9 +31,6 @@ RUN apt-get update && \
     && service xrdp restart
 
 COPY jmeter/supervisord-fullstack.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Set DISPLAY environment variable (for X11 forwarding)
-ENV DISPLAY=":1"
 
 # Expose ports for RDP and VNC/NoVNC
 # - 3389 : RDP
