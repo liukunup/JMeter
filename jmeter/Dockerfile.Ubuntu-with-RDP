@@ -2,10 +2,9 @@
 ARG BASE_JMETER_IMAGE
 FROM ${BASE_JMETER_IMAGE}
 
-# Set your password for RDP access, or use auto-generated password
-ENV RDP_PASSWORD=""
-
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    RDP_USERNAME="jmeter" \
+    RDP_PASSWORD=""
 
 RUN apt-get update && apt-get install -y \
     sudo \

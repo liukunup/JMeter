@@ -496,8 +496,8 @@ run_vnc_server() {
 run_rdp_server() {
   log_section "Starting RDP Server"
 
-  create_user "$DEFAULT_USER" "$RDP_PASSWORD"
-  create_desktop_shortcut "$DEFAULT_USER"
+  create_user "$RDP_USERNAME" "$RDP_PASSWORD"  # export USERNAME and PASSWORD
+  create_desktop_shortcut "$USERNAME"
 
   # Generate self-signed certificate
   create_self_signed_cert "/home/$USERNAME/.certs" "rdp"
@@ -506,18 +506,18 @@ run_rdp_server() {
   [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
   [ ! -f /var/run/xrdp/xrdp.pid ] || rm -f /var/run/xrdp/xrdp.pid
 
-  if ! dbus-daemon --system --nofork 2>&1; then
+  if ! service dbus start 2>&1; then
     log_error "Failed to start dbus service"
     exit 1
   fi
 
   if ! /usr/sbin/xrdp-sesman 2>&1; then
-    log_error "Failed to start xrdp-sesman service"
+    log_error "Failed to start xrdp-sesman"
     exit 1
   fi
 
   if ! /usr/sbin/xrdp --nodaemon 2>&1; then
-    log_error "Failed to start xrdp service"
+    log_error "Failed to start xrdp"
     exit 1
   fi
 }
