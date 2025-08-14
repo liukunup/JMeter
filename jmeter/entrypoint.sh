@@ -449,29 +449,41 @@ create_self_signed_cert() {
 run_vnc_server() {
   log_section "Starting VNC Server"
 
+  # Create user and desktop shortcut
   create_user "$VNC_USERNAME" "$VNC_PASSWORD"  # export USERNAME and PASSWORD
   create_desktop_shortcut "$USERNAME"
 
   # Generate VNC password file
-  mkdir -p "/home/$USERNAME/.vnc" || {
-    log_error "Failed to create required directories"
+  local passwd_dir="/home/$USERNAME/.vnc"
+  local passwd_file="$passwd_dir/passwd"
+  mkdir -p "$passwd_dir" || {
+    log_error "Failed to create required directories: $passwd_dir"
     exit 1
   }
-  /usr/bin/x11vnc -storepasswd "$PASSWORD" "/home/$USERNAME/.vnc/passwd" >/dev/null 2>&1 || {
+  /usr/bin/x11vnc -storepasswd "$PASSWORD" "$passwd_file" >/dev/null 2>&1 || {
     log_error "Failed to generate VNC password file"
     exit 1
   }
-  chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.vnc"
-  chmod 600 "/home/$USERNAME/.vnc/passwd" || {
+  chmod 600 "$passwd_file" || {
     log_error "Failed to set permissions on VNC password file"
     exit 1
   }
 
   # Generate self-signed certificate
-  create_self_signed_cert "/root/.certs" "vnc" || {
+  create_self_signed_cert "/home/$USERNAME/.certs" "vnc" || {
     log_error "Failed to generate SSL certificate"
     exit 1
   }
+
+  chown -R "$USERNAME:$USERNAME" "/home/$USERNAME" || {
+    log_error "Failed to set ownership for user home directory"
+    exit 1
+  }
+
+  # Ensure /tmp/.X11-unix exists with correct permissions
+  touch /tmp/.X11-unix/X1
+  chmod 1777 /tmp/.X11-unix
+  xhost +SI:localuser:$USERNAME
 
   # Print connection information
   log_info "VNC/NoVNC Server is configured with the following details:"
@@ -479,6 +491,11 @@ run_vnc_server() {
   log_info "• Web: https://localhost:6080/vnc.html"
   log_info "• Username: $USERNAME"
   log_info "• Password: $PASSWORD"
+
+  if ! service dbus start 2>&1; then
+    log_error "Failed to start dbus service"
+    exit 1
+  fi
 
   # Start supervisord with logging
   log_info "Starting supervisord with VNC services"
