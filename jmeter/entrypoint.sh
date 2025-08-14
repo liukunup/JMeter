@@ -481,9 +481,9 @@ run_vnc_server() {
   }
 
   # Ensure /tmp/.X11-unix exists with correct permissions
-  touch /tmp/.X11-unix/X1
-  chmod 1777 /tmp/.X11-unix
-  xhost +SI:localuser:$USERNAME
+  # touch /tmp/.X11-unix/X1
+  # chmod 1777 /tmp/.X11-unix
+  # xhost +SI:localuser:$USERNAME
 
   # Print connection information
   log_info "VNC/NoVNC Server is configured with the following details:"
