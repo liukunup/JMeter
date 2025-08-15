@@ -277,7 +277,7 @@ create_user() {
   local gid=$uid
 
   # Check if user exists, if not create it
-  if ! id "$username"; then
+  if ! id "$username" >/dev/null 2>&1; then
     log_info "Creating user '$username' with UID:GID $uid:$gid"
 
     # Create group
@@ -489,7 +489,7 @@ run_vnc_server() {
     log_error "Failed to create required directories: $passwd_dir"
     exit 1
   }
-  /usr/bin/x11vnc -storepasswd "$PASSWORD" "$passwd_file" || {
+  /usr/bin/x11vnc -storepasswd "$PASSWORD" "$passwd_file" >/dev/null 2>&1 || {
     log_error "Failed to generate VNC password file"
     exit 1
   }
@@ -521,7 +521,7 @@ run_vnc_server() {
   log_info "• Username: $USERNAME"
   log_info "• Password: $PASSWORD"
 
-  if ! service dbus start 2>&1; then
+  if ! service dbus start >/dev/null 2>&1; then
     log_error "Failed to start dbus service"
     exit 1
   fi
