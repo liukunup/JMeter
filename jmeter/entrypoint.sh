@@ -546,7 +546,23 @@ run_rdp_server() {
   create_desktop_shortcut "$USERNAME"
 
   # Generate self-signed certificate
-  create_self_signed_cert "/home/$USERNAME/.certs" "rdp"
+  local cert_dir="/home/$USERNAME/.certs"
+  create_self_signed_cert "$cert_dir" "rdp"
+  # Ensure the certs directory exists and has correct permissions
+  chown -R "$USERNAME:$USERNAME" "$cert_dir" || {
+    log_error "Failed to set ownership for user certs directory"
+    exit 1
+  }
+  # Ensure xrdp is in ssl-cert group
+  if ! id -nG "$USERNAME" | grep -qw "ssl-cert"; then
+    usermod -aG ssl-cert $USERNAME || {
+      log_error "Failed to add user $USERNAME to ssl-cert group"
+      exit 1
+    }
+  fi
+  # Configure to use the generated certificate
+  sed -i "s|^certificate=.*|certificate=$cert_dir/rdp.crt|" /etc/xrdp/xrdp.ini
+  sed -i "s|^key_file=.*|key_file=$cert_dir/rdp.key|" /etc/xrdp/xrdp.ini
 
   # Remove existing sesman/xrdp PID files to prevent rdp sessions hanging on container restart
   [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
