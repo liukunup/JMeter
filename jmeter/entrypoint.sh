@@ -327,72 +327,101 @@ create_user() {
   export PASSWORD="$password"
 }
 
-# Create desktop shortcut for JMeter
 create_desktop_shortcut() {
-    local username="${1:-$DEFAULT_USER}"
-    local user_home="/home/$username"
-    local user_desktop_dir="$user_home/Desktop"
-    local desktop_shortcut_file="$user_desktop_dir/jmeter.desktop"
+  local username="${1:-$DEFAULT_USER}"
+  local user_home="/home/$username"
+  local desktop_shortcut_file="/tmp/jmeter.desktop"
 
-    # Check if user already exists
-    if ! id -u "$username" >/dev/null 2>&1; then
-        log_error "User '$username' does not exist"
-        return 1
-    fi
+  # Ensure user exists
+  if ! id -u "$username" >/dev/null 2>&1; then
+    log_error "User '$username' does not exist"
+    return 1
+  fi
 
-    # Ensure home directory exists
-    if [ ! -d "$user_home" ]; then
-        log_error "Home directory $user_home does not exist"
-        return 1
-    fi
-
-    # Create Desktop directory if needed
-    if [ ! -d "$user_desktop_dir" ]; then
-        log_info "Creating Desktop directory at $user_desktop_dir"
-        if ! mkdir -p "$user_desktop_dir"; then
-            log_error "Failed to create Desktop directory at $user_desktop_dir"
-            return 1
-        fi
-        chown "$username:$username" "$user_desktop_dir" || {
-            log_error "Failed to set ownership for $user_desktop_dir"
-            return 1
-        }
-    fi
-
-    # Check if shortcut already exists
-    if [ -f "$desktop_shortcut_file" ]; then
-        log_info "Desktop shortcut already exists at $desktop_shortcut_file"
-        return 0
-    fi
-
-    # Create desktop shortcut
-    log_info "Creating JMeter desktop shortcut at $desktop_shortcut_file"
-    if ! cat > "$desktop_shortcut_file" <<'EOL'
+  log_info "Creating desktop shortcut file $desktop_shortcut_file"
+  if ! cat > "$desktop_shortcut_file" <<'EOL'
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=JMeter
 Comment=Start JMeter
-Exec=jmeter
+Exec=$JMETER_HOME/bin/jmeter.sh
 Icon=utilities-terminal
 Terminal=false
 StartupNotify=true
+Categories=Development;
 EOL
-    then
-        log_error "Failed to create desktop shortcut file"
-        return 1
-    fi
+  then
+    log_error "Failed to create desktop shortcut file"
+    return 1
+  fi
 
-    # Set permissions
-    if ! chmod +x "$desktop_shortcut_file"; then
-        log_error "Failed to make shortcut executable"
-        return 1
-    fi
+  # Set permissions
+  if ! chmod +x "$desktop_shortcut_file"; then
+    log_error "Failed to make shortcut file executable"
+    return 1
+  fi
 
-    if ! chown "$username:$username" "$desktop_shortcut_file"; then
-        log_error "Failed to set ownership for shortcut file"
-        return 1
-    fi
+  # Set ownership
+  if ! chown "$username:$username" "$desktop_shortcut_file"; then
+    log_error "Failed to set ownership for shortcut file"
+    return 1
+  fi
+
+  # ----- copy to ~/Desktop -----
+  # Create Desktop directory if needed
+  if [ ! -d "$user_home/Desktop" ]; then
+    mkdir -p "$user_home/Desktop" || {
+      log_error "Failed to create directory $user_home/Desktop"
+      return 1
+    }
+    chown "$username:$username" "$user_home/Desktop" || {
+      log_error "Failed to set ownership for Desktop directory"
+      return 1
+    }
+  fi
+
+  # Check if shortcut already exists
+  if [ ! -f "$user_home/Desktop/$desktop_shortcut_file" ]; then
+    cp "$desktop_shortcut_file" "$user_home/Desktop/" || {
+      log_error "Failed to copy desktop shortcut file to $user_home/Desktop/"
+      return 1
+    }
+    chown "$username:$username" "$user_home/Desktop/$desktop_shortcut_file" || {
+      log_error "Failed to set ownership for desktop shortcut file"
+      return 1
+    }
+  fi
+
+  # ----- copy to ~/.local/share/applications/ -----
+  if [ ! -d "$user_home/.local/share/applications" ]; then
+    mkdir -p "$user_home/.local/share/applications" || {
+      log_error "Failed to create directory $user_home/.local/share/applications"
+      return 1
+    }
+    chown "$username:$username" "$user_home/.local/share/applications" || {
+      log_error "Failed to set ownership for applications directory"
+      return 1
+    }
+  fi
+
+  if [ ! -f "$user_home/.local/share/applications/$desktop_shortcut_file" ]; then
+    cp "$desktop_shortcut_file" "$user_home/.local/share/applications/" || {
+      log_error "Failed to copy desktop shortcut file to $user_home/.local/share/applications/"
+      return 1
+    }
+    chown "$username:$username" "$user_home/.local/share/applications/$desktop_shortcut_file" || {
+      log_error "Failed to set ownership for desktop shortcut file"
+      return 1
+    }
+  fi
+
+  sudo -u "$username" update-desktop-database "$user_home/.local/share/applications/" || {
+    log_error "Failed to update desktop database for $user_home/.local/share/applications"
+    return 1
+  }
+
+  rm -f "$desktop_shortcut_file"
 }
 
 create_self_signed_cert() {
