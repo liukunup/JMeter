@@ -330,7 +330,7 @@ create_user() {
 create_desktop_shortcut() {
   local username="${1:-$DEFAULT_USER}"
   local user_home="/home/$username"
-  local desktop_shortcut_file="/tmp/jmeter.desktop"
+  local desktop_shortcut_file="jmeter.desktop"
 
   # Ensure user exists
   if ! id -u "$username" >/dev/null; then
