@@ -625,7 +625,7 @@ main() {
 
   log_info "Java   version: $(java -version 2>&1 | head -1)"
   log_info "JMeter version: $(jmeter -v 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)"
-  log_info "JMeter HOME: $JMETER_HOME"
+  log_info "JMeter home: $JMETER_HOME"
   log_info "JVM args: $JVM_ARGS"
   log_info "Log file: $LOG_FILE"
 
