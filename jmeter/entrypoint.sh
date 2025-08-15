@@ -277,7 +277,7 @@ create_user() {
   local gid=$uid
 
   # Check if user exists, if not create it
-  if ! id "$username" >/dev/null 2>&1; then
+  if ! id "$username"; then
     log_info "Creating user '$username' with UID:GID $uid:$gid"
 
     # Create group
@@ -306,7 +306,7 @@ create_user() {
         echo "$username ALL=(ALL) NOPASSWD: ALL"
     } > "$temp_sudoers"
     # Validate temporary file
-    if ! visudo -cf "$temp_sudoers" >/dev/null 2>&1; then
+    if ! visudo -cf "$temp_sudoers"; then
         log_error "Invalid sudoers file"
         rm -f "$temp_sudoers"
         return 1
@@ -333,7 +333,7 @@ create_desktop_shortcut() {
   local desktop_shortcut_file="/tmp/jmeter.desktop"
 
   # Ensure user exists
-  if ! id -u "$username" >/dev/null 2>&1; then
+  if ! id -u "$username" >/dev/null; then
     log_error "User '$username' does not exist"
     return 1
   fi
@@ -489,7 +489,7 @@ run_vnc_server() {
     log_error "Failed to create required directories: $passwd_dir"
     exit 1
   }
-  /usr/bin/x11vnc -storepasswd "$PASSWORD" "$passwd_file" >/dev/null 2>&1 || {
+  /usr/bin/x11vnc -storepasswd "$PASSWORD" "$passwd_file" || {
     log_error "Failed to generate VNC password file"
     exit 1
   }
@@ -528,7 +528,7 @@ run_vnc_server() {
 
   # Start supervisord with logging
   log_info "Starting supervisord with VNC services"
-  exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf 2>&1 | \
+  exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf | \
     while read -r line; do
       log_info "supervisord: $line"
     done
@@ -552,17 +552,17 @@ run_rdp_server() {
   [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
   [ ! -f /var/run/xrdp/xrdp.pid ] || rm -f /var/run/xrdp/xrdp.pid
 
-  if ! service dbus start 2>&1; then
+  if ! service dbus start; then
     log_error "Failed to start dbus service"
     exit 1
   fi
 
-  if ! /usr/sbin/xrdp-sesman 2>&1; then
+  if ! /usr/sbin/xrdp-sesman; then
     log_error "Failed to start xrdp-sesman"
     exit 1
   fi
 
-  if ! /usr/sbin/xrdp --nodaemon 2>&1; then
+  if ! /usr/sbin/xrdp --nodaemon; then
     log_error "Failed to start xrdp"
     exit 1
   fi
