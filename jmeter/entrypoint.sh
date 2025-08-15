@@ -498,14 +498,14 @@ run_vnc_server() {
     exit 1
   }
 
-  # Generate self-signed certificate
-  create_self_signed_cert "/home/$USERNAME/.certs" "vnc" || {
-    log_error "Failed to generate SSL certificate"
+  chown -R "$USERNAME:$USERNAME" "/home/$USERNAME" || {
+    log_error "Failed to set ownership for user home directory"
     exit 1
   }
 
-  chown -R "$USERNAME:$USERNAME" "/home/$USERNAME" || {
-    log_error "Failed to set ownership for user home directory"
+  # Generate self-signed certificate
+  create_self_signed_cert "/root/.certs" "novnc" || {
+    log_error "Failed to generate SSL certificate"
     exit 1
   }
 
