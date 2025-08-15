@@ -457,7 +457,7 @@ create_self_signed_cert() {
   # Generate certificate  
   openssl req -x509 -nodes -days ${days} -newkey rsa:2048 -sha256 \
     -keyout "${key_file}" -out "${cert_file}" \
-    -subj "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN=localhost" 2>/dev/null
+    -subj "/C=CN/ST=Guangdong/L=Shenzhen/O=My Company Inc./OU=R&D/CN=localhost" 2>/dev/null
 
   # Set proper permissions
   chmod 644 "${cert_file}"
