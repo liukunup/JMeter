@@ -1,0 +1,7 @@
+ignored:
+  - DL3007  # 忽略 "使用 latest 标签" 警告
+  - DL3059  # 忽略 "多个 RUN 指令" 警告
+override:
+  error:
+    - DL3013
+    - DL4001

@@ -1,0 +1,31 @@
+{
+    "folders": [
+        {
+            "path": ".",
+            "name": "root"
+        }
+    ],
+    "settings": {
+    },
+    "extensions": {
+        "recommendations": [
+            "mhutchie.git-graph",
+            "donjayamanne.githistory",
+            "esbenp.prettier-vscode",
+            "aaron-bond.better-comments",
+            "humao.rest-client",
+            "vscode-icons-team.vscode-icons",
+            "ms-azuretools.vscode-containers",
+            "ms-azuretools.vscode-docker",
+            "redhat.vscode-yaml",
+            "timonwong.shellcheck",
+            "foxundermoon.shell-format",
+            "exiasr.hadolint",
+        ]
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+        ]
+    }
+}

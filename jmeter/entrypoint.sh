@@ -15,7 +15,7 @@
 
 # ------------ Constants (Do not modify) ----------
 readonly SCRIPT_VERSION="1.0.0"
-readonly SCRIPT_NAME=$(basename "$0")
+SCRIPT_NAME=$(basename "$0")
 readonly LOCK_FILE="/tmp/${SCRIPT_NAME%.*}.lock"
 readonly LOG_FILE="/var/log/${SCRIPT_NAME%.*}.log"
 readonly DEFAULT_USER="jmeter"
@@ -35,7 +35,8 @@ set -euo pipefail
 log() {
   local level=$1
   local message=$2
-  local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+  local timestamp
+  timestamp=$(date "+%Y-%m-%d %H:%M:%S")
   local log_entry="[$level] ${timestamp} - ${message}"
 
   # Always write to log file (no color codes)
@@ -92,7 +93,8 @@ get_container_memory_limit() {
 
   # 3. 非容器环境或 systemd 容器 (Ubuntu 24.04 可能用 systemd)
   elif [ -f "/proc/self/cgroup" ] && grep -q "memory:" /proc/self/cgroup; then
-    local cgroup_path=$(grep "memory:" /proc/self/cgroup | cut -d: -f3)
+    local cgroup_path
+    cgroup_path=$(grep "memory:" /proc/self/cgroup | cut -d: -f3)
     if [ -f "/sys/fs/cgroup/memory$cgroup_path/memory.limit_in_bytes" ]; then
       mem_limit=$(cat "/sys/fs/cgroup/memory$cgroup_path/memory.limit_in_bytes")
     else
@@ -130,9 +132,12 @@ get_java_version() {
 
 # Calculate and set JVM memory parameters
 calculate_jvm_memory() {
-  local container_mem=$(get_container_memory_limit)
-  local java_version=$(get_java_version)
+  local container_mem
+  local java_version
   local jvm_opts=""
+
+  container_mem=$(get_container_memory_limit)
+  java_version=$(get_java_version)
 
   log_info "Container memory limit: ${container_mem} MB"
 
@@ -304,7 +309,8 @@ create_user() {
     }
   fi
 
-  local uid=$(shuf -i 2000-60000 -n 1)
+  local uid
+  uid=$(shuf -i 2000-60000 -n 1)
   local gid=$uid
 
   log_info "Creating user '$username' with UID:GID $uid:$gid"
@@ -489,7 +495,7 @@ check_or_create_self_signed_ssl_cert() {
   fi
 
   # Generate certificate  
-  openssl req -x509 -nodes -days ${days} -newkey rsa:2048 -sha256 \
+  openssl req -x509 -nodes -days "${days}" -newkey rsa:2048 -sha256 \
     -keyout "${key_file}" -out "${cert_file}" \
     -subj "/C=CN/ST=Guangdong/L=Shenzhen/O=My Company Inc./OU=R&D/CN=localhost" 2>/dev/null
 
@@ -613,7 +619,7 @@ run_rdp_server() {
 
     # Ensure xrdp is in ssl-cert group
     if ! id -nG "$USERNAME" | grep -qw "ssl-cert"; then
-      usermod -aG ssl-cert $USERNAME || {
+      usermod -aG ssl-cert "$USERNAME" || {
         log_error "Failed to add user $USERNAME to ssl-cert group"
         exit 1
       }
