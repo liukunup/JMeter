@@ -306,7 +306,7 @@ create_user() {
         echo "$username ALL=(ALL) NOPASSWD: ALL"
     } > "$temp_sudoers"
     # Validate temporary file
-    if ! visudo -cf "$temp_sudoers"; then
+    if ! visudo -cf "$temp_sudoers" >/dev/null 2>&1; then
         log_error "Invalid sudoers file"
         rm -f "$temp_sudoers"
         return 1
@@ -472,6 +472,8 @@ create_self_signed_cert() {
     log_error "Failed to create self-signed certificate"
     return 1
   fi
+
+  return 0
 }
 
 # Run VNC Server
@@ -543,42 +545,60 @@ run_rdp_server() {
   log_section "Starting RDP Server"
 
   create_user "$RDP_USERNAME" "$RDP_PASSWORD"  # export USERNAME and PASSWORD
-  create_desktop_shortcut "$USERNAME"
+  create_desktop_shortcut "$USERNAME"  # jmeter.desktop will be created in user's Desktop
 
-  # Generate self-signed certificate
+  # ----- Configure certificate -----
   local cert_dir="/home/$USERNAME/.certs"
-  create_self_signed_cert "$cert_dir" "rdp"
-  # Ensure the certs directory exists and has correct permissions
-  chown -R "$USERNAME:$USERNAME" "$cert_dir" || {
-    log_error "Failed to set ownership for user certs directory"
-    exit 1
-  }
-  # Ensure xrdp is in ssl-cert group
-  if ! id -nG "$USERNAME" | grep -qw "ssl-cert"; then
-    usermod -aG ssl-cert $USERNAME || {
-      log_error "Failed to add user $USERNAME to ssl-cert group"
+  if [[ ! -f "$cert_dir/rdp.crt" || ! -f "$cert_dir/rdp.key" ]]; then
+    log_info "Configuring xrdp with self-signed SSL certificate"
+
+    # Remove existing certs to avoid conflicts
+    [[ -f "/etc/xrdp/cert.pem" ]] && rm -f "/etc/xrdp/cert.pem"
+    [[ -f "/etc/xrdp/key.pem" ]] && rm -f "/etc/xrdp/key.pem"
+
+    # Generate self-signed certificate
+    create_self_signed_cert "$cert_dir" "rdp" || {
+      log_error "Failed to generate self-signed SSL certificate"
       exit 1
     }
+
+    # Ensure the certs directory exists and has correct permissions
+    chown -R "$USERNAME:$USERNAME" "$cert_dir" || {
+      log_error "Failed to set ownership for user certs directory"
+      exit 1
+    }
+
+    # Ensure xrdp is in ssl-cert group
+    if ! id -nG "$USERNAME" | grep -qw "ssl-cert"; then
+      usermod -aG ssl-cert $USERNAME || {
+        log_error "Failed to add user $USERNAME to ssl-cert group"
+        exit 1
+      }
+    fi
+
+    # Configure xrdp to use the self-signed certificate
+    sed -i "s|^certificate=.*|certificate=$cert_dir/rdp.crt|" /etc/xrdp/xrdp.ini
+    sed -i "s|^key_file=.*|key_file=$cert_dir/rdp.key|" /etc/xrdp/xrdp.ini
   fi
-  # Configure to use the generated certificate
-  sed -i "s|^certificate=.*|certificate=$cert_dir/rdp.crt|" /etc/xrdp/xrdp.ini
-  sed -i "s|^key_file=.*|key_file=$cert_dir/rdp.key|" /etc/xrdp/xrdp.ini
 
   # Remove existing sesman/xrdp PID files to prevent rdp sessions hanging on container restart
   [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
   [ ! -f /var/run/xrdp/xrdp.pid ] || rm -f /var/run/xrdp/xrdp.pid
 
-  if ! service dbus start; then
+  log_info "Starting dbus service"
+  if ! service dbus start >/dev/null 2>&1; then
     log_error "Failed to start dbus service"
     exit 1
   fi
 
-  if ! /usr/sbin/xrdp-sesman; then
+  log_info "Starting xrdp-sesman service"
+  if ! /usr/sbin/xrdp-sesman >/dev/null 2>&1; then
     log_error "Failed to start xrdp-sesman"
     exit 1
   fi
 
-  if ! /usr/sbin/xrdp --nodaemon; then
+  log_info "Starting xrdp service"
+  if ! /usr/sbin/xrdp --nodaemon >/dev/null 2>&1; then
     log_error "Failed to start xrdp"
     exit 1
   fi
