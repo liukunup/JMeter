@@ -309,8 +309,8 @@ create_user() {
     }
   fi
 
-  local uid
-  uid=$(shuf -i 2000-60000 -n 1)
+  # shellcheck disable=SC2155
+  local uid=$(shuf -i 2000-60000 -n 1)
   local gid=$uid
 
   log_info "Creating user '$username' with UID:GID $uid:$gid"
