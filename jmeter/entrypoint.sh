@@ -597,6 +597,12 @@ run_rdp_server() {
     exit 1
   fi
 
+  # Show connection information
+  log_info "RDP Server is configured with the following details:"
+  log_info "• RDP: rdp://localhost:3390"
+  log_info "• Username: $USERNAME"
+  log_info "• Password: $PASSWORD"
+
   log_info "Starting xrdp service"
   if ! /usr/sbin/xrdp --nodaemon >/dev/null 2>&1; then
     log_error "Failed to start xrdp"
