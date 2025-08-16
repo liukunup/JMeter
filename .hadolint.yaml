@@ -1,8 +1,9 @@
 ignored:
-  - DL3008  # 忽略 "未固定版本" 警告
-  - DL3007  # 忽略 "使用 latest 标签" 警告
-  - DL3059  # 忽略 "多个 RUN 指令" 警告
+  - DL3007  # 允许使用 latest 标签（不强制指定镜像标签）
+  - DL3008  # 允许 apt-get install 不固定版本（不强制包版本固定）
+  - DL3059  # 允许多个 RUN 指令合并（不强制单条RUN指令）
+
 override:
   error:
-    - DL3013
-    - DL4001
+    - DL3013  # 将 --no-install-recommends 相关警告升级为错误（必须使用）
+    - DL4001  # 将 ADD 使用相关警告升级为错误（必须用COPY替代ADD）
