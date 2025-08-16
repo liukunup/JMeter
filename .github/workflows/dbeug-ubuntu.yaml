@@ -50,6 +50,7 @@ jobs:
   # Ubuntu
   build-ubuntu-jmeter-images:
     name: Build JMeter images based on Ubuntu
+    needs: shellcheck
     runs-on: ubuntu-24.04
     permissions:
       packages: write
