@@ -1,4 +1,5 @@
 ignored:
+  - DL3008  # 忽略 "未固定版本" 警告
   - DL3007  # 忽略 "使用 latest 标签" 警告
   - DL3059  # 忽略 "多个 RUN 指令" 警告
 override:
