@@ -554,7 +554,7 @@ run_vnc_server() {
       log_error "Failed to generate SSL certificate"
       exit 1
     }
-  }
+  fi
 
   # Show connection information
   log_info "VNC/NoVNC Server is configured with the following details:"
