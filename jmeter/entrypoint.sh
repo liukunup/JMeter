@@ -345,7 +345,7 @@ Version=1.0
 Type=Application
 Name=JMeter
 Comment=Start JMeter
-Exec=$JMETER_HOME/bin/jmeter.sh
+Exec=%JMETER_HOME%/bin/jmeter.sh
 Icon=utilities-terminal
 Terminal=false
 StartupNotify=true
@@ -355,6 +355,7 @@ EOL
     log_error "Failed to create desktop shortcut file"
     return 1
   fi
+  sed -i "s|%JMETER_HOME%|$JMETER_HOME|g" "$desktop_shortcut_file";
 
   # Set permissions
   if ! chmod +x "$desktop_shortcut_file"; then
