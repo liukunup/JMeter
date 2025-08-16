@@ -1,5 +1,6 @@
 # Use the specified JMeter image as the base image
-ARG BASE_JMETER_IMAGE=liukunup/jmeter:5.6.3
+ARG BASE_JMETER_IMAGE=liukunup/jmeter:latest
+# hadolint ignore=DL3006
 FROM ${BASE_JMETER_IMAGE}
 
 # Set your password for access, or use auto-generated password

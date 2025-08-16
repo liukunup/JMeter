@@ -1,5 +1,4 @@
 ignored:
-  - DL3006
   - DL3007  # 允许使用 latest 标签（不强制指定镜像标签）
   - DL3008  # 允许 apt-get install 不固定版本（不强制包版本固定）
   - DL3059  # 允许多个 RUN 指令合并（不强制单条RUN指令）
