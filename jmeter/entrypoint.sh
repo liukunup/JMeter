@@ -272,56 +272,82 @@ run_server_agent() {
 # Create user with sudo privileges
 create_user() {
   local username="${1:-$DEFAULT_USER}"
-  local password="${2:-$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)}"
+  local password="$2"
+
+  # Check if user exists, if not create it
+  if id "$username" >/dev/null 2>&1; then
+    log_info "User '$username' already exists"
+    export USERNAME="$username"
+
+    # If password is provided, update it
+    if [ -n "$password" ]; then
+      log_info "Updating password for user '$username'"
+
+      if ! passwd --stdin "$username" <<< "$password" &>/dev/null; then
+        log_error "Failed to update password for user '$username'"
+        return 1
+      fi
+
+      log_info "Password for user '$username' updated successfully"
+      export PASSWORD="$password"
+    fi
+
+    return 0
+  fi
+
+  # Generate a random password if not provided
+  if [ -z "$password" ]; then
+    log_info "No password provided, generating a random password"
+    password=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
+  fi
+
   local uid=$(shuf -i 2000-60000 -n 1)
   local gid=$uid
 
-  # Check if user exists, if not create it
-  if ! id "$username" >/dev/null 2>&1; then
-    log_info "Creating user '$username' with UID:GID $uid:$gid"
+  log_info "Creating user '$username' with UID:GID $uid:$gid"
 
-    # Create group
-    if ! groupadd --gid "$gid" "$username"; then
-      log_error "Failed to create group '$username' (GID: $gid)"
-      return 1
-    fi
-
-    # Create user with sudo privileges
-    if ! useradd --shell /bin/bash \
-                 --uid "$uid" \
-                 --gid "$gid" \
-                 --groups sudo \
-                 --password "$(openssl passwd -6 -salt "$(openssl rand -base64 12)" "$password")" \
-                 --create-home \
-                 --home-dir "/home/$username" \
-                 "$username"; then
-      log_error "Failed to create user '$username' (UID: $uid)"
-      return 1
-    fi
-
-    # Add sudo rule safely
-    temp_sudoers=$(mktemp)
-    {
-        echo "# Temporary sudoers addition for $username"
-        echo "$username ALL=(ALL) NOPASSWD: ALL"
-    } > "$temp_sudoers"
-    # Validate temporary file
-    if ! visudo -cf "$temp_sudoers" >/dev/null 2>&1; then
-        log_error "Invalid sudoers file"
-        rm -f "$temp_sudoers"
-        return 1
-    fi
-    # Append to /etc/sudoers
-    if ! cat "$temp_sudoers" >> /etc/sudoers; then
-        log_error "Failed to update /etc/sudoers"
-        rm -f "$temp_sudoers"
-        return 1
-    fi
-    # Clean up temporary file
-    rm -f "$temp_sudoers"
-
-    log_info "User '$username' created with password: $password (Remember it! You will see it only once)"
+  # Create group
+  if ! groupadd --gid "$gid" "$username"; then
+    log_error "Failed to create group '$username' (GID: $gid)"
+    return 1
   fi
+
+  # Create user with sudo privileges
+  if ! useradd --shell /bin/bash \
+                --uid "$uid" \
+                --gid "$gid" \
+                --groups sudo \
+                --password "$(openssl passwd -6 -salt "$(openssl rand -base64 12)" "$password")" \
+                --create-home \
+                --home-dir "/home/$username" \
+                "$username"; then
+    log_error "Failed to create user '$username' (UID: $uid)"
+    return 1
+  fi
+
+  # Add sudo rule safely
+  temp_sudoers=$(mktemp)
+  {
+      echo "# Temporary sudoers addition for $username"
+      echo "$username ALL=(ALL) NOPASSWD: ALL"
+  } > "$temp_sudoers"
+  # Validate temporary file
+  if ! visudo -cf "$temp_sudoers" >/dev/null 2>&1; then
+      log_error "Invalid sudoers file"
+      rm -f "$temp_sudoers"
+      return 1
+  fi
+  # Append to /etc/sudoers
+  if ! cat "$temp_sudoers" >> /etc/sudoers; then
+      log_error "Failed to update /etc/sudoers"
+      rm -f "$temp_sudoers"
+      return 1
+  fi
+
+  # Clean up temporary file
+  rm -f "$temp_sudoers"
+
+  log_info "User '$username' created with password: $password (Remember it! You will see it only once)"
 
   export USERNAME="$username"
   export PASSWORD="$password"
@@ -331,6 +357,12 @@ create_desktop_shortcut() {
   local username="${1:-$DEFAULT_USER}"
   local user_home="/home/$username"
   local desktop_shortcut_file="jmeter.desktop"
+
+  # Check if jmeter.desktop already exists
+  if [ -f "$user_home/Desktop/$desktop_shortcut_file" ] || [ -f "$user_home/.local/share/applications/$desktop_shortcut_file" ]; then
+    log_info "Desktop shortcut file already exists for user '$username'"
+    return 0
+  fi
 
   # Ensure user exists
   if ! id -u "$username" >/dev/null; then
@@ -425,20 +457,18 @@ EOL
   rm -f "$desktop_shortcut_file"
 }
 
-create_self_signed_cert() {
-  log_info "Creating self-signed SSL certificate"
-
+check_or_create_self_signed_ssl_cert() {
   local cert_dir="$1"
   local cert_filename="${2:-selfsigned}"
   local cert_file="${cert_dir}/${cert_filename}.crt"
   local key_file="${cert_dir}/${cert_filename}.key"
-  local days=365
+  local days="${3:-365}"
 
   # Check if certificate already exists
   if [ -f "${cert_file}" ] && [ -f "${key_file}" ]; then
-    log_info "Self-signed certificate already exists."
+    log_info "The self-signed SSL certificate already exists."
     log_info "  Certificate: ${cert_file}"
-    log_info "  Private Key: ${key_file}"
+    log_info "  Private key: ${key_file}"
     log_info "  Valid   for: ${days} days"
     return 0
   fi
@@ -464,13 +494,21 @@ create_self_signed_cert() {
   chmod 644 "${cert_file}"
   chmod 600 "${key_file}"
 
+  # Set ownership if USERNAME is set
+  if [ -n "$USERNAME" ]; then
+    chown "$USERNAME:$USERNAME" "${cert_file}" "${key_file}" || {
+      log_error "Failed to set ownership for certificate files"
+      return 1
+    }
+  fi
+
   if [[ -f "${cert_file}" && -f "${key_file}" ]]; then
-    log_info "Self-signed certificate created successfully"
+    log_info "The self-signed SSL certificate created successfully"
     log_info "  Certificate: ${cert_file}"
-    log_info "  Private Key: ${key_file}"
+    log_info "  Private key: ${key_file}"
     log_info "  Valid   for: ${days} days"
   else
-    log_error "Failed to create self-signed certificate"
+    log_error "Failed to create self-signed SSL certificate"
     return 1
   fi
 
@@ -485,45 +523,52 @@ run_vnc_server() {
   create_user "$VNC_USERNAME" "$VNC_PASSWORD"  # export USERNAME and PASSWORD
   create_desktop_shortcut "$USERNAME"
 
-  # Generate VNC password file
-  local passwd_dir="/home/$USERNAME/.vnc"
-  local passwd_file="$passwd_dir/passwd"
-  mkdir -p "$passwd_dir" || {
-    log_error "Failed to create required directories: $passwd_dir"
-    exit 1
-  }
-  /usr/bin/x11vnc -storepasswd "$PASSWORD" "$passwd_file" >/dev/null 2>&1 || {
-    log_error "Failed to generate VNC password file"
-    exit 1
-  }
-  chmod 600 "$passwd_file" || {
-    log_error "Failed to set permissions on VNC password file"
-    exit 1
+  # First time startup or password has been changed
+  if [ -n "$PASSWORD" ]; then
+    # Generate VNC password file
+    local passwd_dir="/home/$USERNAME/.vnc"
+    local passwd_file="$passwd_dir/passwd"
+    mkdir -p "$passwd_dir" || {
+      log_error "Failed to create required directories: $passwd_dir"
+      exit 1
+    }
+    /usr/bin/x11vnc -storepasswd "$PASSWORD" "$passwd_file" >/dev/null 2>&1 || {
+      log_error "Failed to generate VNC password file"
+      exit 1
+    }
+    chmod 600 "$passwd_file" || {
+      log_error "Failed to set permissions on VNC password file"
+      exit 1
+    }
+    chown "$USERNAME:$USERNAME" "$passwd_file" || {
+      log_error "Failed to set ownership for user home directory"
+      exit 1
+    }
+  fi
+
+  # Check if certificates already exist
+  local cert_dir="/root/.certs"
+  if [[ ! -f "$cert_dir/novnc.crt" || ! -f "$cert_dir/novnc.key" ]]; then
+    log_info "Configuring novnc with self-signed SSL certificate"
+    check_or_create_self_signed_ssl_cert "$cert_dir" "novnc" || {
+      log_error "Failed to generate SSL certificate"
+      exit 1
+    }
   }
 
-  chown -R "$USERNAME:$USERNAME" "/home/$USERNAME" || {
-    log_error "Failed to set ownership for user home directory"
-    exit 1
-  }
-
-  # Generate self-signed certificate
-  create_self_signed_cert "/root/.certs" "novnc" || {
-    log_error "Failed to generate SSL certificate"
-    exit 1
-  }
-
-  # Ensure /tmp/.X11-unix exists with correct permissions
-  # touch /tmp/.X11-unix/X1
-  # chmod 1777 /tmp/.X11-unix
-  # xhost +SI:localuser:$USERNAME
-
-  # Print connection information
+  # Show connection information
   log_info "VNC/NoVNC Server is configured with the following details:"
   log_info "• VNC: vnc://localhost:5900"
   log_info "• Web: https://localhost:6080/vnc.html"
   log_info "• Username: $USERNAME"
-  log_info "• Password: $PASSWORD"
+  if [ -n "$PASSWORD" ]; then
+    log_info "• Password: $PASSWORD"
+  else
+    log_info "• Password: (only for first time setup, see logs for generated password)"
+  fi
+  log_info "• Certificate: $cert_dir/novnc.crt and $cert_dir/novnc.key"
 
+  # Start dbus service
   if ! service dbus start >/dev/null 2>&1; then
     log_error "Failed to start dbus service"
     exit 1
@@ -548,7 +593,7 @@ run_rdp_server() {
   create_user "$RDP_USERNAME" "$RDP_PASSWORD"  # export USERNAME and PASSWORD
   create_desktop_shortcut "$USERNAME"  # jmeter.desktop will be created in user's Desktop
 
-  # ----- Configure certificate -----
+  # Check if certificates already exist
   local cert_dir="/home/$USERNAME/.certs"
   if [[ ! -f "$cert_dir/rdp.crt" || ! -f "$cert_dir/rdp.key" ]]; then
     log_info "Configuring xrdp with self-signed SSL certificate"
@@ -558,14 +603,8 @@ run_rdp_server() {
     [[ -f "/etc/xrdp/key.pem" ]] && rm -f "/etc/xrdp/key.pem"
 
     # Generate self-signed certificate
-    create_self_signed_cert "$cert_dir" "rdp" || {
+    check_or_create_self_signed_ssl_cert "$cert_dir" "rdp" || {
       log_error "Failed to generate self-signed SSL certificate"
-      exit 1
-    }
-
-    # Ensure the certs directory exists and has correct permissions
-    chown -R "$USERNAME:$USERNAME" "$cert_dir" || {
-      log_error "Failed to set ownership for user certs directory"
       exit 1
     }
 
@@ -586,12 +625,14 @@ run_rdp_server() {
   [ ! -f /var/run/xrdp/xrdp-sesman.pid ] || rm -f /var/run/xrdp/xrdp-sesman.pid
   [ ! -f /var/run/xrdp/xrdp.pid ] || rm -f /var/run/xrdp/xrdp.pid
 
+  # Start dbus service
   log_info "Starting dbus service"
   if ! service dbus start >/dev/null 2>&1; then
     log_error "Failed to start dbus service"
     exit 1
   fi
 
+  # Start xrdp-sesman service
   log_info "Starting xrdp-sesman service"
   if ! /usr/sbin/xrdp-sesman >/dev/null 2>&1; then
     log_error "Failed to start xrdp-sesman"
@@ -602,8 +643,14 @@ run_rdp_server() {
   log_info "RDP Server is configured with the following details:"
   log_info "• RDP: rdp://localhost:3390"
   log_info "• Username: $USERNAME"
-  log_info "• Password: $PASSWORD"
+  if [ -n "$PASSWORD" ]; then
+    log_info "• Password: $PASSWORD"
+  else
+    log_info "• Password: (only for first time setup, see logs for generated password)"
+  fi
+  log_info "• Certificate: $cert_dir/rdp.crt and $cert_dir/rdp.key"
 
+  # Start xrdp service
   log_info "Starting xrdp service"
   if ! /usr/sbin/xrdp --nodaemon >/dev/null 2>&1; then
     log_error "Failed to start xrdp"
