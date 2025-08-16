@@ -2,9 +2,9 @@
 ARG BASE_JMETER_IMAGE
 FROM ${BASE_JMETER_IMAGE}
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-ENV NM_PASSWORD=""
+ENV DEBIAN_FRONTEND=noninteractive \
+    NM_USERNAME="jmeter" \
+    NM_PASSWORD=""
 
 # Install NoMachine
 # link https://kb.nomachine.com/DT08U00297?s=docker
