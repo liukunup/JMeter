@@ -1,7 +1,7 @@
 # This Dockerfile sets up a JMeter environment for running testcases.
 
 # 1. Choose specified JMeter image as the base image
-ARG BASE_JMETER_IMAGE
+ARG BASE_JMETER_IMAGE=liukunup/jmeter:latest
 FROM ${BASE_JMETER_IMAGE}
 
 # 2. Set the working directory inside the container (don't modify)

@@ -1,5 +1,5 @@
 # Use the specified JMeter image as the base image
-ARG BASE_JMETER_IMAGE
+ARG BASE_JMETER_IMAGE=liukunup/jmeter:latest
 FROM ${BASE_JMETER_IMAGE}
 
 # Set your password for access, or use auto-generated password
