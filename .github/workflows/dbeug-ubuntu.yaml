@@ -30,6 +30,23 @@ env:
   REPOSITORY: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
 
 jobs:
+  # Shell Check
+  shellcheck:
+    name: Run Shell Check
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Run Shell Check
+        run: |
+          # 安装 shellcheck
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          # 检查所有 .sh 文件
+          find jmeter -type f -name "*.sh" -print0 | xargs -0 shellcheck -x -o all
+
   # Ubuntu
   build-ubuntu-jmeter-images:
     name: Build JMeter images based on Ubuntu
@@ -48,8 +65,16 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: jmeter/Dockerfile.Ubuntu
+          failure-threshold: warning
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -105,8 +130,16 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: jmeter/Dockerfile.Plugins
+          failure-threshold: warning
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -156,18 +189,18 @@ jobs:
     strategy:
       matrix:  # format: {jmeter}-{os}-{version}-{jre}-{gui}
         include:
-          - dockerfile: "jmeter/Dockerfile.Ubuntu-with-VNC"
-            jmeter: "5.6.3"
-            jre: "openjdk-21-jre"
-            os: "ubuntu"
-            version: "24.04"
-            gui: "vnc"
           - dockerfile: "jmeter/Dockerfile.Ubuntu-with-RDP"
             jmeter: "5.6.3"
             jre: "openjdk-21-jre"
             os: "ubuntu"
             version: "24.04"
             gui: "rdp"
+          - dockerfile: "jmeter/Dockerfile.Ubuntu-with-VNC"
+            jmeter: "5.6.3"
+            jre: "openjdk-21-jre"
+            os: "ubuntu"
+            version: "24.04"
+            gui: "vnc"
           - dockerfile: "jmeter/Dockerfile.Ubuntu-with-NoMachine"
             jmeter: "5.6.3"
             jre: "openjdk-21-jre"
@@ -183,8 +216,34 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: jmeter/Dockerfile.Ubuntu-with-RDP
+          failure-threshold: warning
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: jmeter/Dockerfile.Ubuntu-with-VNC
+          failure-threshold: warning
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: jmeter/Dockerfile.Ubuntu-with-NoMachine
+          failure-threshold: warning
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: jmeter/Dockerfile.Ubuntu-FullStack
+          failure-threshold: warning
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -242,8 +301,16 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: jmeter/Dockerfile.Business
+          failure-threshold: warning
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
