@@ -527,7 +527,7 @@ run_vnc_server() {
   create_desktop_shortcut "${USERNAME}"
 
   # First time startup or password has been changed
-  if [[ -n "${PASSWORD}" ]]; then
+  if [[ -n "${PASSWORD-}" ]]; then
     # Generate VNC password file
     local passwd_dir="/home/${USERNAME}/.vnc"
     local passwd_file="${passwd_dir}/passwd"
