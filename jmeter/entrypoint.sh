@@ -304,6 +304,8 @@ create_user() {
 
       log_info "Password for user '${username}' updated successfully"
       export PASSWORD="${password}"
+    else
+      export PASSWORD=""
     fi
 
     return 0
@@ -332,12 +334,12 @@ create_user() {
 
   salt=$(openssl rand -base64 12) || {
       echo "ERROR: Failed to generate salt" >&2
-      exit 1
+      return 1
   }
 
   encrypted_passwd=$(openssl passwd -6 -salt "${salt}" "${password}") || {
       echo "ERROR: Password encryption failed" >&2
-      exit 1
+      return 1
   }
 
   # Create user with sudo privileges
@@ -427,6 +429,30 @@ EOL
   if ! chown "${username}:${username}" "${desktop_shortcut_file}"; then
     log_error "Failed to set ownership for shortcut file"
     return 1
+  fi
+
+  # ----- copy to ~/Desktop -----
+  if [[ ! -d "${user_home}/Desktop" ]]; then
+    mkdir -p "${user_home}/Desktop" || {
+      log_error "Failed to create directory ${user_home}/Desktop"
+      return 1
+    }
+    chown "${username}:${username}" "${user_home}/Desktop" || {
+      log_error "Failed to set ownership for Desktop directory"
+      return 1
+    }
+  fi
+
+  # Check if shortcut already exists
+  if [[ ! -f "${user_home}/Desktop/${desktop_shortcut_file}" ]]; then
+    cp "${desktop_shortcut_file}" "${user_home}/Desktop/" || {
+      log_error "Failed to copy desktop shortcut file to ${user_home}/Desktop/"
+      return 1
+    }
+    chown "${username}:${username}" "${user_home}/Desktop/${desktop_shortcut_file}" || {
+      log_error "Failed to set ownership for desktop shortcut file"
+      return 1
+    }
   fi
 
   # ----- copy to ~/.local/share/applications/ -----
@@ -527,7 +553,7 @@ run_vnc_server() {
   create_desktop_shortcut "${USERNAME}"
 
   # First time startup or password has been changed
-  if [[ -n "${PASSWORD-}" ]]; then
+  if [[ -n "${PASSWORD}" ]]; then
     # Generate VNC password file
     local passwd_dir="/home/${USERNAME}/.vnc"
     local passwd_file="${passwd_dir}/passwd"
@@ -634,14 +660,14 @@ run_rdp_server() {
   [[ ! -f /var/run/xrdp/xrdp.pid ]] || rm -f /var/run/xrdp/xrdp.pid
 
   # Start dbus service
-  log_info "Starting dbus service"
+  log_info "Starting D-Bus"
   if ! service dbus start >/dev/null 2>&1; then
     log_error "Failed to start dbus service"
     exit 1
   fi
 
   # Start xrdp-sesman service
-  log_info "Starting xrdp-sesman service"
+  log_info "Starting xrdp-sesman"
   if ! /usr/sbin/xrdp-sesman >/dev/null 2>&1; then
     log_error "Failed to start xrdp-sesman"
     exit 1
@@ -660,7 +686,7 @@ run_rdp_server() {
   log_info "=========================================================================="
 
   # Start xrdp service
-  log_info "Starting xrdp service"
+  log_info "Starting xrdp"
   if ! /usr/sbin/xrdp --nodaemon >/dev/null 2>&1; then
     log_error "Failed to start xrdp"
     exit 1
@@ -687,7 +713,7 @@ run_nomachine_server() {
   fi
 
   # Keep container running and show logs
-  exec tail -f /usr/NX/var/log/nxserver.log
+  exec tail -f /dev/null
 }
 
 # Show help
