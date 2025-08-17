@@ -190,30 +190,24 @@ jobs:
     strategy:
       matrix:  # format: {jmeter}-{os}-{version}-{jre}-{gui}
         include:
-          - dockerfile: "jmeter/Dockerfile.Ubuntu-with-RDP"
+          - dockerfile: "jmeter/Dockerfile.Ubuntu-RDP"
             jmeter: "5.6.3"
             jre: "openjdk-21-jre"
             os: "ubuntu"
             version: "24.04"
             gui: "rdp"
-          - dockerfile: "jmeter/Dockerfile.Ubuntu-with-VNC"
+          - dockerfile: "jmeter/Dockerfile.Ubuntu-VNC"
             jmeter: "5.6.3"
             jre: "openjdk-21-jre"
             os: "ubuntu"
             version: "24.04"
             gui: "vnc"
-          - dockerfile: "jmeter/Dockerfile.Ubuntu-with-NoMachine"
+          - dockerfile: "jmeter/Dockerfile.Ubuntu-NoMachine"
             jmeter: "5.6.3"
             jre: "openjdk-21-jre"
             os: "ubuntu"
             version: "24.04"
             gui: "nomachine"
-          - dockerfile: "jmeter/Dockerfile.Ubuntu-FullStack"
-            jmeter: "5.6.3"
-            jre: "openjdk-21-jre"
-            os: "ubuntu"
-            version: "24.04"
-            gui: "fullstack"
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -221,25 +215,19 @@ jobs:
       - name: Run Hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: jmeter/Dockerfile.Ubuntu-with-RDP
+          dockerfile: jmeter/Dockerfile.Ubuntu-RDP
           failure-threshold: warning
 
       - name: Run Hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: jmeter/Dockerfile.Ubuntu-with-VNC
+          dockerfile: jmeter/Dockerfile.Ubuntu-VNC
           failure-threshold: warning
 
       - name: Run Hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: jmeter/Dockerfile.Ubuntu-with-NoMachine
-          failure-threshold: warning
-
-      - name: Run Hadolint
-        uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: jmeter/Dockerfile.Ubuntu-FullStack
+          dockerfile: jmeter/Dockerfile.Ubuntu-NoMachine
           failure-threshold: warning
 
       - name: Setup QEMU
