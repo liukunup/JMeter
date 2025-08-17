@@ -700,11 +700,19 @@ run_nomachine_server() {
   create_user "${NM_USERNAME}" "${NM_PASSWORD}"  # export USERNAME and PASSWORD
   create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
 
-  log_info "Starting D-Bus"
-  if ! /etc/init.d/dbus start >/dev/null 2>&1; then
-    log_error "Failed to start D-Bus"
-    exit 1
+  if [[ -n "${NX_PUBLICKEY}" ]]; then
+    local user_home="/home/${USERNAME}"
+    sudo -u "${USERNAME}" mkdir -p "${user_home}/.nx/config/"
+    sudo -u "${USERNAME}" touch "${user_home}/.nx/config/authorized.crt"
+    sudo -u "${USERNAME}" chmod 0600 "${user_home}/.nx/config/authorized.crt"
+    sudo -u "${USERNAME}" echo "${NX_PUBLICKEY}" | tr -d '"' >> "${user_home}/.nx/config/authorized.crt"
   fi
+
+  # log_info "Starting D-Bus"
+  # if ! /etc/init.d/dbus start >/dev/null 2>&1; then
+  #   log_error "Failed to start D-Bus"
+  #   exit 1
+  # fi
 
   log_info "Starting NoMachine"
   if ! /etc/NX/nxserver --startup >/dev/null 2>&1; then
@@ -713,7 +721,8 @@ run_nomachine_server() {
   fi
 
   # Keep container running and show logs
-  exec tail -f /dev/null
+  # exec tail -f /dev/null
+  exec tail -f /usr/NX/var/log/nxserver.log
 }
 
 # Show help
