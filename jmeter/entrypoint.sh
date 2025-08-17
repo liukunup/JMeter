@@ -311,11 +311,11 @@ create_user() {
 
   # Generate a random password if not provided
   if [[ -z "${password}" ]]; then
-    log_info "No password provided, generating a random password"
     password=$(openssl rand -base64 12 | tr -dc 'A-Za-z0-9' | head -c 12) 2>/dev/null || {
       log_error "Failed to generate random password"
       return 1
     }
+    log_info "No password provided, generated random password for user '${username}'"
   fi
 
   # shellcheck disable=SC2155
@@ -563,7 +563,7 @@ run_vnc_server() {
 
   # Show connection information
   log_info "VNC/NoVNC Server is configured with the following details:"
-  log_info "• VNC: vnc://localhost:5900"
+  log_info "• VNC: localhost:5900"
   log_info "• Web: https://localhost:6080/vnc.html"
   log_info "• Username: ${USERNAME}"
   if [[ -n "${PASSWORD}" ]]; then
@@ -571,7 +571,6 @@ run_vnc_server() {
   else
     log_info "• Password: (only for first time setup, see logs for generated password)"
   fi
-  log_info "• Certificate: ${cert_dir}/novnc.crt and ${cert_dir}/novnc.key"
 
   # Start dbus service
   if ! service dbus start >/dev/null 2>&1; then
@@ -648,14 +647,13 @@ run_rdp_server() {
 
   # Show connection information
   log_info "RDP Server is configured with the following details:"
-  log_info "• RDP: rdp://localhost:3390"
+  log_info "• RDP: localhost:3390"
   log_info "• Username: ${USERNAME}"
   if [[ -n "${PASSWORD}" ]]; then
     log_info "• Password: ${PASSWORD}"
   else
     log_info "• Password: (only for first time setup, see logs for generated password)"
   fi
-  log_info "• Certificate: ${cert_dir}/rdp.crt and ${cert_dir}/rdp.key"
 
   # Start xrdp service
   log_info "Starting xrdp service"
