@@ -721,8 +721,8 @@ run_nomachine_server() {
   fi
 
   # Keep container running and show logs
-  # exec tail -f /dev/null
-  exec tail -f /usr/NX/var/log/nxserver.log
+  exec tail -f /dev/null
+  # exec tail -f /usr/NX/var/log/nxserver.log
 }
 
 # Show help
