@@ -674,16 +674,19 @@ run_nomachine_server() {
   create_user "${NM_USERNAME}" "${NM_PASSWORD}"  # export USERNAME and PASSWORD
   create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
 
-  if ! /etc/init.d/dbus start 2>&1; then
-    log_error "Failed to start dbus"
+  log_info "Starting D-Bus"
+  if ! /etc/init.d/dbus start >/dev/null 2>&1; then
+    log_error "Failed to start D-Bus"
     exit 1
   fi
 
-  if ! /etc/NX/nxserver --startup 2>&1; then
-    log_error "Failed to start NoMachine server"
+  log_info "Starting NoMachine"
+  if ! /etc/NX/nxserver --startup >/dev/null 2>&1; then
+    log_error "Failed to start NoMachine"
     exit 1
   fi
 
+  # Keep container running and show logs
   exec tail -f /usr/NX/var/log/nxserver.log
 }
 

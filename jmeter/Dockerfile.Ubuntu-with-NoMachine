@@ -7,19 +7,26 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NM_USERNAME="jmeter" \
     NM_PASSWORD=""
 
-# Install NoMachine
-# link https://kb.nomachine.com/DT08U00297?s=docker
 RUN apt-get update && apt-get install -y \
-    apt-utils vim xterm cups curl \
+    sudo openssl \
+    # Install XFCE desktop environment
     xfce4 \
     xfce4-goodies \
-    xubuntu-icon-theme \
+    # Install DBus for inter-process communication
+    dbus-x11 \
+    # Install PulseAudio for sound support
+    pulseaudio \
+    pulseaudio-utils \
+    pavucontrol \
     && curl -fSL "https://www.nomachine.com/free/linux/64/deb" -o nomachine.deb \
     && dpkg -i nomachine.deb \
+    # Clean up apt cache to reduce image size
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 ENV DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
+
+EXPOSE 4000 4443
 
 ENTRYPOINT [ "/entrypoint.sh" ]
 
