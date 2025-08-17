@@ -52,9 +52,9 @@ RUN    mkdir -p /tmp/dependencies \
     && curl -L --silent "${SERVER_AGENT_URL}" > "/tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}.zip" \
     && mkdir -p "${SERVER_AGENT_HOME}" \
     && unzip "/tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}.zip" -d "/tmp/dependencies/" \
-    && mv "/tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}/*" "${SERVER_AGENT_HOME}/" \
+    && mv /tmp/dependencies/ServerAgent-${SERVER_AGENT_VERSION}/* "${SERVER_AGENT_HOME}/" \
     # Make Server Agent scripts executable
-    && chmod +x "${SERVER_AGENT_HOME}/*.sh" \
+    && chmod +x ${SERVER_AGENT_HOME}/*.sh \
     # Clean up temporary files
     && rm -rf /tmp/dependencies
 
