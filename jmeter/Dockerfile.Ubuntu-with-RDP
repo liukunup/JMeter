@@ -34,8 +34,6 @@ RUN apt-get update && apt-get install -y \
 
 EXPOSE 3390/tcp
 
-WORKDIR /home/${RDP_USERNAME}
-
 ENTRYPOINT [ "/entrypoint.sh" ]
 
 CMD [ "rdp" ]

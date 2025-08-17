@@ -32,8 +32,6 @@ COPY jmeter/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 5900 6080
 
-WORKDIR /home/${VNC_USERNAME}
-
 ENTRYPOINT [ "/entrypoint.sh" ]
 
 CMD [ "vnc" ]

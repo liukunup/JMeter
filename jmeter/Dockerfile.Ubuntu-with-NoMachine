@@ -44,8 +44,6 @@ ENV DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
 
 EXPOSE 4000 4443
 
-WORKDIR /home/${NM_USERNAME}
-
 ENTRYPOINT [ "/entrypoint.sh" ]
 
 CMD [ "nomachine" ]
