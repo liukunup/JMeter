@@ -404,7 +404,7 @@ create_desktop_shortcut() {
 Version=1.0
 Type=Application
 Name=JMeter
-Comment=Start JMeter
+Comment=Load Testing
 Exec=%JMETER_HOME%/bin/jmeter.sh
 Icon=utilities-terminal
 Terminal=false
