@@ -312,7 +312,7 @@ create_user() {
   # Generate a random password if not provided
   if [[ -z "${password}" ]]; then
     log_info "No password provided, generating a random password"
-    password=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12) || {
+    password=$(openssl rand -base64 12 | tr -dc 'A-Za-z0-9' | head -c 12) 2>/dev/null || {
       log_error "Failed to generate random password"
       return 1
     }
