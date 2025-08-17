@@ -429,31 +429,6 @@ EOL
     return 1
   fi
 
-  # ----- copy to ~/Desktop -----
-  # Create Desktop directory if needed
-  if [[ ! -d "${user_home}/Desktop" ]]; then
-    mkdir -p "${user_home}/Desktop" || {
-      log_error "Failed to create directory ${user_home}/Desktop"
-      return 1
-    }
-    chown "${username}:${username}" "${user_home}/Desktop" || {
-      log_error "Failed to set ownership for Desktop directory"
-      return 1
-    }
-  fi
-
-  # Check if shortcut already exists
-  if [[ ! -f "${user_home}/Desktop/${desktop_shortcut_file}" ]]; then
-    cp "${desktop_shortcut_file}" "${user_home}/Desktop/" || {
-      log_error "Failed to copy desktop shortcut file to ${user_home}/Desktop/"
-      return 1
-    }
-    chown "${username}:${username}" "${user_home}/Desktop/${desktop_shortcut_file}" || {
-      log_error "Failed to set ownership for desktop shortcut file"
-      return 1
-    }
-  fi
-
   # ----- copy to ~/.local/share/applications/ -----
   if [[ ! -d "${user_home}/.local/share/applications" ]]; then
     mkdir -p "${user_home}/.local/share/applications" || {
