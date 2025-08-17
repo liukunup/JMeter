@@ -708,11 +708,17 @@ run_nomachine_server() {
   #   sudo -u "${USERNAME}" echo "${NX_PUBLICKEY}" | tr -d '"' >> "${user_home}/.nx/config/authorized.crt"
   # fi
 
-  # log_info "Starting D-Bus"
-  # if ! /etc/init.d/dbus start >/dev/null 2>&1; then
-  #   log_error "Failed to start D-Bus"
-  #   exit 1
-  # fi
+  log_info "Starting xvfb"
+  if ! /usr/bin/Xvfb :1 -screen 0 2560x1440x24 -ac +extension GLX +render -noreset >/dev/null 2>&1; then
+    log_error "Failed to start Xvfb"
+    exit 1
+  fi
+
+  log_info "Starting D-Bus"
+  if ! /etc/init.d/dbus start >/dev/null 2>&1; then
+    log_error "Failed to start D-Bus"
+    exit 1
+  fi
 
   log_info "Starting NoMachine"
   if ! /etc/NX/nxserver --startup >/dev/null 2>&1; then
