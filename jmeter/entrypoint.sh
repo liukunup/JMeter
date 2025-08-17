@@ -562,6 +562,7 @@ run_vnc_server() {
   fi
 
   # Show connection information
+  log_info "=========================================================================="
   log_info "VNC/NoVNC Server is configured with the following details:"
   log_info "• VNC: localhost:5900"
   log_info "• Web: https://localhost:6080/vnc.html"
@@ -571,6 +572,7 @@ run_vnc_server() {
   else
     log_info "• Password: (only for first time setup, see logs for generated password)"
   fi
+  log_info "=========================================================================="
 
   # Start dbus service
   if ! service dbus start >/dev/null 2>&1; then
@@ -646,6 +648,7 @@ run_rdp_server() {
   fi
 
   # Show connection information
+  log_info "=========================================================================="
   log_info "RDP Server is configured with the following details:"
   log_info "• RDP: localhost:3390"
   log_info "• Username: ${USERNAME}"
@@ -654,6 +657,7 @@ run_rdp_server() {
   else
     log_info "• Password: (only for first time setup, see logs for generated password)"
   fi
+  log_info "=========================================================================="
 
   # Start xrdp service
   log_info "Starting xrdp service"
