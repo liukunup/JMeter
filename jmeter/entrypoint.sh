@@ -700,13 +700,13 @@ run_nomachine_server() {
   create_user "${NM_USERNAME}" "${NM_PASSWORD}"  # export USERNAME and PASSWORD
   create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
 
-  if [[ -n "${NX_PUBLICKEY}" ]]; then
-    local user_home="/home/${USERNAME}"
-    sudo -u "${USERNAME}" mkdir -p "${user_home}/.nx/config/"
-    sudo -u "${USERNAME}" touch "${user_home}/.nx/config/authorized.crt"
-    sudo -u "${USERNAME}" chmod 0600 "${user_home}/.nx/config/authorized.crt"
-    sudo -u "${USERNAME}" echo "${NX_PUBLICKEY}" | tr -d '"' >> "${user_home}/.nx/config/authorized.crt"
-  fi
+  # if [[ -n "${NX_PUBLICKEY}" ]]; then
+  #   local user_home="/home/${USERNAME}"
+  #   sudo -u "${USERNAME}" mkdir -p "${user_home}/.nx/config/"
+  #   sudo -u "${USERNAME}" touch "${user_home}/.nx/config/authorized.crt"
+  #   sudo -u "${USERNAME}" chmod 0600 "${user_home}/.nx/config/authorized.crt"
+  #   sudo -u "${USERNAME}" echo "${NX_PUBLICKEY}" | tr -d '"' >> "${user_home}/.nx/config/authorized.crt"
+  # fi
 
   # log_info "Starting D-Bus"
   # if ! /etc/init.d/dbus start >/dev/null 2>&1; then
