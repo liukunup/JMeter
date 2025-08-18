@@ -29,6 +29,7 @@ readonly NC='\033[0m' # No Color
 
 # ------------ Environment Variables --------------
 : "${JMETER_HOME:=/opt/jmeter}"
+: "${DISPLAY:=:1}"
 : "${VNC_USERNAME:=jmeter}"
 : "${VNC_PASSWORD:=}"
 : "${RDP_USERNAME:=jmeter}"
