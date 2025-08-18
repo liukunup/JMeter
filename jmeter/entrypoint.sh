@@ -702,7 +702,8 @@ run_nomachine_server() {
   create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
 
   /etc/NX/nxserver --startup
-  tail -f /usr/NX/var/log/nxserver.log
+  # tail -f /usr/NX/var/log/nxserver.log
+  exec tail -f /dev/null
 }
 
 # Show help
