@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     xfce4-goodies \
     # Install DBus for inter-process communication
     dbus \
+    supervisor \
     # Install PulseAudio for sound support
     pulseaudio \
     pulseaudio-utils \
