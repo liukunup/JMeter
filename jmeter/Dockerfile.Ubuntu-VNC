@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY jmeter/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY jmeter/supervisord-vnc.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 5900 6080
 

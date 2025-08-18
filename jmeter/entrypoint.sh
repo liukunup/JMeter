@@ -708,27 +708,16 @@ run_nomachine_server() {
   #   sudo -u "${USERNAME}" echo "${NX_PUBLICKEY}" | tr -d '"' >> "${user_home}/.nx/config/authorized.crt"
   # fi
 
-  log_info "Starting xvfb"
-  if ! /usr/bin/Xvfb :1 -screen 0 2560x1440x24 -ac +extension GLX +render -noreset >/dev/null 2>&1; then
-    log_error "Failed to start Xvfb"
-    exit 1
-  fi
+  # Start supervisord with logging
+  log_info "Starting supervisord with NoMachine server"
+  exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf | \
+    while read -r line; do
+      log_info "supervisord: ${line}"
+    done
 
-  log_info "Starting D-Bus"
-  if ! /etc/init.d/dbus start >/dev/null 2>&1; then
-    log_error "Failed to start D-Bus"
-    exit 1
-  fi
-
-  log_info "Starting NoMachine"
-  if ! /etc/NX/nxserver --startup >/dev/null 2>&1; then
-    log_error "Failed to start NoMachine"
-    exit 1
-  fi
-
-  # Keep container running and show logs
-  exec tail -f /dev/null
-  # exec tail -f /usr/NX/var/log/nxserver.log
+  # This point should theoretically never be reached due to exec
+  log_error "Supervisord unexpectedly exited"
+  exit 1
 }
 
 # Show help
