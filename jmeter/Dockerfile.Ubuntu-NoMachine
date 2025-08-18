@@ -16,14 +16,16 @@ RUN apt-get update && apt-get install -y \
     xfce4 \
     xfce4-goodies \
     # Install DBus for inter-process communication
-    dbus \
+    dbus-x11 \
     supervisor \
     # Install PulseAudio for sound support
     pulseaudio \
     pulseaudio-utils \
     pavucontrol \
-    # Install SSH server for remote access
+    # Install and configure OpenSSH server
     openssh-server \
+    && mkdir -p /var/run/sshd \
+    && chmod 0755 /var/run/sshd \
     # Install and configure NoMachine server
     && curl -fSL "https://www.nomachine.com/free/linux/64/deb" -o nomachine.deb \
     && dpkg -i nomachine.deb \
