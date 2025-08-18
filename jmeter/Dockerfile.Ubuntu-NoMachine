@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     pulseaudio-utils \
     pavucontrol \
     ssh \
+    dbus-x11 \
     && service ssh start \
     && mkdir -p /var/run/dbus \
     # Install and configure NoMachine server
