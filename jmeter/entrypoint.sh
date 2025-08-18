@@ -701,24 +701,8 @@ run_nomachine_server() {
   create_user "${NM_USERNAME}" "${NM_PASSWORD}"  # export USERNAME and PASSWORD
   create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
 
-  # if [[ -n "${NX_PUBLICKEY}" ]]; then
-  #   local user_home="/home/${USERNAME}"
-  #   sudo -u "${USERNAME}" mkdir -p "${user_home}/.nx/config/"
-  #   sudo -u "${USERNAME}" touch "${user_home}/.nx/config/authorized.crt"
-  #   sudo -u "${USERNAME}" chmod 0600 "${user_home}/.nx/config/authorized.crt"
-  #   sudo -u "${USERNAME}" echo "${NX_PUBLICKEY}" | tr -d '"' >> "${user_home}/.nx/config/authorized.crt"
-  # fi
-
-  # Start supervisord with logging
-  log_info "Starting supervisord with NoMachine server"
-  exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf | \
-    while read -r line; do
-      log_info "supervisord: ${line}"
-    done
-
-  # This point should theoretically never be reached due to exec
-  log_error "Supervisord unexpectedly exited"
-  exit 1
+  /etc/NX/nxserver --startup
+  tail -f /usr/NX/var/log/nxserver.log
 }
 
 # Show help
