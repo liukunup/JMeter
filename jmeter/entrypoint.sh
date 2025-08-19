@@ -29,7 +29,7 @@ readonly NC='\033[0m' # No Color
 
 # ------------ Environment Variables --------------
 : "${JMETER_HOME:=/opt/jmeter}"
-: "${DISPLAY:=:1}"
+: "${DISPLAY:=:0}"
 : "${VNC_USERNAME:=jmeter}"
 : "${VNC_PASSWORD:=}"
 : "${RDP_USERNAME:=jmeter}"
@@ -701,9 +701,16 @@ run_nomachine_server() {
   create_user "${NM_USERNAME}" "${NM_PASSWORD}"  # export USERNAME and PASSWORD
   create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
 
-  /etc/NX/nxserver --startup
-  # tail -f /usr/NX/var/log/nxserver.log
-  exec tail -f /dev/null
+  # Start supervisord with logging
+  log_info "Starting supervisord with VNC services"
+  exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf | \
+    while read -r line; do
+      log_info "supervisord: ${line}"
+    done
+
+  # This point should theoretically never be reached due to exec
+  log_error "Supervisord unexpectedly exited"
+  exit 1
 }
 
 # Show help
