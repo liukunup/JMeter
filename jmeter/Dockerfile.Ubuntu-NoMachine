@@ -6,8 +6,9 @@ FROM ${BASE_JMETER_IMAGE}
 ENV DEBIAN_FRONTEND=noninteractive \
     NM_USERNAME="jmeter" \
     NM_PASSWORD="" \
-    DISPLAY=":0" \
-    DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
+    DISPLAY=":0"
+
+    # DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
 
 RUN apt-get update && apt-get install -y \
     sudo openssl \
@@ -22,7 +23,7 @@ RUN apt-get update && apt-get install -y \
     pulseaudio-utils \
     pavucontrol \
     #
-    openssh-server \
+    # openssh-server \
     dbus-x11 \
     supervisor \
     # && service ssh start \
@@ -51,7 +52,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY jmeter/supervisord-nomachine.conf /etc/supervisor/conf.d/supervisord.conf
 
-EXPOSE 22 4000
+EXPOSE 4000
 
 ENTRYPOINT [ "/entrypoint.sh" ]
 

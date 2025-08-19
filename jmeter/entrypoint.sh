@@ -701,6 +701,12 @@ run_nomachine_server() {
   create_user "${NM_USERNAME}" "${NM_PASSWORD}"  # export USERNAME and PASSWORD
   create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
 
+  log_info "Starting nxserver"
+  if ! /etc/NX/nxserver --startup >/dev/null 2>&1; then
+    log_error "Failed to start nxserver"
+    exit 1
+  fi
+
   # Start supervisord with logging
   log_info "Starting supervisord with VNC services"
   exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf | \
