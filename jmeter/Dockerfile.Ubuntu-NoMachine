@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y \
     #
     openssh-server \
     dbus-x11 \
+    supervisor \
     # && service ssh start \
     # && mkdir -p /var/run/dbus \
     # Install and configure NoMachine server
