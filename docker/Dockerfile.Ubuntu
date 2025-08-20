@@ -1,6 +1,6 @@
-# Use the official Alpine Linux image as the base image
+# Use the official Ubuntu Linux image as the base image
 ARG BASE_IMAGE_VERSION=latest
-FROM alpine:${BASE_IMAGE_VERSION}
+FROM ubuntu:${BASE_IMAGE_VERSION}
 
 # Maintainer
 LABEL maintainer="LiuKun<liukunup@outlook.com>"
@@ -27,7 +27,7 @@ ENV JMETER_LIC=${JMETER_HOME}/licenses
 ENV JMETER_CUSTOM_PLUGINS_FOLDER=/opt/plugins
 
 # Java Runtime Environment
-ARG JRE_VERSION=openjdk21-jre
+ARG JRE_VERSION=openjdk-21-jre
 
 # Install Python 3 (default: true)
 ARG INSTALL_PYTHON_3=true
@@ -37,26 +37,26 @@ ARG TIMEZONE=Asia/Shanghai
 ENV TZ=${TIMEZONE}
 
 # Copy the entrypoint script to the root directory
-COPY jmeter/entrypoint.sh /
+COPY docker/entrypoint.sh docker/logger.sh /
 
 # Install necessary packages
-RUN apk update && apk upgrade --no-cache && \
+RUN apt-get update && apt-get upgrade -y && \
 	# Add CA certificates and update
-	apk add --no-cache ca-certificates && \
+	apt-get install --no-install-recommends -y ca-certificates && \
 	update-ca-certificates && \
-	# Install Java, tzdata, curl, bash, vim, tar, unzip, make, net-tools, and nss
-	apk add --no-cache ${JRE_VERSION} tzdata curl bash vim tar unzip make net-tools git && \
-	apk add --no-cache nss && \
+	# Install Java, tzdata, curl, bash, vim, nano, tar, unzip, make, net-tools, git, and nss
+	apt-get install --no-install-recommends -y ${JRE_VERSION} tzdata curl bash vim nano tar unzip make net-tools git && \
 	# Optionally install Python 3 if INSTALL_PYTHON_3 is true
 	if [ "$INSTALL_PYTHON_3" = "true" ]; then \
-	  apk add --no-cache \
-	    python3 py3-pip; \
+	  apt-get install --no-install-recommends -y \
+	    python3 python3-pip; \
 	  ln -sf python3 /usr/bin/python; \
 	fi && \
 	# Make the entrypoint script executable
 	chmod +x /entrypoint.sh && \
     # Clean up apt cache to reduce image size
-    rm -rf /var/cache/apk/*
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install JMeter
 WORKDIR /tmp/dependencies

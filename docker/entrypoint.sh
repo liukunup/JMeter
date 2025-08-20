@@ -1,90 +1,68 @@
 #!/bin/bash
 
+# set -x  # Uncomment for debugging
+
+# Ensure script exits on error and unset variables
+set -euo pipefail
+
 # =================================================
 # Entry Point Script for JMeter Docker Container
 #
 # This script sets up and runs JMeter in various modes including:
-# - Console mode
-# - Server mode
-# - Mirror Server mode
+# - Console
+# - Server
+# - Mirror Server
 # - Custom commands
 # - Server Agent for monitoring
-# - VNC/NoVNC Server
-# - RDP Server
+# - VNC and NoVNC
+# - RDP
+# - NoMachine
 # =================================================
 
 # ------------ Constants (Do not modify) ----------
 readonly SCRIPT_VERSION="1.0.0"
-SCRIPT_NAME=$(basename "$0")
-readonly LOCK_FILE="/tmp/${SCRIPT_NAME%.*}.lock"
-readonly LOG_FILE="/var/log/${SCRIPT_NAME%.*}.log"
-readonly DEFAULT_USER="jmeter"
-
-# Colors for logging (if terminal supports it)
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[0;33m'
-readonly BLUE='\033[0;34m'
-readonly NC='\033[0m' # No Color
+readonly SCRIPT_NAME=$(basename "$0")
 
 # ------------ Environment Variables --------------
+# JMeter
 : "${JMETER_HOME:=/opt/jmeter}"
+# Display settings
 : "${DISPLAY:=:0}"
-: "${VNC_USERNAME:=jmeter}"
+: "${RESOLUTION:=1280x720}"
+: "${DEPTH:=24}"
+# User
+: "${DEFAULT_USER:=jmeter}"
+: "${VNC_USERNAME:=$DEFAULT_USER}"
 : "${VNC_PASSWORD:=}"
-: "${RDP_USERNAME:=jmeter}"
+: "${RDP_USERNAME:=$DEFAULT_USER}"
 : "${RDP_PASSWORD:=}"
-: "${NM_USERNAME:=jmeter}"
+: "${NM_USERNAME:=$DEFAULT_USER}"
 : "${NM_PASSWORD:=}"
 
-# ------------ Initialization ---------------------
-# Ensure script exits on error and unset variables
-set -euo pipefail
+# ------------ Toolkit ------------
 
-# ------------ Function Definitions ---------------
-log() {
-  local level=$1
-  local message=$2
-  local timestamp
-  timestamp=$(date "+%Y-%m-%d %H:%M:%S")
-  local log_entry="[${level}] ${timestamp} - ${message}"
-
-  # Always write to log file (no color codes)
-  echo "${log_entry}" >> "${LOG_FILE}"
-
-  # Write to stderr (with color for terminal)
-  if [[ -t 2 ]]; then
-    case ${level} in
-      ERROR)   echo -e "${RED}${log_entry}${NC}" >&2 ;;
-      WARNING) echo -e "${YELLOW}${log_entry}${NC}" >&2 ;;
-      SUCCESS) echo -e "${GREEN}${log_entry}${NC}" >&2 ;;
-      INFO)    echo -e "${BLUE}${log_entry}${NC}" >&2 ;;
-      *)       echo "${log_entry}" >&2 ;;
-    esac
-  else
-    echo "${log_entry}" >&2
-  fi
-}
-
-log_info()    { log "INFO" "$1"; }
-log_warning() { log "WARNING" "$1"; }
-log_error()   { log "ERROR" "$1"; }
-log_success() { log "SUCCESS" "$1"; }
-
-log_section() {
-  log_info "========================================"
-  log_info "$1"
-  log_info "========================================"
-}
+# Load logger if available, else define basic logging functions
+if [[ -f "logger.sh" ]]; then
+  source logger.sh
+  export LOG_LEVEL="DEBUG"
+  export LOG_FILE="/var/log/${SCRIPT_NAME%.*}.log"
+else
+  debug()    { echo "[DEBUG] $(date '+%Y-%m-%d %H:%M:%S') - $@"; }
+  info()     { echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') - $@"; }
+  warn()     { echo "[WARN] $(date '+%Y-%m-%d %H:%M:%S') - $@"; }
+  error()    { echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') - $@"; }
+  critical() { echo "[CRITICAL] $(date '+%Y-%m-%d %H:%M:%S') - $@"; }
+fi
 
 # Create lock file to prevent multiple instances
 create_lock() {
-  if [[ -f "${LOCK_FILE}" ]]; then
-    log_error "Lock file exists: ${LOCK_FILE}. Another instance may be running."
+  local lock_file="/tmp/${SCRIPT_NAME%.*}.lock"
+  if [[ -f "${lock_file}" ]]; then
+    error "Lock file exists: ${lock_file}. Another instance may be running."
     exit 1
   fi
-  touch "${LOCK_FILE}"
-  trap 'rm -f "$LOCK_FILE"' EXIT
+  touch "${lock_file}"
+  trap 'rm -f "$lock_file"' EXIT
 }
 
 # Get container memory limit in MB
@@ -149,7 +127,7 @@ calculate_jvm_memory() {
   container_mem=$(get_container_memory_limit)
   java_version=$(get_java_version)
 
-  log_info "Container memory limit: ${container_mem} MB"
+  info "Container memory limit: ${container_mem} MB"
 
   # Extract major version (e.g., "1.8.0_312" → 8, "11.0.14" → 11)
   local major_version
@@ -183,7 +161,9 @@ calculate_jvm_memory() {
 # Copy custom plugins to JMeter
 copy_plugins() {
   if [[ -d "${JMETER_CUSTOM_PLUGINS_FOLDER:-}" ]]; then
-    log_section "Copying custom JMeter plugins"
+    info "========================================"
+    info "Copying custom JMeter plugins"
+    info "========================================"
     local plugin_count=0
 
     for plugin in "${JMETER_CUSTOM_PLUGINS_FOLDER}"/*.jar; do
@@ -193,30 +173,34 @@ copy_plugins() {
       fi
     done
 
-    log_info "Copied ${plugin_count} plugin(s) to JMeter"
+    info "Copied ${plugin_count} plugin(s) to JMeter"
   fi
 }
 
 # Run JMeter in Console mode
 run_jmeter() {
-  log_section "Starting JMeter in Console mode"
+  info "========================================"
+  info "Starting JMeter in Console"
+  info "========================================"
 
   local args=(
     -Dlog4j2.formatMsgNoLookups=true
   )
 
-  [[ $# -eq 0 ]] && { log_error "No test file or arguments provided (usage: jmeter <test.jmx> [options])"; exit 1; }
+  [[ $# -eq 0 ]] && { error "No test file or arguments provided (usage: jmeter <test.jmx> [options])"; exit 1; }
 
-  log_info "Using JVM Args: ${JVM_ARGS}"
-  log_info "Using JMeter Args: ${args[*]}"
-  [[ $# -gt 0 ]] && log_info "Using Additional Args: $*"
+  info "Using JVM Args: ${JVM_ARGS}"
+  info "Using JMeter Args: ${args[*]}"
+  [[ $# -gt 0 ]] && info "Using Additional Args: $*"
 
   exec jmeter "${args[@]}" "$@"
 }
 
 # Run JMeter Server
 run_jmeter_server() {
-  log_section "Starting JMeter Server"
+  info "========================================"
+  info "Starting JMeter Server"
+  info "========================================"
 
   local args=(
     -Dlog4j2.formatMsgNoLookups=true
@@ -225,44 +209,50 @@ run_jmeter_server() {
     -Dserver.rmi.ssl.disable=true
   )
 
-  log_info "Using JVM Args: ${JVM_ARGS}"
-  log_info "Using JMeter Server Args: ${args[*]}"
-  [[ $# -gt 0 ]] && log_info "Using Additional Args: $*"
+  info "Using JVM Args: ${JVM_ARGS}"
+  info "Using JMeter Server Args: ${args[*]}"
+  [[ $# -gt 0 ]] && info "Using Additional Args: $*"
 
   exec jmeter-server "${args[@]}" "$@"
 }
 
 # Run Mirror Server
 run_mirror_server() {
-  log_section "Starting Mirror Server"
+  info "========================================"
+  info "Starting Mirror Server"
+  info "========================================"
 
   local args=(
     --port 8080
     --loglevel INFO
   )
 
-  log_info "Using JVM Args: ${JVM_ARGS}"
-  log_info "Using Mirror Server Args: ${args[*]}"
-  [[ $# -gt 0 ]] && log_info "Using Additional Args: $*"
+  info "Using JVM Args: ${JVM_ARGS}"
+  info "Using Mirror Server Args: ${args[*]}"
+  [[ $# -gt 0 ]] && info "Using Additional Args: $*"
 
   exec mirror-server "${args[@]}" "$@"
 }
 
 # Run custom command
 run_custom_command() {
-  log_section "Run Custom Command"
+  info "========================================"
+  info "Run Custom Command"
+  info "========================================"
 
-  [[ $# -eq 0 ]] && { log_error "No command provided"; exit 1; }
+  [[ $# -eq 0 ]] && { error "No command provided"; exit 1; }
 
-  log_info "Executing: $*"
+  info "Executing: $*"
   exec "$@"
 }
 
 # Keep container alive
 run_keepalive() {
-  log_section "Keepalive mode"
+  info "========================================"
+  info "Keepalive mode"
+  info "========================================"
 
-  log_info "Container will remain running indefinitely"
+  info "Container will remain running indefinitely"
 
   exec tail -f /dev/null
 }
@@ -276,11 +266,11 @@ run_server_agent() {
   local script="${agent_home}/startAgent.sh"
 
   if [[ ! -f "${script}" ]]; then
-    log_error "Server Agent script not found at ${script}"
+    error "Server Agent script not found at ${script}"
     exit 1
   fi
 
-  log_info "Starting Server Agent with interval ${interval}s"
+  info "Starting Server Agent with interval ${interval}s"
   exec /bin/bash "${script}" --udp-port 4444 --tcp-port 4444 --interval "${interval}"
 }
 
@@ -291,19 +281,19 @@ create_user() {
 
   # Check if user exists, if not create it
   if id "${username}" >/dev/null 2>&1; then
-    log_info "User '${username}' already exists"
+    info "User '${username}' already exists"
     export USERNAME="${username}"
 
     # If password is provided, update it
     if [[ -n "${password}" ]]; then
-      log_info "Updating password for user '${username}'"
+      info "Updating password for user '${username}'"
 
       if ! passwd --stdin "${username}" <<< "${password}" &>/dev/null; then
-        log_error "Failed to update password for user '${username}'"
+        error "Failed to update password for user '${username}'"
         return 1
       fi
 
-      log_info "Password for user '${username}' updated successfully"
+      info "Password for user '${username}' updated successfully"
       export PASSWORD="${password}"
     else
       export PASSWORD=""
@@ -315,21 +305,21 @@ create_user() {
   # Generate a random password if not provided
   if [[ -z "${password}" ]]; then
     password=$(openssl rand -base64 12 | tr -dc 'A-Za-z0-9' | head -c 12) 2>/dev/null || {
-      log_error "Failed to generate random password"
+      error "Failed to generate random password"
       return 1
     }
-    log_info "No password provided, generated random password for user '${username}'"
+    info "No password provided, generated random password for user '${username}'"
   fi
 
   # shellcheck disable=SC2155
   local uid=$(shuf -i 2000-60000 -n 1)
   local gid=${uid}
 
-  log_info "Creating user '${username}' with UID:GID ${uid}:${gid}"
+  info "Creating user '${username}' with UID:GID ${uid}:${gid}"
 
   # Create group
   if ! groupadd --gid "${gid}" "${username}"; then
-    log_error "Failed to create group '${username}' (GID: ${gid})"
+    error "Failed to create group '${username}' (GID: ${gid})"
     return 1
   fi
 
@@ -352,7 +342,7 @@ create_user() {
                 --create-home \
                 --home-dir "/home/${username}" \
                 "${username}"; then
-    log_error "Failed to create user '${username}' (UID: ${uid})"
+    error "Failed to create user '${username}' (UID: ${uid})"
     return 1
   fi
 
@@ -364,13 +354,13 @@ create_user() {
   } > "${temp_sudoers}"
   # Validate temporary file
   if ! visudo -cf "${temp_sudoers}" >/dev/null 2>&1; then
-      log_error "Invalid sudoers file"
+      error "Invalid sudoers file"
       rm -f "${temp_sudoers}"
       return 1
   fi
   # Append to /etc/sudoers
   if ! cat "${temp_sudoers}" >> /etc/sudoers; then
-      log_error "Failed to update /etc/sudoers"
+      error "Failed to update /etc/sudoers"
       rm -f "${temp_sudoers}"
       return 1
   fi
@@ -378,7 +368,7 @@ create_user() {
   # Clean up temporary file
   rm -f "${temp_sudoers}"
 
-  log_info "User '${username}' created with password: ${password} (Remember it! You will see it only once)"
+  info "User '${username}' created with password: ${password} (Remember it! You will see it only once)"
 
   export USERNAME="${username}"
   export PASSWORD="${password}"
@@ -391,17 +381,17 @@ create_desktop_shortcut() {
 
   # Check if jmeter.desktop already exists
   if [[ -f "${user_home}/Desktop/${desktop_shortcut_file}" ]] || [[ -f "${user_home}/.local/share/applications/${desktop_shortcut_file}" ]]; then
-    log_info "Desktop shortcut file already exists for user '${username}'"
+    info "Desktop shortcut file already exists for user '${username}'"
     return 0
   fi
 
   # Ensure user exists
   if ! id -u "${username}" >/dev/null; then
-    log_error "User '${username}' does not exist"
+    error "User '${username}' does not exist"
     return 1
   fi
 
-  log_info "Creating desktop shortcut file ${desktop_shortcut_file}"
+  info "Creating desktop shortcut file ${desktop_shortcut_file}"
   if ! cat > "${desktop_shortcut_file}" <<'EOL'
 [Desktop Entry]
 Version=1.0
@@ -415,31 +405,31 @@ StartupNotify=true
 Categories=Development;
 EOL
   then
-    log_error "Failed to create desktop shortcut file"
+    error "Failed to create desktop shortcut file"
     return 1
   fi
   sed -i "s|%JMETER_HOME%|${JMETER_HOME}|g" "${desktop_shortcut_file}";
 
   # Set permissions
   if ! chmod +x "${desktop_shortcut_file}"; then
-    log_error "Failed to make shortcut file executable"
+    error "Failed to make shortcut file executable"
     return 1
   fi
 
   # Set ownership
   if ! chown "${username}:${username}" "${desktop_shortcut_file}"; then
-    log_error "Failed to set ownership for shortcut file"
+    error "Failed to set ownership for shortcut file"
     return 1
   fi
 
   # ----- copy to ~/Desktop -----
   if [[ ! -d "${user_home}/Desktop" ]]; then
     mkdir -p "${user_home}/Desktop" || {
-      log_error "Failed to create directory ${user_home}/Desktop"
+      error "Failed to create directory ${user_home}/Desktop"
       return 1
     }
     chown "${username}:${username}" "${user_home}/Desktop" || {
-      log_error "Failed to set ownership for Desktop directory"
+      error "Failed to set ownership for Desktop directory"
       return 1
     }
   fi
@@ -447,11 +437,11 @@ EOL
   # Check if shortcut already exists
   if [[ ! -f "${user_home}/Desktop/${desktop_shortcut_file}" ]]; then
     cp "${desktop_shortcut_file}" "${user_home}/Desktop/" || {
-      log_error "Failed to copy desktop shortcut file to ${user_home}/Desktop/"
+      error "Failed to copy desktop shortcut file to ${user_home}/Desktop/"
       return 1
     }
     chown "${username}:${username}" "${user_home}/Desktop/${desktop_shortcut_file}" || {
-      log_error "Failed to set ownership for desktop shortcut file"
+      error "Failed to set ownership for desktop shortcut file"
       return 1
     }
   fi
@@ -459,28 +449,28 @@ EOL
   # ----- copy to ~/.local/share/applications/ -----
   if [[ ! -d "${user_home}/.local/share/applications" ]]; then
     mkdir -p "${user_home}/.local/share/applications" || {
-      log_error "Failed to create directory ${user_home}/.local/share/applications"
+      error "Failed to create directory ${user_home}/.local/share/applications"
       return 1
     }
     chown "${username}:${username}" "${user_home}/.local/share/applications" || {
-      log_error "Failed to set ownership for applications directory"
+      error "Failed to set ownership for applications directory"
       return 1
     }
   fi
 
   if [[ ! -f "${user_home}/.local/share/applications/${desktop_shortcut_file}" ]]; then
     cp "${desktop_shortcut_file}" "${user_home}/.local/share/applications/" || {
-      log_error "Failed to copy desktop shortcut file to ${user_home}/.local/share/applications/"
+      error "Failed to copy desktop shortcut file to ${user_home}/.local/share/applications/"
       return 1
     }
     chown "${username}:${username}" "${user_home}/.local/share/applications/${desktop_shortcut_file}" || {
-      log_error "Failed to set ownership for desktop shortcut file"
+      error "Failed to set ownership for desktop shortcut file"
       return 1
     }
   fi
 
   sudo -u "${username}" update-desktop-database "${user_home}/.local/share/applications/" || {
-    log_error "Failed to update desktop database for ${user_home}/.local/share/applications"
+    error "Failed to update desktop database for ${user_home}/.local/share/applications"
     return 1
   }
 
@@ -496,22 +486,22 @@ check_or_create_self_signed_ssl_cert() {
 
   # Check if certificate already exists
   if [[ -f "${cert_file}" ]] && [[ -f "${key_file}" ]]; then
-    log_info "The self-signed SSL certificate already exists."
-    log_info "  Certificate: ${cert_file}"
-    log_info "  Private key: ${key_file}"
-    log_info "  Valid   for: ${days} days"
+    info "The self-signed SSL certificate already exists."
+    info "  Certificate: ${cert_file}"
+    info "  Private key: ${key_file}"
+    info "  Valid   for: ${days} days"
     return 0
   fi
 
   # Create directories if they don't exist
   mkdir -p "${cert_dir}" || {
-    log_error "Failed to create certificate directory: ${cert_dir}"
+    error "Failed to create certificate directory: ${cert_dir}"
     return 1
   }
 
   # Check if OpenSSL is installed
   if ! command -v openssl &> /dev/null; then
-    log_error "OpenSSL is not installed. Please install it first."
+    error "OpenSSL is not installed. Please install it first."
     return 1
   fi
 
@@ -527,18 +517,18 @@ check_or_create_self_signed_ssl_cert() {
   # Set ownership if USERNAME is set
   if [[ -n "${USERNAME}" ]]; then
     chown "${USERNAME}:${USERNAME}" "${cert_file}" "${key_file}" || {
-      log_error "Failed to set ownership for certificate files"
+      error "Failed to set ownership for certificate files"
       return 1
     }
   fi
 
   if [[ -f "${cert_file}" && -f "${key_file}" ]]; then
-    log_info "The self-signed SSL certificate created successfully"
-    log_info "  Certificate: ${cert_file}"
-    log_info "  Private key: ${key_file}"
-    log_info "  Valid   for: ${days} days"
+    info "The self-signed SSL certificate created successfully"
+    info "  Certificate: ${cert_file}"
+    info "  Private key: ${key_file}"
+    info "  Valid   for: ${days} days"
   else
-    log_error "Failed to create self-signed SSL certificate"
+    error "Failed to create self-signed SSL certificate"
     return 1
   fi
 
@@ -547,7 +537,9 @@ check_or_create_self_signed_ssl_cert() {
 
 # Run VNC Server
 run_vnc_server() {
-  log_section "Starting VNC Server"
+  info "========================================"
+  info "Starting VNC and NoVNC"
+  info "========================================"
 
   # Create user and desktop shortcut
   create_user "${VNC_USERNAME}" "${VNC_PASSWORD}"  # export USERNAME and PASSWORD
@@ -559,19 +551,19 @@ run_vnc_server() {
     local passwd_dir="/home/${USERNAME}/.vnc"
     local passwd_file="${passwd_dir}/passwd"
     mkdir -p "${passwd_dir}" || {
-      log_error "Failed to create required directories: ${passwd_dir}"
+      error "Failed to create required directories: ${passwd_dir}"
       exit 1
     }
     /usr/bin/x11vnc -storepasswd "${PASSWORD}" "${passwd_file}" >/dev/null 2>&1 || {
-      log_error "Failed to generate VNC password file"
+      error "Failed to generate VNC password file"
       exit 1
     }
     chmod 600 "${passwd_file}" || {
-      log_error "Failed to set permissions on VNC password file"
+      error "Failed to set permissions on VNC password file"
       exit 1
     }
     chown "${USERNAME}:${USERNAME}" "${passwd_file}" || {
-      log_error "Failed to set ownership for user home directory"
+      error "Failed to set ownership for user home directory"
       exit 1
     }
   fi
@@ -579,7 +571,7 @@ run_vnc_server() {
   # Check if certificates already exist
   local cert_dir="/root/.certs"
   if [[ ! -f "${cert_dir}/novnc.crt" || ! -f "${cert_dir}/novnc.key" ]]; then
-    log_info "Configuring novnc with self-signed SSL certificate"
+    info "Configuring novnc with self-signed SSL certificate"
     check_or_create_self_signed_ssl_cert "${cert_dir}" "novnc"
     cert_status=$?
     if [[ "${cert_status}" -ne 0 ]]; then
@@ -589,39 +581,41 @@ run_vnc_server() {
   fi
 
   # Show connection information
-  log_info "=========================================================================="
-  log_info "VNC/NoVNC Server is configured with the following details:"
-  log_info "• VNC: localhost:5900"
-  log_info "• Web: https://localhost:6080/vnc.html"
-  log_info "• Username: ${USERNAME}"
+  info "=========================================================================="
+  info "VNC/NoVNC Server is configured with the following details:"
+  info "• VNC: localhost:5900"
+  info "• Web: https://localhost:6080/vnc.html"
+  info "• Username: ${USERNAME}"
   if [[ -n "${PASSWORD}" ]]; then
-    log_info "• Password: ${PASSWORD}"
+    info "• Password: ${PASSWORD}"
   else
-    log_info "• Password: (only for first time setup, see logs for generated password)"
+    info "• Password: (only for first time setup, see logs for generated password)"
   fi
-  log_info "=========================================================================="
+  info "=========================================================================="
 
   # Start dbus service
   if ! service dbus start >/dev/null 2>&1; then
-    log_error "Failed to start dbus service"
+    error "Failed to start dbus service"
     exit 1
   fi
 
   # Start supervisord with logging
-  log_info "Starting supervisord with VNC services"
-  exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf | \
+  info "Starting supervisord with VNC services"
+  exec /usr/bin/supervisord --nodaemon --configuration=/etc/supervisord.conf | \
     while read -r line; do
-      log_info "supervisord: ${line}"
+      info "supervisord: ${line}"
     done
 
   # This point should theoretically never be reached due to exec
-  log_error "Supervisord unexpectedly exited"
+  error "Supervisord unexpectedly exited"
   exit 1
 }
 
 # Run RDP Server
 run_rdp_server() {
-  log_section "Starting RDP Server"
+  info "========================================"
+  info "Starting RDP"
+  info "========================================"
 
   create_user "${RDP_USERNAME}" "${RDP_PASSWORD}"  # export USERNAME and PASSWORD
   create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
@@ -629,7 +623,7 @@ run_rdp_server() {
   # Check if certificates already exist
   local cert_dir="/home/${USERNAME}/.certs"
   if [[ ! -f "${cert_dir}/rdp.crt" || ! -f "${cert_dir}/rdp.key" ]]; then
-    log_info "Configuring xrdp with self-signed SSL certificate"
+    info "Configuring xrdp with self-signed SSL certificate"
 
     # Remove existing certs to avoid conflicts
     [[ -f "/etc/xrdp/cert.pem" ]] && rm -f "/etc/xrdp/cert.pem"
@@ -646,7 +640,7 @@ run_rdp_server() {
     # Ensure xrdp is in ssl-cert group
     if ! id -nG "${USERNAME}" | grep -qw "ssl-cert"; then
       usermod -aG ssl-cert "${USERNAME}" || {
-        log_error "Failed to add user ${USERNAME} to ssl-cert group"
+        error "Failed to add user ${USERNAME} to ssl-cert group"
         exit 1
       }
     fi
@@ -661,61 +655,74 @@ run_rdp_server() {
   [[ ! -f /var/run/xrdp/xrdp.pid ]] || rm -f /var/run/xrdp/xrdp.pid
 
   # Start dbus service
-  log_info "Starting D-Bus"
+  info "Starting D-Bus"
   if ! service dbus start >/dev/null 2>&1; then
-    log_error "Failed to start dbus service"
+    error "Failed to start dbus service"
     exit 1
   fi
 
   # Start xrdp-sesman service
-  log_info "Starting xrdp-sesman"
+  info "Starting xrdp-sesman"
   if ! /usr/sbin/xrdp-sesman >/dev/null 2>&1; then
-    log_error "Failed to start xrdp-sesman"
+    error "Failed to start xrdp-sesman"
     exit 1
   fi
 
   # Show connection information
-  log_info "=========================================================================="
-  log_info "RDP Server is configured with the following details:"
-  log_info "• RDP: localhost:3390"
-  log_info "• Username: ${USERNAME}"
+  info "=========================================================================="
+  info "RDP Server is configured with the following details:"
+  info "• RDP: localhost:3390"
+  info "• Username: ${USERNAME}"
   if [[ -n "${PASSWORD}" ]]; then
-    log_info "• Password: ${PASSWORD}"
+    info "• Password: ${PASSWORD}"
   else
-    log_info "• Password: (only for first time setup, see logs for generated password)"
+    info "• Password: (only for first time setup, see logs for generated password)"
   fi
-  log_info "=========================================================================="
+  info "=========================================================================="
 
   # Start xrdp service
-  log_info "Starting xrdp"
+  info "Starting xrdp"
   if ! /usr/sbin/xrdp --nodaemon >/dev/null 2>&1; then
-    log_error "Failed to start xrdp"
+    error "Failed to start xrdp"
     exit 1
   fi
 }
 
 # Run NoMachine Server
 run_nomachine_server() {
-  log_section "Starting NoMachine Server"
+  info "========================================"
+  info "Starting NoMachine"
+  info "========================================"
 
   create_user "${NM_USERNAME}" "${NM_PASSWORD}"  # export USERNAME and PASSWORD
-  create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
+  create_desktop_shortcut "${USERNAME}"          # jmeter.desktop will be created in user's Desktop
 
-  log_info "Starting nxserver"
+  info "Start nxserver"
   if ! /etc/NX/nxserver --startup >/dev/null 2>&1; then
-    log_error "Failed to start nxserver"
+    error "Failed to start nxserver"
     exit 1
   fi
 
-  # Start supervisord with logging
-  log_info "Starting supervisord with VNC services"
-  exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf | \
+  ip_address=$(hostname -I | awk '{print $1}')
+  info "=========================================================================="
+  info "NoMachine is configured with the following details:"
+  info "• NoMachine: ${ip_address}:4000"
+  info "• Username: ${USERNAME}"
+  if [[ -n "${PASSWORD}" ]]; then
+    info "• Password: ${PASSWORD}"
+  else
+    info "• Password: (only for first time setup, see logs for generated password)"
+  fi
+  info "=========================================================================="
+
+  info "Start supervisord with logging"
+  exec /usr/bin/supervisord --nodaemon --configuration=/etc/supervisord.conf | \
     while read -r line; do
-      log_info "supervisord: ${line}"
+      info "supervisord: ${line}"
     done
 
   # This point should theoretically never be reached due to exec
-  log_error "Supervisord unexpectedly exited"
+  error "Supervisord unexpectedly exited"
   exit 1
 }
 
@@ -725,15 +732,15 @@ show_help() {
 Usage: ${SCRIPT_NAME} <mode> [options]
 
 Available modes:
-jmeter          Run JMeter in Console mode
-jmeter-server   Run JMeter in Server mode
+jmeter          Run JMeter in Console
+jmeter-server   Run JMeter in Server
 mirror-server   Run Mirror Server
 customize       Run custom commands
 keepalive       Just keep container alive
 server-agent    Run Server Agent for monitoring
-vnc             Start VNC/NoVNC server
-rdp             Start RDP server
-nomachine       Start NoMachine server
+vnc             Start VNC and NoVNC
+rdp             Start RDP
+nomachine       Start NoMachine
 
 Environment Variables:
 JMETER_HOME                  - Path to JMeter installation (required)
@@ -751,7 +758,7 @@ main() {
   log_section "Starting ${SCRIPT_NAME} v${SCRIPT_VERSION}"
 
   current_user=$(id) || current_user="unknown"
-  log_info "Running as ${current_user}"
+  info "Running as ${current_user}"
 
   calculate_jvm_memory
   copy_plugins
@@ -759,11 +766,11 @@ main() {
   java_version=$(java -version 2>&1 | head -1 || true)
   jmeter_version=$(jmeter -v 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1 || true)
 
-  log_info "Java   version: ${java_version:-Unknown}"
-  log_info "JMeter version: ${jmeter_version:-Unknown}"
-  log_info "JMeter home: ${JMETER_HOME}"
-  log_info "JVM args: ${JVM_ARGS}"
-  log_info "Log file: ${LOG_FILE}"
+  info "Java   version: ${java_version:-Unknown}"
+  info "JMeter version: ${jmeter_version:-Unknown}"
+  info "JMeter home: ${JMETER_HOME}"
+  info "JVM args: ${JVM_ARGS}"
+  info "Log file: ${LOG_FILE}"
 
   if [[ $# -eq 0 ]]; then
     show_help
@@ -785,7 +792,7 @@ main() {
     nomachine)      run_nomachine_server ;;
     help|--help|-h) show_help ;;
     *) 
-      log_error "Unknown mode: ${mode}"
+      error "Unknown mode: ${mode}"
       show_help
       exit 1
       ;;

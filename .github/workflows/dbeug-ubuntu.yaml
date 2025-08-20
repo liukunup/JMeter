@@ -45,7 +45,7 @@ jobs:
           # 安装 shellcheck
           sudo apt-get update && sudo apt-get install -y shellcheck
           # 检查所有 .sh 文件
-          find jmeter -type f -name "*.sh" -print0 | xargs -0 shellcheck -x -o all
+          find docker -type f -name "*.sh" -print0 | xargs -0 shellcheck -x -o all
 
   # Ubuntu
   build-ubuntu-jmeter-images:
@@ -62,7 +62,7 @@ jobs:
         version: ["24.04"]
         os: ["ubuntu"]
         include:
-          - dockerfile: "jmeter/Dockerfile.Ubuntu"
+          - dockerfile: "docker/Dockerfile.Ubuntu"
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -70,7 +70,7 @@ jobs:
       - name: Run Hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: jmeter/Dockerfile.Ubuntu
+          dockerfile: docker/Dockerfile.Ubuntu
           failure-threshold: warning
 
       - name: Setup QEMU
@@ -127,7 +127,7 @@ jobs:
         version: ["24.04"]
         os: ["ubuntu"]
         include:
-          - dockerfile: "jmeter/Dockerfile.Plugins"
+          - dockerfile: "docker/Dockerfile.Plugins"
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -135,7 +135,7 @@ jobs:
       - name: Run Hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: jmeter/Dockerfile.Plugins
+          dockerfile: docker/Dockerfile.Plugins
           failure-threshold: warning
 
       - name: Setup QEMU
@@ -190,19 +190,19 @@ jobs:
     strategy:
       matrix:  # format: {jmeter}-{os}-{version}-{jre}-{gui}
         include:
-          - dockerfile: "jmeter/Dockerfile.Ubuntu-RDP"
+          - dockerfile: "docker/Dockerfile.Ubuntu-RDP"
             jmeter: "5.6.3"
             jre: "openjdk-21-jre"
             os: "ubuntu"
             version: "24.04"
             gui: "rdp"
-          - dockerfile: "jmeter/Dockerfile.Ubuntu-VNC"
+          - dockerfile: "docker/Dockerfile.Ubuntu-VNC"
             jmeter: "5.6.3"
             jre: "openjdk-21-jre"
             os: "ubuntu"
             version: "24.04"
             gui: "vnc"
-          - dockerfile: "jmeter/Dockerfile.Ubuntu-NoMachine"
+          - dockerfile: "docker/Dockerfile.Ubuntu-NoMachine"
             jmeter: "5.6.3"
             jre: "openjdk-21-jre"
             os: "ubuntu"
@@ -215,19 +215,19 @@ jobs:
       - name: Run Hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: jmeter/Dockerfile.Ubuntu-RDP
+          dockerfile: docker/Dockerfile.Ubuntu-RDP
           failure-threshold: warning
 
       - name: Run Hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: jmeter/Dockerfile.Ubuntu-VNC
+          dockerfile: docker/Dockerfile.Ubuntu-VNC
           failure-threshold: warning
 
       - name: Run Hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: jmeter/Dockerfile.Ubuntu-NoMachine
+          dockerfile: docker/Dockerfile.Ubuntu-NoMachine
           failure-threshold: warning
 
       - name: Setup QEMU
@@ -286,7 +286,7 @@ jobs:
         version: ["24.04"]
         os: ["ubuntu"]
         include:
-          - dockerfile: "jmeter/Dockerfile.Business"
+          - dockerfile: "docker/Dockerfile.Business"
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -294,7 +294,7 @@ jobs:
       - name: Run Hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: jmeter/Dockerfile.Business
+          dockerfile: docker/Dockerfile.Business
           failure-threshold: warning
 
       - name: Setup QEMU
