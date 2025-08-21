@@ -37,7 +37,7 @@ ARG TIMEZONE=Asia/Shanghai
 ENV TZ=${TIMEZONE}
 
 # Add shell scripts
-COPY docker/entrypoint.sh docker/logger.sh /
+COPY docker/entrypoint.sh docker/logger.sh /usr/local/bin/
 
 # Install necessary packages
 RUN apt-get update && apt-get upgrade -y \
@@ -52,8 +52,8 @@ RUN apt-get update && apt-get upgrade -y \
 	  ln -sf python3 /usr/bin/python; \
 	fi \
 	# Make the entrypoint script executable
-	&& chmod +x /entrypoint.sh \
-	&& chmod +x /logger.sh \
+	&& chmod +x /usr/local/bin/entrypoint.sh \
+	&& chmod +x /usr/local/bin/logger.sh \
     # Clean up apt cache to reduce image size
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -83,6 +83,6 @@ EXPOSE 1099 50000 8080
 
 WORKDIR ${JMETER_HOME}
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 CMD [ "keepalive" ]
