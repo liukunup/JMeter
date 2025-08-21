@@ -33,26 +33,28 @@ readonly SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}") || exit 1
 : "${DEPTH:=24}"
 # User
 : "${DEFAULT_USER:=jmeter}"
-: "${VNC_USERNAME:=$DEFAULT_USER}"
+: "${VNC_USERNAME:=${DEFAULT_USER}}"
 : "${VNC_PASSWORD:=}"
-: "${RDP_USERNAME:=$DEFAULT_USER}"
+: "${RDP_USERNAME:=${DEFAULT_USER}}"
 : "${RDP_PASSWORD:=}"
-: "${NM_USERNAME:=$DEFAULT_USER}"
+: "${NM_USERNAME:=${DEFAULT_USER}}"
 : "${NM_PASSWORD:=}"
 
 # ------------ Toolkit ------------
 
 # Load logger if available, else define basic logging functions
-if [[ -f "logger.sh" ]]; then
-  source logger.sh
+LOGGER_SCRIPT="$(dirname "${BASH_SOURCE[0]}")/logger.sh"
+if [[ -f "${LOGGER_SCRIPT}" && -r "${LOGGER_SCRIPT}" ]]; then
+  # shellcheck disable=SC1090
+  source "${LOGGER_SCRIPT}"
   export LOG_LEVEL="DEBUG"
   export LOG_FILE="/var/log/${SCRIPT_NAME%.*}.log"
 else
-  debug()    { echo "[DEBUG] $(date '+%Y-%m-%d %H:%M:%S') - $@"; }
-  info()     { echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') - $@"; }
-  warn()     { echo "[WARN] $(date '+%Y-%m-%d %H:%M:%S') - $@"; }
-  error()    { echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') - $@"; }
-  critical() { echo "[CRITICAL] $(date '+%Y-%m-%d %H:%M:%S') - $@"; }
+  debug()    { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[DEBUG] ${timestamp} - $*"; }
+  info()     { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[INFO] ${timestamp} - $*"; }
+  warn()     { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[WARN] ${timestamp} - $*"; }
+  error()    { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[ERROR] ${timestamp} - $*"; }
+  critical() { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[CRITICAL] ${timestamp} - $*"; }
 fi
 
 # Create lock file to prevent multiple instances

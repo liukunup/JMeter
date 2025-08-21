@@ -1,8 +1,12 @@
 #!/bin/bash
-# brief : logger
-# author: Liu Kun
-# email : liukunup@outlook.com
-# date  : 2025/08/18 20:08:07
+#
+# brief  : 日志工具库
+# author : LiuKun
+# email  : liukunup@outlook.com
+# date   : 2025-08-18
+# version: 1.0.0
+
+# set -x  # 调试模式
 
 # 确保出错时立即退出
 set -euo pipefail
@@ -28,6 +32,25 @@ set -euo pipefail
 # export LOG_SHOW_CALLER="false" # 禁用调用者信息显示
 # ==================================================
 
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# 引入样例
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# # Load logger if available, else define basic logging functions
+# LOGGER_SCRIPT="$(dirname "${BASH_SOURCE[0]}")/logger.sh"
+# if [[ -f "${LOGGER_SCRIPT}" && -r "${LOGGER_SCRIPT}" ]]; then
+#   # shellcheck disable=SC1090
+#   source "${LOGGER_SCRIPT}"
+#   export LOG_LEVEL="DEBUG"
+#   export LOG_FILE="/var/log/${SCRIPT_NAME%.*}.log"
+# else
+#   debug()    { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[DEBUG] ${timestamp} - $*"; }
+#   info()     { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[INFO] ${timestamp} - $*"; }
+#   warn()     { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[WARN] ${timestamp} - $*"; }
+#   error()    { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[ERROR] ${timestamp} - $*"; }
+#   critical() { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[CRITICAL] ${timestamp} - $*"; }
+# fi
+# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 # 定义日志级别
 declare -A LOG_LEVELS=(
   ["DEBUG"]=0
@@ -44,7 +67,7 @@ LOG_LEVEL=${LOG_LEVEL:-"INFO"}
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
+# BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
@@ -54,18 +77,19 @@ LOG_FILE=${LOG_FILE:-""}
 
 # 确保日志文件目录存在
 _ensure_log_dir() {
-  if [ -n "$LOG_FILE" ]; then
-    local log_dir=$(dirname "$LOG_FILE")
-    if [ ! -d "$log_dir" ]; then
-      mkdir -p "$log_dir" 2>/dev/null || {
-        echo -e "${RED}ERROR: 无法创建日志目录: $log_dir${NC}" >&2
+  if [[ -n "${LOG_FILE}" ]]; then
+    # shellcheck disable=SC2155
+    local log_dir=$(dirname "${LOG_FILE}")
+    if [[ ! -d "${log_dir}" ]]; then
+      mkdir -p "${log_dir}" 2>/dev/null || {
+        echo -e "${RED}ERROR: 无法创建日志目录: ${log_dir}${NC}" >&2
         LOG_FILE=""  # 禁用文件日志
         return 1
       }
     fi
     # 确保文件可写
-    touch "$LOG_FILE" 2>/dev/null || {
-      echo -e "${RED}ERROR: 无法写入日志文件: $LOG_FILE${NC}" >&2
+    touch "${LOG_FILE}" 2>/dev/null || {
+      echo -e "${RED}ERROR: 无法写入日志文件: ${LOG_FILE}${NC}" >&2
       LOG_FILE=""  # 禁用文件日志
       return 1
     }
@@ -74,19 +98,19 @@ _ensure_log_dir() {
 
 # 获取当前时间戳
 _get_timestamp() {
-  echo "$(date '+%Y-%m-%d %H:%M:%S')"
+  date '+%Y-%m-%d %H:%M:%S'
 }
 
 # 获取调用者信息
 _get_caller_info() {
   local caller_info=""
-  if [ "${LOG_SHOW_CALLER:-true}" = "true" ]; then
+  if [[ "${LOG_SHOW_CALLER:-true}" = "true" ]]; then
     local caller_file="${BASH_SOURCE[3]}"
     local caller_line="${BASH_LINENO[2]}"
     # caller_info="[${caller_file}:${caller_line}]"
-    caller_info="[$(basename ${caller_file}):${caller_line}]"
+    caller_info="[$(basename "${caller_file}"):${caller_line}]"
   fi
-  echo "$caller_info"
+  echo "${caller_info}"
 }
 
 # 日志函数
@@ -94,17 +118,19 @@ log() {
   local level=$1
   shift
   local message="$*"
+  # shellcheck disable=SC2155
   local timestamp=$(_get_timestamp)
+  # shellcheck disable=SC2155
   local caller_info=$(_get_caller_info)
 
   # 检查日志级别是否足够
-  if [ ${LOG_LEVELS[$level]} -lt ${LOG_LEVELS[$LOG_LEVEL]} ]; then
+  if [[ "${LOG_LEVELS[${level}]}" -lt "${LOG_LEVELS[${LOG_LEVEL}]}" ]]; then
     return 0
   fi
 
   # 设置颜色
   local color=""
-  case "$level" in
+  case "${level}" in
     "DEBUG") color="${CYAN}" ;;
     "INFO") color="${GREEN}" ;;
     "WARN") color="${YELLOW}" ;;
@@ -115,12 +141,12 @@ log() {
 
   # 控制台输出
   local log_line="[${timestamp}] ${color}${level}${NC} - ${caller_info} ${message}"
-  echo -e "$log_line"
+  echo -e "${log_line}"
 
   # 文件输出 (无颜色)
-  if [ -n "$LOG_FILE" ]; then
+  if [[ -n "${LOG_FILE}" ]]; then
     local file_line="[${timestamp}] ${level} - ${caller_info} ${message}"
-    echo -e "$file_line" >> "$LOG_FILE"
+    echo -e "${file_line}" >> "${LOG_FILE}"
   fi
 }
 
