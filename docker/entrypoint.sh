@@ -21,7 +21,8 @@ set -euo pipefail
 
 # ------------ Constants (Do not modify) ----------
 readonly SCRIPT_VERSION="1.0.0"
-readonly SCRIPT_NAME=$(basename "$0")
+# shellcheck disable=SC2155
+readonly SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}") || exit 1
 
 # ------------ Environment Variables --------------
 # JMeter
