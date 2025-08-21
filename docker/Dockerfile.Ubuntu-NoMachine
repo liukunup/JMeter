@@ -4,35 +4,32 @@ ARG BASE_JMETER_IMAGE=liukunup/jmeter:latest
 FROM ${BASE_JMETER_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    NM_USERNAME="jmeter" \
+    NM_USERNAME="" \
     NM_PASSWORD="" \
-    DISPLAY=":0"
-
-    # DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
+    DISPLAY=":0" \
+    RESOLUTION="1280x720" \
+    DEPTH="24"
 
 RUN apt-get update && apt-get install -y \
     sudo openssl \
-    # apt-utils vim xterm cups curl \
-    #
+    # Install Xvfb for virtual framebuffer support
     xvfb \
-    # Install XFCE desktop environment
+    # Install Xfce desktop environment
     xfce4 \
     xfce4-goodies \
     # Install PulseAudio for sound support
     pulseaudio \
     pulseaudio-utils \
     pavucontrol \
-    #
-    # openssh-server \
+    # Install dbus-x11 for X11 forwarding support
     dbus-x11 \
+    # [Supervisor: A Process Control System](https://supervisord.org/)
     supervisor \
-    # && service ssh start \
-    # && mkdir -p /var/run/dbus \
-    # Install and configure NoMachine server
+    # Install NoMachine for remote desktop access
     && curl -fSL "https://www.nomachine.com/free/linux/64/deb" -o nomachine.deb \
     && dpkg -i nomachine.deb \
     && rm -f nomachine.deb \
-    #
+    # Configure NoMachine - node.cfg
     && cp /usr/NX/etc/node.cfg /usr/NX/etc/node.cfg.bak \
     && sed -i \
     -e "s|^DefaultDesktopCommand.*|DefaultDesktopCommand \"/usr/bin/startxfce4\"|" \
@@ -40,12 +37,11 @@ RUN apt-get update && apt-get install -y \
     -e "s|^CommandStartGnome.*|#&|" \
     -e "s|^#DefaultXSession.*|DefaultXSession /usr/bin/startxfce4|" \
     /usr/NX/etc/node.cfg \
-    #
+    # Configure NoMachine - server.cfg
     && cp /usr/NX/etc/server.cfg /usr/NX/etc/server.cfg.bak \
     && sed -i \
     -e "s|#EnableClipboard both|EnableClipboard both|g" \
     /usr/NX/etc/server.cfg \
-    # && /etc/init.d/dbus start \
     # Clean up apt cache to reduce image size
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -54,6 +50,6 @@ COPY docker/supervisord-nomachine.conf /etc/supervisord.conf
 
 EXPOSE 4000
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
 CMD [ "nomachine" ]

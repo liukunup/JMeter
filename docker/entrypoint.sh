@@ -25,19 +25,20 @@ readonly SCRIPT_VERSION="1.0.0"
 readonly SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}") || exit 1
 
 # ------------ Environment Variables --------------
-# JMeter
+# JMeter home directory
 : "${JMETER_HOME:=/opt/jmeter}"
 # Display settings
 : "${DISPLAY:=:0}"
 : "${RESOLUTION:=1280x720}"
 : "${DEPTH:=24}"
-# User
+# Default user is 'jmeter' if not set
 : "${DEFAULT_USER:=jmeter}"
-: "${VNC_USERNAME:=${DEFAULT_USER}}"
+# Username and Password for various services
+: "${VNC_USERNAME:=}"
 : "${VNC_PASSWORD:=}"
-: "${RDP_USERNAME:=${DEFAULT_USER}}"
+: "${RDP_USERNAME:=}"
 : "${RDP_PASSWORD:=}"
-: "${NM_USERNAME:=${DEFAULT_USER}}"
+: "${NM_USERNAME:=}"
 : "${NM_PASSWORD:=}"
 
 # ------------ Toolkit ------------
@@ -163,13 +164,13 @@ calculate_jvm_memory() {
 
 # Copy custom plugins to JMeter
 copy_plugins() {
-  if [[ -d "${JMETER_CUSTOM_PLUGINS_FOLDER:-}" ]]; then
+  if [[ -d "${JMETER_CUSTOM_PLUGINS_DIR:-}" ]]; then
     info "========================================"
     info "Copying custom JMeter plugins"
     info "========================================"
     local plugin_count=0
 
-    for plugin in "${JMETER_CUSTOM_PLUGINS_FOLDER}"/*.jar; do
+    for plugin in "${JMETER_CUSTOM_PLUGINS_DIR}"/*.jar; do
       if [[ -f "${plugin}" ]]; then
         cp -v "${plugin}" "${JMETER_HOME}/lib/ext/" >> "${LOG_FILE}" 2>&1
         ((plugin_count++))
@@ -180,7 +181,7 @@ copy_plugins() {
   fi
 }
 
-# Run JMeter in Console mode
+# Run JMeter in Console
 run_jmeter() {
   info "========================================"
   info "Starting JMeter in Console"
@@ -747,7 +748,7 @@ nomachine       Start NoMachine
 
 Environment Variables:
 JMETER_HOME                  - Path to JMeter installation (required)
-JMETER_CUSTOM_PLUGINS_FOLDER - Path to custom JMeter plugins
+JMETER_CUSTOM_PLUGINS_DIR    - Path to custom JMeter plugins
 SERVER_AGENT_HOME            - Path to Server Agent installation
 SA_INTERVAL                  - Server Agent polling interval (default: 5s)
 VNC_PASSWORD                 - Password for VNC server (if not set, a random password will be generated)

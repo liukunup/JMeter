@@ -4,34 +4,41 @@ ARG BASE_JMETER_IMAGE=liukunup/jmeter:latest
 FROM ${BASE_JMETER_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    VNC_USERNAME="jmeter" \
+    VNC_USERNAME="" \
     VNC_PASSWORD="" \
-    DISPLAY=":1"
+    DISPLAY=":0" \
+    RESOLUTION="1280x720" \
+    DEPTH="24"
 
 RUN apt-get update && apt-get install -y \
     sudo openssl \
-    # xvfb + xfce + x11vnc + NoVNC
+    # Install Xvfb for virtual framebuffer support
     xvfb \
-    # Install XFCE desktop environment
+    # Install Xfce desktop environment
     xfce4 \
     xfce4-goodies \
-    x11vnc \
-    novnc websockify \
-    supervisor \
-    # Install DBus for inter-process communication
-    dbus-x11 \
     # Install PulseAudio for sound support
     pulseaudio \
     pulseaudio-utils \
     pavucontrol \
+    # Install dbus-x11 for X11 forwarding support
+    dbus-x11 \
+    # [Supervisor: A Process Control System](https://supervisord.org/)
+    supervisor \
+    # Install x11vnc for VNC server
+    x11vnc \
+    # Install VNC server and NoVNC for web-based VNC access
+    novnc websockify \
     # Clean up apt cache to reduce image size
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/*
 
 COPY docker/supervisord-vnc.conf /etc/supervisord.conf
 
+# - VNC  : 5900
+# - NoVNC: 6080
 EXPOSE 5900 6080
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
 CMD [ "vnc" ]

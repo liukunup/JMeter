@@ -4,25 +4,22 @@ ARG BASE_JMETER_IMAGE=liukunup/jmeter:latest
 FROM ${BASE_JMETER_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    RDP_USERNAME="jmeter" \
+    RDP_USERNAME="" \
     RDP_PASSWORD=""
 
 RUN apt-get update && apt-get install -y \
     sudo openssl \
-    # Install XFCE desktop environment
+    # Install Xfce desktop environment
     xfce4 \
     xfce4-goodies \
-    # Install xRDP for remote desktop access
-    xrdp xorg xorgxrdp \
-    # Install DBus for inter-process communication
-    dbus-x11 \
     # Install PulseAudio for sound support
     pulseaudio \
     pulseaudio-utils \
     pavucontrol \
-    # Clean up apt cache to reduce image size
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
+    # Install dbus-x11 for X11 forwarding support
+    dbus-x11 \
+    # Install xrdp for remote desktop access
+    xrdp xorg xorgxrdp \
     # Set the default X session to XFCE for new users by writing to /etc/skel/.xsession
     && echo "xfce4-session" > /etc/skel/.xsession \
     # Change xRDP port to avoid default port conflicts
@@ -30,10 +27,13 @@ RUN apt-get update && apt-get install -y \
     # Configure xRDP to start the XFCE desktop environment by updating /etc/xrdp/startwm.sh
     && echo "startxfce4" > /etc/xrdp/startwm.sh \
     # Ensure /etc/xrdp/startwm.sh is executable so xRDP can launch the session script
-    && chmod +x /etc/xrdp/startwm.sh
+    && chmod +x /etc/xrdp/startwm.sh \
+    # Clean up apt cache to reduce image size
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 3390/tcp
+EXPOSE 3390
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
 CMD [ "rdp" ]
