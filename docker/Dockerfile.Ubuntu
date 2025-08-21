@@ -12,7 +12,7 @@ LABEL org.opencontainers.image.source="https://github.com/liukunup/JMeter"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.description="Apache JMeter is an open-source software testing tool developed by the Apache Software Foundation.\nJMeter in Docker is a lightweight image that provides a ready-to-use JMeter environment for running performance tests."
 
-# JMeter version & download URL
+# JMeter
 ARG JMETER_VERSION=5.6.3
 ARG JMETER_DOWNLOAD_URL=https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz
 
@@ -24,7 +24,7 @@ ENV JMETER_EXT=${JMETER_HOME}/lib/ext
 ENV JMETER_LIC=${JMETER_HOME}/licenses
 
 # The folder where custom plugins are stored
-ENV JMETER_CUSTOM_PLUGINS_FOLDER=/opt/plugins
+ENV JMETER_CUSTOM_PLUGINS_DIR=/opt/plugins
 
 # Java Runtime Environment
 ARG JRE_VERSION=openjdk-21-jre
@@ -36,43 +36,43 @@ ARG INSTALL_PYTHON_3=true
 ARG TIMEZONE=Asia/Shanghai
 ENV TZ=${TIMEZONE}
 
-# Copy the entrypoint script to the root directory
+# Add shell scripts
 COPY docker/entrypoint.sh docker/logger.sh /
 
 # Install necessary packages
-RUN apt-get update && apt-get upgrade -y && \
+RUN apt-get update && apt-get upgrade -y \
 	# Add CA certificates and update
-	apt-get install --no-install-recommends -y ca-certificates && \
-	update-ca-certificates && \
-	# Install Java, tzdata, curl, bash, vim, nano, tar, unzip, make, net-tools, git, and nss
-	apt-get install --no-install-recommends -y ${JRE_VERSION} tzdata curl bash vim nano tar unzip make net-tools git && \
+	&& apt-get install -y ca-certificates \
+	&& update-ca-certificates \
+	# Install Java, tzdata, curl, bash, vim, nano, tar, unzip, make, net-tools, git
+	&& apt-get install -y ${JRE_VERSION} tzdata curl bash vim nano tar unzip make net-tools git \
 	# Optionally install Python 3 if INSTALL_PYTHON_3 is true
-	if [ "$INSTALL_PYTHON_3" = "true" ]; then \
-	  apt-get install --no-install-recommends -y \
-	    python3 python3-pip; \
+	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then \
+	  apt-get install -y python3 python3-pip; \
 	  ln -sf python3 /usr/bin/python; \
-	fi && \
+	fi \
 	# Make the entrypoint script executable
-	chmod +x /entrypoint.sh && \
+	&& chmod +x /entrypoint.sh \
+	&& chmod +x /logger.sh \
     # Clean up apt cache to reduce image size
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install JMeter
 WORKDIR /tmp/dependencies
-RUN curl -L --silent ${JMETER_DOWNLOAD_URL} > apache-jmeter-${JMETER_VERSION}.tgz && \
-	mkdir -p /opt && \
-	tar -zxf apache-jmeter-${JMETER_VERSION}.tgz -C /opt && \
-	mv /opt/apache-jmeter-${JMETER_VERSION} ${JMETER_HOME} && \
+RUN curl -L --silent ${JMETER_DOWNLOAD_URL} > apache-jmeter-${JMETER_VERSION}.tgz \
+	&& mkdir -p /opt \
+	&& tar -zxf apache-jmeter-${JMETER_VERSION}.tgz -C /opt \
+	&& mv /opt/apache-jmeter-${JMETER_VERSION} ${JMETER_HOME} \
 	# Clean up temporary dependencies directory
-	rm -rf /tmp/dependencies
+	&& rm -rf /tmp/dependencies
 
 # Install security patch (update vulnerable jar packages)
 WORKDIR /tmp/security
 COPY security .
-RUN chmod +x patch.sh && \
-	./patch.sh && \
-	rm -rf /tmp/security
+RUN chmod +x patch.sh \
+	&& ./patch.sh \
+	&& rm -rf /tmp/security
 
 # Add JMeter bin directory to PATH
 ENV PATH=${PATH}:${JMETER_BIN}
