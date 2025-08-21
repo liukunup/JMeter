@@ -23,6 +23,7 @@ set -euo pipefail
 readonly SCRIPT_VERSION="1.0.0"
 # shellcheck disable=SC2155
 readonly SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}") || exit 1
+readonly LOCK_FILE="/tmp/${SCRIPT_NAME%.*}.lock"
 
 # ------------ Environment Variables --------------
 # JMeter home directory
@@ -60,13 +61,12 @@ fi
 
 # Create lock file to prevent multiple instances
 create_lock() {
-  local lock_file="/tmp/${SCRIPT_NAME%.*}.lock"
-  if [[ -f "${lock_file}" ]]; then
-    error "Lock file exists: ${lock_file}. Another instance may be running."
+  if [[ -f "${LOCK_FILE}" ]]; then
+    error "Lock file exists: ${LOCK_FILE}. Another instance may be running."
     exit 1
   fi
-  touch "${lock_file}"
-  trap 'rm -f "$lock_file"' EXIT
+  touch "${LOCK_FILE}"
+  trap 'rm -f "$LOCK_FILE"' EXIT
 }
 
 # Get container memory limit in MB
@@ -759,7 +759,9 @@ EOF
 main() {
   create_lock
 
-  log_section "Starting ${SCRIPT_NAME} v${SCRIPT_VERSION}"
+  info "========================================"
+  info "Starting ${SCRIPT_NAME} v${SCRIPT_VERSION}"
+  info "========================================"
 
   current_user=$(id) || current_user="unknown"
   info "Running as ${current_user}"
