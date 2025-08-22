@@ -117,7 +117,7 @@ get_java_version() {
     java_version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
     echo "${java_version}"
   else
-    echo "ERROR: Java not found in PATH!" >&2
+    error "ERROR: Java not found in PATH!"
     exit 1
   fi
 }
@@ -181,7 +181,6 @@ copy_plugins() {
   fi
 }
 
-# Run JMeter in Console
 run_jmeter() {
   info "=========================================="
   info "Starting JMeter in Console"
@@ -200,7 +199,6 @@ run_jmeter() {
   exec jmeter "${args[@]}" "$@"
 }
 
-# Run JMeter Server
 run_jmeter_server() {
   info "=========================================="
   info "Starting JMeter Server"
@@ -220,7 +218,6 @@ run_jmeter_server() {
   exec jmeter-server "${args[@]}" "$@"
 }
 
-# Run Mirror Server
 run_mirror_server() {
   info "=========================================="
   info "Starting Mirror Server"
@@ -238,7 +235,6 @@ run_mirror_server() {
   exec mirror-server "${args[@]}" "$@"
 }
 
-# Run custom command
 run_custom_command() {
   info "=========================================="
   info "Run Custom Command"
@@ -250,7 +246,6 @@ run_custom_command() {
   exec "$@"
 }
 
-# Keep container alive
 run_keepalive() {
   info "=========================================="
   info "Keepalive mode"
@@ -261,9 +256,10 @@ run_keepalive() {
   exec tail -f /dev/null
 }
 
-# Run Server Agent
 run_server_agent() {
-  log_section "Starting Server Agent"
+  info "=========================================="
+  info "Starting Server Agent"
+  info "=========================================="
 
   local agent_home=${SERVER_AGENT_HOME:-"/opt/ServerAgent"}
   local interval=${SA_INTERVAL:-5}
@@ -285,7 +281,7 @@ create_user() {
 
   # Check if user exists, if not create it
   if id "${username}" >/dev/null 2>&1; then
-    info "User '${username}' already exists"
+    warn "User '${username}' already exists"
     export USERNAME="${username}"
 
     # If password is provided, update it
@@ -328,12 +324,12 @@ create_user() {
   fi
 
   salt=$(openssl rand -base64 12) || {
-      echo "ERROR: Failed to generate salt" >&2
+      error "ERROR: Failed to generate salt"
       return 1
   }
 
   encrypted_passwd=$(openssl passwd -6 -salt "${salt}" "${password}") || {
-      echo "ERROR: Password encryption failed" >&2
+      error "ERROR: Password encryption failed"
       return 1
   }
 
@@ -372,7 +368,7 @@ create_user() {
   # Clean up temporary file
   rm -f "${temp_sudoers}"
 
-  info "User '${username}' created with password: ${password} (Remember it! You will see it only once)"
+  warn "User '${username}' created with password: ${password} (Remember it! You will see it only once)"
 
   export USERNAME="${username}"
   export PASSWORD="${password}"
@@ -490,7 +486,7 @@ check_or_create_self_signed_ssl_cert() {
 
   # Check if certificate already exists
   if [[ -f "${cert_file}" ]] && [[ -f "${key_file}" ]]; then
-    info "The self-signed SSL certificate already exists."
+    warn "The self-signed SSL certificate already exists."
     info "  Certificate: ${cert_file}"
     info "  Private key: ${key_file}"
     info "  Valid   for: ${days} days"
@@ -579,7 +575,7 @@ run_vnc_server() {
     check_or_create_self_signed_ssl_cert "${cert_dir}" "novnc"
     cert_status=$?
     if [[ "${cert_status}" -ne 0 ]]; then
-      echo "ERROR: SSL certificate generation failed" >&2
+      error "ERROR: SSL certificate generation failed"
       exit 1
     fi
   fi
@@ -637,7 +633,7 @@ run_rdp_server() {
     check_or_create_self_signed_ssl_cert "${cert_dir}" "rdp"
     cert_status=$?
     if [[ "${cert_status}" -ne 0 ]]; then
-      echo "ERROR: SSL certificate generation failed" >&2
+      error "ERROR: SSL certificate generation failed"
       exit 1
     fi
 
