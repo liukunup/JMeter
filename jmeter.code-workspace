@@ -21,6 +21,7 @@
             "timonwong.shellcheck",
             "foxundermoon.shell-format",
             "exiasr.hadolint",
+            "rogalmic.bash-debug",
         ]
     },
     "launch": {
