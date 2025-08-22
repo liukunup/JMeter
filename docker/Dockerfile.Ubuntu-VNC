@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY docker/supervisord-vnc.conf /etc/supervisord.conf
+COPY docker/supervisord/vnc.conf /etc/supervisord.conf
 
 # - VNC  : 5900
 # - NoVNC: 6080
