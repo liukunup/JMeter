@@ -49,7 +49,7 @@ LOGGER_SCRIPT="$(dirname "${BASH_SOURCE[0]}")/logger.sh"
 if [[ -f "${LOGGER_SCRIPT}" && -r "${LOGGER_SCRIPT}" ]]; then
   # shellcheck disable=SC1090
   source "${LOGGER_SCRIPT}"
-  export LOG_LEVEL="DEBUG"
+  export LOG_LEVEL="INFO"
   export LOG_FILE="/var/log/${SCRIPT_NAME%.*}.log"
 else
   debug()    { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[DEBUG] ${timestamp} - $*"; }
