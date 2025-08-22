@@ -710,10 +710,9 @@ run_nomachine_server() {
     exit 1
   fi
 
-  ip_address=$(hostname -I | awk '{print $1}')
   info "=========================================================================="
   info "NoMachine is configured with the following details:"
-  info "• NoMachine: ${ip_address}:4000"
+  info "• NoMachine: localhost:4000"
   info "• Username: ${USERNAME}"
   if [[ -n "${PASSWORD}" ]]; then
     info "• Password: ${PASSWORD}"
