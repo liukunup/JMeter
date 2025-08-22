@@ -29,6 +29,23 @@ env:
   REPOSITORY: ${{ secrets.DOCKER_HUB_USERNAME }}/jmeter
 
 jobs:
+  # Shell Check
+  shellcheck:
+    name: Run Shell Check
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Run Shell Check
+        run: |
+          # 安装 shellcheck
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          # 检查所有 .sh 文件
+          find docker -type f -name "*.sh" -print0 | xargs -0 shellcheck -x -o all
+
   # Alpine
   build-alpine-jmeter-images:
     name: Build JMeter images based on Alpine
@@ -43,7 +60,7 @@ jobs:
         version: ["3"]
         os: ["alpine"]
         include:
-          - dockerfile: "jmeter/Dockerfile.Alpine"
+          - dockerfile: "docker/Dockerfile.Alpine"
           - jre_map: |
               {
                 "openjdk-21-jre": "openjdk21-jre",
@@ -113,7 +130,7 @@ jobs:
         version: ["3"]
         os: ["alpine"]
         include:
-          - dockerfile: "jmeter/Dockerfile.Plugins"
+          - dockerfile: "docker/Dockerfile.Plugins"
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -171,7 +188,7 @@ jobs:
         version: ["3"]
         os: ["alpine"]
         include:
-          - dockerfile: "jmeter/Dockerfile.Business"
+          - dockerfile: "docker/Dockerfile.Business"
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
