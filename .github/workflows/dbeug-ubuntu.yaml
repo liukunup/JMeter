@@ -6,24 +6,26 @@ on:
       - dev
       - feature/*
     paths-ignore:
-      - 'README.md'
-      - 'README_EN.md'
-      - 'LICENSE'
       - 'deploy/**'
       - 'docs/**'
-      - 'helm-charts/**'
       - 'scripts/**'
+      - 'testcases/**'
+      - 'jmeter.code-workspace'
+      - 'LICENSE'
+      - 'README.md'
+      - 'README_EN.md'
   pull_request:
     branches:
       - dev
     paths-ignore:
-      - 'README.md'
-      - 'README_EN.md'
-      - 'LICENSE'
       - 'deploy/**'
       - 'docs/**'
-      - 'helm-charts/**'
       - 'scripts/**'
+      - 'testcases/**'
+      - 'jmeter.code-workspace'
+      - 'LICENSE'
+      - 'README.md'
+      - 'README_EN.md'
 
 env:
   REGISTRY: registry.cn-hangzhou.aliyuncs.com
