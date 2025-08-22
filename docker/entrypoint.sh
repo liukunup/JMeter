@@ -484,7 +484,7 @@ use_default_self_signed_ssl_cert() {
   if [[ ! -f "${cert_dir}/${cert_name}.pem" || ! -f "${cert_dir}/${cert_name}.key" ]]; then
     # PEM
     if [[ -f "/etc/ssl/certs/ssl-cert-snakeoil.pem" ]]; then
-      [[ -f "${cert_dir}/${cert_name}.pem" ]] || rm "${cert_dir}/${cert_name}.pem"
+      [[ -f "${cert_dir}/${cert_name}.pem" ]] && rm "${cert_dir}/${cert_name}.pem"
       ln -s "/etc/ssl/certs/ssl-cert-snakeoil.pem" "${cert_dir}/${cert_name}.pem"
     else
       error "Default self-signed SSL certificate not found at /etc/ssl/certs/ssl-cert-snakeoil.pem"
@@ -492,7 +492,7 @@ use_default_self_signed_ssl_cert() {
     fi
     # Private key
     if [[ -f "/etc/ssl/private/ssl-cert-snakeoil.key" ]]; then
-      [[ -f "${cert_dir}/${cert_name}.key" ]] || rm "${cert_dir}/${cert_name}.key"
+      [[ -f "${cert_dir}/${cert_name}.key" ]] && rm "${cert_dir}/${cert_name}.key"
       ln -s "/etc/ssl/private/ssl-cert-snakeoil.key" "${cert_dir}/${cert_name}.key"
     else
       error "Default self-signed SSL private key not found at /etc/ssl/private/ssl-cert-snakeoil.key"
