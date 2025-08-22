@@ -481,6 +481,12 @@ use_default_self_signed_ssl_cert() {
   local cert_dir="$1"
   local cert_name="${2:-selfsigned}"
 
+  # Create certificate directory if it doesn't exist
+  mkdir -p "${cert_dir}" || {
+    error "Failed to create certificate directory: ${cert_dir}"
+    return 1
+  }
+
   if [[ ! -f "${cert_dir}/${cert_name}.pem" || ! -f "${cert_dir}/${cert_name}.key" ]]; then
     # PEM
     if [[ -f "/etc/ssl/certs/ssl-cert-snakeoil.pem" ]]; then
