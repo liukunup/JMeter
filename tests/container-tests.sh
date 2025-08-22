@@ -1,13 +1,122 @@
 #!/bin/bash
 
+# set -x  # Uncomment for debugging
+
 # Ensure script exits on error and unset variables
 set -euo pipefail
 
-DEFAULT_JMETER_VERSION="5.6.3"
+# ------------ Constants (Do not modify) ------------
+readonly SCRIPT_VERSION="1.0.0"
+# shellcheck disable=SC2155
+readonly SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}") || exit 1
+
+# ------------ Defaults ------------
+JMETER_VERSION="5.6.3"
+REGISTRY="docker.io"
 IMAGE_BASE="liukunup/jmeter"
 TAG_OS="ubuntu-24.04"
 TAG_JRE="openjdk-21-jre"
-TAG_TYPE="fullstack"
+TAG_GUI="vnc"
+
+# ------------ Toolkit ------------
+# Load logger if available, else define basic logging functions
+LOGGER_SCRIPT="$(dirname "${BASH_SOURCE[0]}")/logger.sh"
+if [[ -f "${LOGGER_SCRIPT}" && -r "${LOGGER_SCRIPT}" ]]; then
+  # shellcheck disable=SC1090
+  source "${LOGGER_SCRIPT}"
+  export LOG_LEVEL="INFO"
+  export LOG_FILE="/var/log/${SCRIPT_NAME%.*}.log"
+else
+  debug()    { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[DEBUG] ${timestamp} - $*"; }
+  info()     { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[INFO] ${timestamp} - $*"; }
+  warn()     { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[WARN] ${timestamp} - $*"; }
+  error()    { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[ERROR] ${timestamp} - $*"; }
+  critical() { local timestamp; timestamp=$(date '+%Y-%m-%d %H:%M:%S') || return 1; echo "[CRITICAL] ${timestamp} - $*"; }
+fi
+
+# 检查日志文件最后N行是否匹配给定的正则表达式
+# 参数: 日志文件 行数 正则表达式
+# 返回: 0-匹配成功, 1-匹配失败, 2-其他错误
+check_logfile_pattern() {
+  local logfile="$1"
+  local last_line_count="${2:-1}"
+  local pattern="$3"
+
+  # 参数最少3个 & 日志文件可读
+  [ $# -lt 3 ] || [ ! -f "$logfile" ] || [ ! -r "$logfile" ] || [ ! -s "$logfile" ] && return 1
+
+  # 行数为数字且大于0
+  [[ "$last_line_count" =~ ^[0-9]+$ ]] && [ "$last_line_count" -gt 0 ] || return 1
+
+  # 执行匹配
+  tail -n "$last_line_count" "$logfile" | grep -E -q "$pattern" 2>/dev/null
+
+  return $?
+}
+
+# 提取 JMeter 版本号
+# 参数: 日志文件
+# 返回: 版本号
+get_jmeter_version() {
+  local logfile=$1
+  grep -oE '[0-9]+\.[0-9]+\.[0-9]+' "$logfile" | head -n 1
+}
+
+# 标准的容器测试流程
+# 参数: 待测镜像 行数 正则表达式
+# 返回: 0-成功, 1-失败
+test_docker_container() {
+  local image="$1"
+  local last_line_count="${2:-1}"
+  local pattern="$3"
+  local container_name="test-jmeter"
+  local logfile="entrypoint.log"
+
+  # 1. 拉取
+  docker pull "${image}" || {
+    error "拉取镜像失败"
+    return 1
+  }
+  # 2. 启动
+  docker run -d -v "${logfile}:/var/log/entrypoint.log" --name "${container_name}" "${image}" || {
+    error "启动容器失败"
+    return 1
+  }
+  # 3. 等待容器内服务运行稳定
+  sleep 30
+  # 4. 停止
+  docker stop "${container_name}" || {
+    error "停止容器失败"
+    return 1
+  }
+  # 5. 删除
+  docker rm "${container_name}" || {
+    error "删除容器失败"
+    return 1
+  }
+
+  # 日志断言
+  if ! check_logfile_pattern "${logfile}" "${last_line_count}" "${pattern}"; then
+    error "日志断言失败"
+    cat "${logfile}" && rm "${logfile}"
+    return 1
+  else
+    info "${image} 测试通过"
+    rm "${logfile}"
+    return 0
+  fi
+}
+
+# ------------ TEST --------------
+
+# 冒烟测试
+test_smoke() {
+  info "冒烟测试 - JMeter ${JMETER_VERSION} (SHA: ${GIT_COMMIT_SHA})"
+
+  test_docker_container "$TARGET_IMAGE" 100 "JMeter ${JMETER_VERSION} started"
+
+  info "冒烟测试通过"
+}
 
 # Parse command line arguments
 parse_args() {
@@ -15,6 +124,18 @@ parse_args() {
     case "$1" in
       --JMeter)
         JMETER_VERSION="$2"
+        shift 2
+        ;;
+      --OS)
+        TAG_OS="$2"
+        shift 2
+        ;;
+      --JRE)
+        TAG_JRE="$2"
+        shift 2
+        ;;
+      --GUI)
+        TAG_GUI="$2"
         shift 2
         ;;
       --SHA)
@@ -33,109 +154,7 @@ parse_args() {
     exit 1
   fi
 
-  JMETER_VERSION="${JMETER_VERSION:-$DEFAULT_JMETER_VERSION}"
-  TARGET_IMAGE="${IMAGE_BASE}:${JMETER_VERSION}-${TAG_OS}-${TAG_JRE}-${TAG_TYPE}-${GIT_COMMIT_SHA}"
-}
-
-# Define the script name and log file
-readonly SCRIPT_NAME=$(basename "$0")
-readonly LOG_FILE="${SCRIPT_NAME%.*}.log"
-
-# Colors for logging (if terminal supports it)
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[0;33m'
-readonly BLUE='\033[0;34m'
-readonly NC='\033[0m' # No Color
-
-# Ensure log file exists and is empty
-> "$LOG_FILE"
-
-log() {
-  local level=$1
-  local message=$2
-  local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
-  local log_entry="[$level] ${timestamp} - ${message}"
-
-  # Always write to log file (no color codes)
-  echo "$log_entry" >> "$LOG_FILE"
-
-  # Write to stderr (with color for terminal)
-  if [ -t 2 ]; then
-    case $level in
-      ERROR)   echo -e "${RED}${log_entry}${NC}" >&2 ;;
-      WARNING) echo -e "${YELLOW}${log_entry}${NC}" >&2 ;;
-      SUCCESS) echo -e "${GREEN}${log_entry}${NC}" >&2 ;;
-      INFO)    echo -e "${BLUE}${log_entry}${NC}" >&2 ;;
-      *)       echo "$log_entry" >&2 ;;
-    esac
-  else
-    echo "$log_entry" >&2
-  fi
-}
-
-log_info()    { log "INFO" "$1"; }
-log_warning() { log "WARNING" "$1"; }
-log_failed()  { log "ERROR" "$1"; }
-log_passed()  { log "SUCCESS" "$1"; }
-
-log_section() {
-  log_info "========================================"
-  log_info "$1"
-  log_info "========================================"
-}
-
-# 提取版本号
-get_jmeter_version() {
-  local log_file=$1
-
-  grep -oE '[0-9]+\.[0-9]+\.[0-9]+' "$log_file" | head -n 1
-}
-
-# ------------ TEST --------------
-
-# 冒烟测试
-test_smoke() {
-  log_section "冒烟测试 - JMeter ${JMETER_VERSION} (SHA: ${GIT_COMMIT_SHA})"
-
-  # 检查/拉取镜像
-  if ! docker image inspect "$TARGET_IMAGE" &>/dev/null; then
-    log_info "镜像不存在，尝试拉取: $TARGET_IMAGE"
-    if ! docker pull "$TARGET_IMAGE"; then
-      log_failed "镜像拉取失败"
-      exit 1
-    fi
-  fi
-
-  # 版本检查
-  local TEMP_LOG=$(mktemp)
-  log_info "执行 JMeter 版本验证..."
-
-  if ! docker run --rm "$TARGET_IMAGE" jmeter -v > "$TEMP_LOG" 2>&1; then
-    log_failed "获取版本号失败"
-    cat "$TEMP_LOG"
-    rm "$TEMP_LOG"
-    exit 1
-  fi
-
-  # 验证版本号
-  detected_version=$(get_jmeter_version "$TEMP_LOG")
-  if [ -z "$detected_version" ]; then
-    log_failed "无法提取JMeter版本号"
-    cat "$TEMP_LOG"
-    rm "$TEMP_LOG"
-    exit 1
-  elif [ "$detected_version" != "$JMETER_VERSION" ]; then
-    log_failed "版本不匹配 (期望: $JMETER_VERSION, 实际: $detected_version)"
-    cat "$TEMP_LOG"
-    rm "$TEMP_LOG"
-    exit 1
-  fi
-
-  # Clean up
-  rm "$TEMP_LOG"
-
-  log_passed "冒烟测试通过"
+  export TARGET_IMAGE="${REGISTRY}/${IMAGE_BASE}:${JMETER_VERSION}-${TAG_OS}-${TAG_JRE}-${TAG_GUI}-${GIT_COMMIT_SHA}"
 }
 
 main() {
