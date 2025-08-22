@@ -165,9 +165,9 @@ calculate_jvm_memory() {
 # Copy custom plugins to JMeter
 copy_plugins() {
   if [[ -d "${JMETER_CUSTOM_PLUGINS_DIR:-}" ]]; then
-    info "========================================"
+    info "=========================================="
     info "Copying custom JMeter plugins"
-    info "========================================"
+    info "=========================================="
     local plugin_count=0
 
     for plugin in "${JMETER_CUSTOM_PLUGINS_DIR}"/*.jar; do
@@ -183,9 +183,9 @@ copy_plugins() {
 
 # Run JMeter in Console
 run_jmeter() {
-  info "========================================"
+  info "=========================================="
   info "Starting JMeter in Console"
-  info "========================================"
+  info "=========================================="
 
   local args=(
     -Dlog4j2.formatMsgNoLookups=true
@@ -202,9 +202,9 @@ run_jmeter() {
 
 # Run JMeter Server
 run_jmeter_server() {
-  info "========================================"
+  info "=========================================="
   info "Starting JMeter Server"
-  info "========================================"
+  info "=========================================="
 
   local args=(
     -Dlog4j2.formatMsgNoLookups=true
@@ -222,9 +222,9 @@ run_jmeter_server() {
 
 # Run Mirror Server
 run_mirror_server() {
-  info "========================================"
+  info "=========================================="
   info "Starting Mirror Server"
-  info "========================================"
+  info "=========================================="
 
   local args=(
     --port 8080
@@ -240,9 +240,9 @@ run_mirror_server() {
 
 # Run custom command
 run_custom_command() {
-  info "========================================"
+  info "=========================================="
   info "Run Custom Command"
-  info "========================================"
+  info "=========================================="
 
   [[ $# -eq 0 ]] && { error "No command provided"; exit 1; }
 
@@ -252,9 +252,9 @@ run_custom_command() {
 
 # Keep container alive
 run_keepalive() {
-  info "========================================"
+  info "=========================================="
   info "Keepalive mode"
-  info "========================================"
+  info "=========================================="
 
   info "Container will remain running indefinitely"
 
@@ -541,9 +541,9 @@ check_or_create_self_signed_ssl_cert() {
 
 # Run VNC Server
 run_vnc_server() {
-  info "========================================"
+  info "=========================================="
   info "Starting VNC and NoVNC"
-  info "========================================"
+  info "=========================================="
 
   # Create user and desktop shortcut
   create_user "${VNC_USERNAME}" "${VNC_PASSWORD}"  # export USERNAME and PASSWORD
@@ -617,9 +617,9 @@ run_vnc_server() {
 
 # Run RDP Server
 run_rdp_server() {
-  info "========================================"
+  info "=========================================="
   info "Starting RDP"
-  info "========================================"
+  info "=========================================="
 
   create_user "${RDP_USERNAME}" "${RDP_PASSWORD}"  # export USERNAME and PASSWORD
   create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
@@ -694,9 +694,9 @@ run_rdp_server() {
 
 # Run NoMachine Server
 run_nomachine_server() {
-  info "========================================"
+  info "=========================================="
   info "Starting NoMachine"
-  info "========================================"
+  info "=========================================="
 
   create_user "${NM_USERNAME}" "${NM_PASSWORD}"  # export USERNAME and PASSWORD
   create_desktop_shortcut "${USERNAME}"          # jmeter.desktop will be created in user's Desktop
@@ -761,9 +761,9 @@ EOF
 main() {
   create_lock
 
-  info "========================================"
+  info "=========================================="
   info "Starting ${SCRIPT_NAME} v${SCRIPT_VERSION}"
-  info "========================================"
+  info "=========================================="
 
   current_user=$(id) || current_user="unknown"
   info "Running as ${current_user}"
