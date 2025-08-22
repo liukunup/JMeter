@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y \
     && cp /usr/NX/etc/node.cfg /usr/NX/etc/node.cfg.bak \
     && sed -i \
     -e "s|^DefaultDesktopCommand.*|DefaultDesktopCommand \"/usr/bin/startxfce4\"|" \
-    -e "s|^AvailableSessionTypes.*|AvailableSessionTypes unix-remote,unix-console,unix-default,unix-application,physical-desktop,shadow,unix-xsession-default,unix-xdm,SSH|" \
+    -e "s|^AvailableSessionTypes.*|AvailableSessionTypes unix-remote,unix-console,unix-default,unix-application,physical-desktop,shadow,unix-xsession-default,unix-xdm|" \
     -e "s|^CommandStartGnome.*|#&|" \
     -e "s|^#DefaultXSession.*|DefaultXSession /usr/bin/startxfce4|" \
     /usr/NX/etc/node.cfg \
