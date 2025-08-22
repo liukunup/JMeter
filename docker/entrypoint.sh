@@ -368,7 +368,7 @@ create_user() {
   # Clean up temporary file
   rm -f "${temp_sudoers}"
 
-  warn "User '${username}' created with password: ${password} (Remember it! You will see it only once)"
+  info "User '${username}' created with password: ${password} (Remember it! You will see it only once)"
 
   export USERNAME="${username}"
   export PASSWORD="${password}"
