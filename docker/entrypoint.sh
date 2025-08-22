@@ -477,65 +477,39 @@ EOL
   rm -f "${desktop_shortcut_file}"
 }
 
-check_or_create_self_signed_ssl_cert() {
+use_default_self_signed_ssl_cert() {
   local cert_dir="$1"
-  local cert_filename="${2:-selfsigned}"
-  local cert_file="${cert_dir}/${cert_filename}.crt"
-  local key_file="${cert_dir}/${cert_filename}.key"
-  local days="${3:-365}"
+  local cert_name="${2:-selfsigned}"
 
-  # Check if certificate already exists
-  if [[ -f "${cert_file}" ]] && [[ -f "${key_file}" ]]; then
-    warn "The self-signed SSL certificate already exists."
-    info "  Certificate: ${cert_file}"
-    info "  Private key: ${key_file}"
-    info "  Valid   for: ${days} days"
+  if [[ ! -f "${cert_dir}/${cert_name}.pem" || ! -f "${cert_dir}/${cert_name}.key" ]]; then
+    # PEM
+    if [[ -f "/etc/ssl/certs/ssl-cert-snakeoil.pem" ]]; then
+      [[ -f "${cert_dir}/${cert_name}.pem" ]] || rm "${cert_dir}/${cert_name}.pem"
+      ln -s "/etc/ssl/certs/ssl-cert-snakeoil.pem" "${cert_dir}/${cert_name}.pem"
+    else
+      error "Default self-signed SSL certificate not found at /etc/ssl/certs/ssl-cert-snakeoil.pem"
+      return 1
+    fi
+    # Private key
+    if [[ -f "/etc/ssl/private/ssl-cert-snakeoil.key" ]]; then
+      [[ -f "${cert_dir}/${cert_name}.key" ]] || rm "${cert_dir}/${cert_name}.key"
+      ln -s "/etc/ssl/private/ssl-cert-snakeoil.key" "${cert_dir}/${cert_name}.key"
+    else
+      error "Default self-signed SSL private key not found at /etc/ssl/private/ssl-cert-snakeoil.key"
+      return 1
+    fi
+  else
+    info "Using existing self-signed SSL certificate"
     return 0
   fi
 
-  # Create directories if they don't exist
-  mkdir -p "${cert_dir}" || {
-    error "Failed to create certificate directory: ${cert_dir}"
-    return 1
-  }
-
-  # Check if OpenSSL is installed
-  if ! command -v openssl &> /dev/null; then
-    error "OpenSSL is not installed. Please install it first."
-    return 1
-  fi
-
-  # Generate certificate  
-  openssl req -x509 -nodes -days "${days}" -newkey rsa:2048 -sha256 \
-    -keyout "${key_file}" -out "${cert_file}" \
-    -subj "/C=CN/ST=Guangdong/L=Shenzhen/O=My Company Inc./OU=R&D/CN=localhost" 2>/dev/null
-
-  # Set proper permissions
-  chmod 644 "${cert_file}"
-  chmod 600 "${key_file}"
-
-  # Set ownership if USERNAME is set
-  if [[ -n "${USERNAME}" ]]; then
-    chown "${USERNAME}:${USERNAME}" "${cert_file}" "${key_file}" || {
-      error "Failed to set ownership for certificate files"
-      return 1
-    }
-  fi
-
-  if [[ -f "${cert_file}" && -f "${key_file}" ]]; then
-    info "The self-signed SSL certificate created successfully"
-    info "  Certificate: ${cert_file}"
-    info "  Private key: ${key_file}"
-    info "  Valid   for: ${days} days"
-  else
-    error "Failed to create self-signed SSL certificate"
-    return 1
-  fi
+  info "Using default self-signed SSL certificate"
+  debug "  Certificate: ${cert_dir}/${cert_name}.pem"
+  debug "  Private key: ${cert_dir}/${cert_name}.key"
 
   return 0
 }
 
-# Run VNC Server
 run_vnc_server() {
   info "=========================================="
   info "Starting VNC and NoVNC"
@@ -543,7 +517,7 @@ run_vnc_server() {
 
   # Create user and desktop shortcut
   create_user "${VNC_USERNAME}" "${VNC_PASSWORD}"  # export USERNAME and PASSWORD
-  create_desktop_shortcut "${USERNAME}"
+  create_desktop_shortcut "${USERNAME}"            # jmeter.desktop will be created in user's Desktop
 
   # First time startup or password has been changed
   if [[ -n "${PASSWORD}" ]]; then
@@ -568,16 +542,11 @@ run_vnc_server() {
     }
   fi
 
-  # Check if certificates already exist
-  local cert_dir="/root/.certs"
-  if [[ ! -f "${cert_dir}/novnc.crt" || ! -f "${cert_dir}/novnc.key" ]]; then
-    info "Configuring novnc with self-signed SSL certificate"
-    check_or_create_self_signed_ssl_cert "${cert_dir}" "novnc"
-    cert_status=$?
-    if [[ "${cert_status}" -ne 0 ]]; then
-      error "ERROR: SSL certificate generation failed"
-      exit 1
-    fi
+  use_default_self_signed_ssl_cert "/opt/certs" "novnc"
+  cert_status=$?
+  if [[ "${cert_status}" -ne 0 ]]; then
+    error "ERROR: SSL certificate configuration failed"
+    exit 1
   fi
 
   # Show connection information
@@ -593,13 +562,6 @@ run_vnc_server() {
   fi
   info "=========================================================================="
 
-  # Start dbus service
-  if ! service dbus start >/dev/null 2>&1; then
-    error "Failed to start dbus service"
-    exit 1
-  fi
-
-  # Start supervisord with logging
   info "Starting supervisord with VNC services"
   exec /usr/bin/supervisord --nodaemon --configuration=/etc/supervisord.conf | \
     while read -r line; do
@@ -611,64 +573,50 @@ run_vnc_server() {
   exit 1
 }
 
-# Run RDP Server
 run_rdp_server() {
   info "=========================================="
   info "Starting RDP"
   info "=========================================="
 
   create_user "${RDP_USERNAME}" "${RDP_PASSWORD}"  # export USERNAME and PASSWORD
-  create_desktop_shortcut "${USERNAME}"  # jmeter.desktop will be created in user's Desktop
+  create_desktop_shortcut "${USERNAME}"            # jmeter.desktop will be created in user's Desktop
 
-  # Check if certificates already exist
   local cert_dir="/home/${USERNAME}/.certs"
-  if [[ ! -f "${cert_dir}/rdp.crt" || ! -f "${cert_dir}/rdp.key" ]]; then
-    info "Configuring xrdp with self-signed SSL certificate"
-
-    # Remove existing certs to avoid conflicts
-    [[ -f "/etc/xrdp/cert.pem" ]] && rm -f "/etc/xrdp/cert.pem"
-    [[ -f "/etc/xrdp/key.pem" ]] && rm -f "/etc/xrdp/key.pem"
-
-    # Generate self-signed certificate
-    check_or_create_self_signed_ssl_cert "${cert_dir}" "rdp"
-    cert_status=$?
-    if [[ "${cert_status}" -ne 0 ]]; then
-      error "ERROR: SSL certificate generation failed"
-      exit 1
-    fi
-
-    # Ensure xrdp is in ssl-cert group
-    if ! id -nG "${USERNAME}" | grep -qw "ssl-cert"; then
-      usermod -aG ssl-cert "${USERNAME}" || {
-        error "Failed to add user ${USERNAME} to ssl-cert group"
-        exit 1
-      }
-    fi
-
-    # Configure xrdp to use the self-signed certificate
-    sed -i "s|^certificate=.*|certificate=${cert_dir}/rdp.crt|" /etc/xrdp/xrdp.ini
-    sed -i "s|^key_file=.*|key_file=${cert_dir}/rdp.key|" /etc/xrdp/xrdp.ini
+  local cert_name="rdp"
+  # Configure SSL certificate
+  use_default_self_signed_ssl_cert "${cert_dir}" "${cert_name}"
+  cert_status=$?
+  if [[ "${cert_status}" -ne 0 ]]; then
+    error "ERROR: SSL certificate configuration failed"
+    exit 1
   fi
+  # Ensure user is in ssl-cert group
+  if ! id -nG "${USERNAME}" | grep -qw "ssl-cert"; then
+    usermod -aG ssl-cert "${USERNAME}" || {
+      error "Failed to add user ${USERNAME} to ssl-cert group"
+      exit 1
+    }
+  fi
+  # Configure xrdp to use the self-signed certificate
+  sed -i "s|^certificate=.*|certificate=${cert_dir}/${cert_name}.pem|" /etc/xrdp/xrdp.ini
+  sed -i "s|^key_file=.*|key_file=${cert_dir}/${cert_name}.key|" /etc/xrdp/xrdp.ini
 
   # Remove existing sesman/xrdp PID files to prevent rdp sessions hanging on container restart
   [[ ! -f /var/run/xrdp/xrdp-sesman.pid ]] || rm -f /var/run/xrdp/xrdp-sesman.pid
   [[ ! -f /var/run/xrdp/xrdp.pid ]] || rm -f /var/run/xrdp/xrdp.pid
 
-  # Start dbus service
   info "Starting D-Bus"
   if ! service dbus start >/dev/null 2>&1; then
     error "Failed to start dbus service"
     exit 1
   fi
 
-  # Start xrdp-sesman service
   info "Starting xrdp-sesman"
   if ! /usr/sbin/xrdp-sesman >/dev/null 2>&1; then
     error "Failed to start xrdp-sesman"
     exit 1
   fi
 
-  # Show connection information
   info "=========================================================================="
   info "RDP Server is configured with the following details:"
   info "• RDP: localhost:3390"
@@ -680,7 +628,6 @@ run_rdp_server() {
   fi
   info "=========================================================================="
 
-  # Start xrdp service
   info "Starting xrdp"
   if ! /usr/sbin/xrdp --nodaemon >/dev/null 2>&1; then
     error "Failed to start xrdp"
@@ -707,7 +654,7 @@ run_nomachine_server() {
   fi
 
   info "=========================================================================="
-  info "NoMachine is configured with the following details:"
+  info "NoMachine Server is configured with the following details:"
   info "• NoMachine: localhost:4000"
   info "• Username: ${USERNAME}"
   if [[ -n "${PASSWORD}" ]]; then
