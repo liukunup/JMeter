@@ -14,6 +14,20 @@
 
 ## 支持的标签/架构/仓库
 
+**血缘**
+
+```plaintext
+├── Alpine                   # 以 Alpine 作为基础镜像（目的是尽可能压缩镜像体积）
+│   └── Alpine with Plugins  # Alpine 基础镜像 + 常用插件
+|       └── Business         # 业务镜像示例
+└── Ubuntu                   # 以 Ubuntu 作为基础镜像（更加常规、主流）
+    └── Ubuntu with Plugins  # Ubuntu 基础镜像 + 常用插件
+        ├── Business         # 业务镜像示例
+        ├── RDP              # 支持 RDP（使用到端口3389）
+        ├── VNC/NoVNC        # 支持 VNC & NoVNC（使用到端口 5900 和 6080）
+        └── NoMachine        # 支持 NoMachine（使用到端口 4000）
+```
+
 **标签**
 
 - [`5.6.2`](https://hub.docker.com/r/liukunup/jmeter), [`5.6.3`](https://hub.docker.com/r/liukunup/jmeter)
