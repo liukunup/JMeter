@@ -701,6 +701,9 @@ run_nomachine_server() {
   create_user "${NM_USERNAME}" "${NM_PASSWORD}"  # export USERNAME and PASSWORD
   create_desktop_shortcut "${USERNAME}"          # jmeter.desktop will be created in user's Desktop
 
+  # Remove existing D-Bus PID files to prevent hanging on container restart
+  [[ ! -f /run/dbus/pid ]] || rm -f /run/dbus/pid || error "Failed to remove existing D-Bus PID file"
+
   info "Start nxserver"
   if ! /etc/NX/nxserver --startup >/dev/null 2>&1; then
     error "Failed to start nxserver"
