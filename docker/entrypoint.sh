@@ -385,7 +385,7 @@ create_desktop_shortcut() {
 
   # Check if jmeter.desktop already exists
   if [[ -f "${user_home}/Desktop/${desktop_shortcut_file}" ]] || [[ -f "${user_home}/.local/share/applications/${desktop_shortcut_file}" ]]; then
-    info "Desktop shortcut file already exists for user '${username}'"
+    warn "Desktop shortcut already exists for user '${username}'"
     return 0
   fi
 
