@@ -77,19 +77,29 @@ test_docker_container() {
     error "拉取镜像失败"
     return 1
   }
+
+  # 清理日志文件
+  [[ ! -f "${logfile}" ]] || rm -f "${logfile}"
+
   # 2. 启动
-  docker run -d -v "${logfile}:/var/log/entrypoint.log" --name "${container_name}" "${image}" || {
+  docker run -d --name "${container_name}" "${image}" || {
     error "启动容器失败"
     return 1
   }
-  # 3. 等待容器内服务运行稳定
+
+  # 等待容器内服务运行稳定
   sleep 30
-  # 4. 停止
+
+  # 获取日志文件
+  docker cp "${container_name}:/var/log/entrypoint.log" "${logfile}"
+
+  # 3. 停止
   docker stop "${container_name}" || {
     error "停止容器失败"
     return 1
   }
-  # 5. 删除
+
+  # 4. 删除
   docker rm "${container_name}" || {
     error "删除容器失败"
     return 1
@@ -97,12 +107,11 @@ test_docker_container() {
 
   # 日志断言
   if ! check_logfile_pattern "${logfile}" "${last_line_count}" "${pattern}"; then
-    error "日志断言失败"
-    cat "${logfile}" && rm "${logfile}"
+    error "日志断言失败, 找不到匹配字符串: ${pattern}"
+    cat "${logfile}"
     return 1
   else
     info "${image} 测试通过"
-    rm "${logfile}"
     return 0
   fi
 }
@@ -113,7 +122,7 @@ test_docker_container() {
 test_smoke() {
   info "冒烟测试 - JMeter ${JMETER_VERSION} (SHA: ${GIT_COMMIT_SHA})"
 
-  test_docker_container "$TARGET_IMAGE" 100 "JMeter ${JMETER_VERSION} started"
+  test_docker_container "$TARGET_IMAGE" 100 "Start supervisord with logging"
 
   info "冒烟测试通过"
 }
@@ -143,7 +152,7 @@ parse_args() {
         shift 2
         ;;
       *)
-        log_failed "未知参数: $1"
+        error "未知参数: $1"
         exit 1
         ;;
     esac
@@ -163,7 +172,7 @@ main() {
   # 运行所有测试
   test_smoke
 
-  log_info "所有测试通过!"
+  info "所有测试通过!"
 }
 
 main "$@"
