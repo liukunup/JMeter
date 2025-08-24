@@ -22,6 +22,7 @@
             "foxundermoon.shell-format",
             "exiasr.hadolint",
             "rogalmic.bash-debug",
+            "mechatroner.rainbow-csv",
         ]
     },
     "launch": {
