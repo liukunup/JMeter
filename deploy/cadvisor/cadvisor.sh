@@ -6,7 +6,7 @@ CADVISOR_HOME=${PERF_HOME}/cadvisor
 
 # 如果不存在则创建
 if [[ ! -d "${CADVISOR_HOME}" ]]; then
-    mkdir -p "${CADVISOR_HOME}"
+  mkdir -p "${CADVISOR_HOME}"
 fi
 
 echo ==================== Deploy cAdvisor ====================
@@ -16,9 +16,9 @@ echo 1. checking perf network...
 # 如果不存在则创建
 # shellcheck disable=SC2312
 if [[ -z "$(docker network ls --filter name=^perf$ --format "{{.Name}}")" ]]; then
-    echo Network Id:
-    docker network create perf
-    echo
+  echo Network Id:
+  docker network create perf
+  echo
 fi
 
 echo 2. Starting cAdvisor container...

@@ -10,39 +10,41 @@ echo ==================== Deploy InfluxDB 2 ====================
 echo 1. checking perf network...
 
 # 如果网络不存在则创建
-if [ -z "$(docker network ls --filter name=^perf$ --format {{.Name}})" ]; then
-    echo Network Id:
-    docker network create perf
-    echo
+# shellcheck disable=SC2312
+if [[ -z "$(docker network ls --filter name=^perf$ --format "{{.Name}}")" ]]; then
+  echo Network Id:
+  docker network create perf
+  echo
 fi
 
 echo 2. Generating admin Token for InfluxDB2...
 
 # 生成随机Token的方法
 generate_token() {
-    local length=$1
-    local charset=$2
-    tr -dc "$charset" < /dev/urandom | head -c $length
+  local length=$1
+  local charset=$2
+  # shellcheck disable=SC2312
+  tr -dc "${charset}" < /dev/urandom | head -c "${length}"
 }
 
 # 生成Token
-TOKEN=$(generate_token $TOKEN_LENGTH $TOKEN_CHAR_SET)
+TOKEN=$(generate_token "${TOKEN_LENGTH}" "${TOKEN_CHAR_SET}")
 
 echo 3. Starting InfluxDB2 container...
 
 # 询问并设置账号和密码
-read -p "[InfluxDB2] Please input the username (default: admin): " username
+read -rp "[InfluxDB2] Please input the username (default: admin): " username
 username=${username:-admin}
-read -p "[InfluxDB2] Please input the password (default: perf@JMeter#1024): " password
+read -rp "[InfluxDB2] Please input the password (default: perf@JMeter#1024): " password
 password=${password:-perf@JMeter#1024}
 # 询问并设置组织和桶
-read -p "[InfluxDB2] Please input the organization (default: Org): " organization
+read -rp "[InfluxDB2] Please input the organization (default: Org): " organization
 organization=${organization:-Org}
-read -p "[InfluxDB2] Please input the bucket (default: JMeter): " bucket
+read -rp "[InfluxDB2] Please input the bucket (default: JMeter): " bucket
 bucket=${bucket:-Org}
 
 # 询问镜像仓库
-read -p "[InfluxDB2] Please input the image repository (default: docker.io): " repository
+read -rp "[InfluxDB2] Please input the image repository (default: docker.io): " repository
 repository=${repository:-docker.io}
 
 echo
@@ -53,16 +55,16 @@ docker run -d \
   -v influxdb-data:/var/lib/influxdb2 \
   -v influxdb-config:/etc/influxdb2 \
   -e DOCKER_INFLUXDB_INIT_MODE=setup \
-  -e DOCKER_INFLUXDB_INIT_USERNAME=$username \
-  -e DOCKER_INFLUXDB_INIT_PASSWORD=$password \
-  -e DOCKER_INFLUXDB_INIT_ORG=$organization \
-  -e DOCKER_INFLUXDB_INIT_BUCKET=$bucket \
-  -e DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=$TOKEN \
+  -e DOCKER_INFLUXDB_INIT_USERNAME="${username}" \
+  -e DOCKER_INFLUXDB_INIT_PASSWORD="${password}" \
+  -e DOCKER_INFLUXDB_INIT_ORG="${organization}" \
+  -e DOCKER_INFLUXDB_INIT_BUCKET="${bucket}" \
+  -e DOCKER_INFLUXDB_INIT_ADMIN_TOKEN="${TOKEN}" \
   --restart=unless-stopped \
   --hostname=influxdb \
   --network=perf \
   --name=perf-influxdb \
-  $repository/influxdb:2
+  "${repository}/influxdb:2"
 
 # 提示保存
 echo
@@ -70,5 +72,5 @@ echo Grafana has been successfully deployed. You can access it via http://localh
 echo
 echo Please save the following Token securely, it is your credential to access InfluxDB2.
 echo
-echo token: $TOKEN
+echo token: "${TOKEN}"
 echo

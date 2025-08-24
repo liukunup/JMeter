@@ -23,9 +23,9 @@ echo 1. checking perf network...
 # 如果不存在则创建
 # shellcheck disable=SC2312
 if [[ -z "$(docker network ls --filter name=^perf$ --format "{{.Name}}")" ]]; then
-    echo Network Id:
-    docker network create perf
-    echo
+  echo Network Id:
+  docker network create perf
+  echo
 fi
 
 echo 2. starting Grafana container...
