@@ -102,7 +102,8 @@ correct_jar_version() {
 }
 
 # add commons-lang3-*.jar
-sed -i "/^java -cp/ i\CP=${CP}:../lib/commons-lang3-3.14.0.jar" "${JMETER_BIN}/mirror-server.sh"
+# shellcheck disable=SC2016
+sed -i '/^java -cp/ i\CP=${CP}:../lib/commons-lang3-3.14.0.jar' "${JMETER_BIN}/mirror-server.sh"
 correct_jar_version "${JMETER_LIB}" "${JMETER_BIN}/mirror-server.sh"
 
 # add commons-lang3-*.jar
