@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     RESOLUTION="1280x720" \
     DEPTH="24"
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     sudo openssl \
     # Install Xvfb for virtual framebuffer support
     xvfb \

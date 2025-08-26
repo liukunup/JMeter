@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     RDP_USERNAME="" \
     RDP_PASSWORD=""
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     sudo openssl \
     # Install Xfce desktop environment
     xfce4 \

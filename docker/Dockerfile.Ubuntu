@@ -42,13 +42,13 @@ COPY docker/entrypoint.sh docker/logger.sh docker/patch.sh /usr/local/bin/
 # Install necessary packages
 RUN apt-get update && apt-get upgrade -y \
 	# Add CA certificates and update
-	&& apt-get install -y ca-certificates \
+	&& apt-get install --no-install-recommends -y ca-certificates \
 	&& update-ca-certificates \
 	# Install Java, tzdata, curl, bash, vim, nano, tar, unzip, make, net-tools, git
-	&& apt-get install -y ${JRE_VERSION} tzdata curl bash vim nano tar unzip make net-tools git \
+	&& apt-get install --no-install-recommends -y ${JRE_VERSION} tzdata curl bash vim nano tar unzip make net-tools git \
 	# Optionally install Python 3 if INSTALL_PYTHON_3 is true
 	&& if [ "$INSTALL_PYTHON_3" = "true" ]; then \
-	  apt-get install -y python3 python3-pip; \
+	  apt-get install --no-install-recommends -y python3 python3-pip; \
 	  ln -sf python3 /usr/bin/python; \
 	fi \
 	# Make the entrypoint script executable
