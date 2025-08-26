@@ -94,7 +94,7 @@ correct_jar_version() {
   if command -v diff &>/dev/null && [[ ${replace_count} -gt 0 ]]; then
     info "=========================================="
     info "Changes made:"
-    diff "${backup_file}" "${script_file}" | head -10
+    diff "${backup_file}" "${script_file}" || true
   fi
 
   return 0
