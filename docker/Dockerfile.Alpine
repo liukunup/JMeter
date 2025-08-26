@@ -37,7 +37,7 @@ ARG TIMEZONE=Asia/Shanghai
 ENV TZ=${TIMEZONE}
 
 # Add shell scripts
-COPY docker/entrypoint.sh docker/logger.sh /usr/local/bin/
+COPY docker/entrypoint.sh docker/logger.sh docker/patch.sh /usr/local/bin/
 
 # Install necessary packages
 RUN apk update && apk upgrade --no-cache \
@@ -55,6 +55,7 @@ RUN apk update && apk upgrade --no-cache \
 	# Make the entrypoint script executable
 	&& chmod +x /usr/local/bin/entrypoint.sh \
 	&& chmod +x /usr/local/bin/logger.sh \
+	&& chmod +x /usr/local/bin/patch.sh \
     # Clean up apt cache to reduce image size
     && rm -rf /var/cache/apk/*
 
@@ -73,6 +74,9 @@ COPY security .
 RUN chmod +x patch.sh \
 	&& ./patch.sh \
 	&& rm -rf /tmp/security
+
+# Run patch script
+RUN /usr/local/bin/patch.sh
 
 # Add JMeter bin directory to PATH
 ENV PATH=${PATH}:${JMETER_BIN}

@@ -26,8 +26,9 @@ readonly SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}") || exit 1
 readonly LOCK_FILE="/tmp/${SCRIPT_NAME%.*}.lock"
 
 # ------------ Environment Variables --------------
-# JMeter home directory
+# JMeter
 : "${JMETER_HOME:=/opt/jmeter}"
+: "${JMETER_BIN:=${JMETER_HOME}/bin}"
 # Display settings
 : "${DISPLAY:=:0}"
 : "${RESOLUTION:=1280x720}"
@@ -232,7 +233,7 @@ run_mirror_server() {
   info "Using Mirror Server Args: ${args[*]}"
   [[ $# -gt 0 ]] && info "Using Additional Args: $*"
 
-  exec mirror-server "${args[@]}" "$@"
+  exec "${JMETER_BIN}/mirror-server.sh" "${args[@]}" "$@"
 }
 
 run_custom_command() {
