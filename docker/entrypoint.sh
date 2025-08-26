@@ -224,13 +224,7 @@ run_mirror_server() {
   info "Starting Mirror Server"
   info "=========================================="
 
-  local args=(
-    --port 8080
-    --loglevel INFO
-  )
-
   info "Using JVM Args: ${JVM_ARGS}"
-  info "Using Mirror Server Args: ${args[*]}"
   [[ $# -gt 0 ]] && info "Using Additional Args: $*"
 
   exec "${JMETER_BIN}/mirror-server.sh" "${args[@]}" "$@"
