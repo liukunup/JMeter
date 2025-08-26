@@ -48,6 +48,7 @@ correct_jar_version() {
     "log4j-api-"
     "log4j-core-"
     "log4j-1.2-api-"
+    "commons-lang3-"
   )
 
   # Counters for statistics
@@ -100,5 +101,10 @@ correct_jar_version() {
   return 0
 }
 
+# add commons-lang3-*.jar
+sed -i '/^java -cp/ i\CP=${CP}:../lib/commons-lang3-3.14.0.jar' "${JMETER_BIN}/mirror-server.sh"
 correct_jar_version "${JMETER_LIB}" "${JMETER_BIN}/mirror-server.sh"
+
+# add commons-lang3-*.jar
+sed -i '/^java -cp/ i\set CP=%CP%;..\\lib\\commons-lang3-3.14.0.jar' "${JMETER_BIN}/mirror-server.cmd"
 correct_jar_version "${JMETER_LIB}" "${JMETER_BIN}/mirror-server.cmd"
